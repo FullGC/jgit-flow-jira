@@ -8,7 +8,11 @@ import com.atlassian.jgitflow.core.exception.ReleaseBranchExistsException;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.release.ReleaseExecutionException;
+import org.apache.maven.shared.release.exec.MavenExecutorException;
+import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 /**
@@ -19,35 +23,13 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
     @Override
     public void start(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
-        checkPom(reactorProjects);
-        
-        JGitFlow flow = null;
-        String releaseLabel = getReleaseLabel(ctx,reactorProjects);
-        try
-        {
-            flow = JGitFlow.getOrInit(ctx.getBaseDir(),ctx.getFlowInitContext());
-            flow.releaseStart(releaseLabel).call();
-        }
-        catch (ReleaseBranchExistsException e)
-        {
-            //since the release branch already exists, just check it out
-            try
-            {
-                flow.git().checkout().setName(flow.getReleaseBranchPrefix() + releaseLabel).call();
-            }
-            catch (GitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing release branch: " + e1.getMessage(), e1);
-            }
-        }
-        catch (JGitFlowException e)
-        {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-        }
+        start(ctx,reactorProjects,false);
+    }
 
-        updatePoms(ctx, reactorProjects);
-
-        commitAllChanges(flow.git(),"updating poms for " + releaseLabel + " release");
+    @Override
+    public void finish(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
+    {
+        finish(ctx, reactorProjects, session, false);
     }
 
 }

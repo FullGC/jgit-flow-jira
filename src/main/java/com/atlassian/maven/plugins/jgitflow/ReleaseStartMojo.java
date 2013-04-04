@@ -38,23 +38,9 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
     @Parameter( property = "releaseVersion" )
     private String releaseVersion;
 
-    /**
-     * Default version to use for new local working copy.
-     *
-     */
-    @Parameter( property = "developmentVersion" )
-    private String developmentVersion;
-
     @Parameter( defaultValue = "true", property = "updateDependencies" )
     private boolean updateDependencies;
 
-    /**
-     * Will or not push changes to the upstream repository.
-     * <code>true</code> by default
-     */
-    @Parameter( defaultValue = "true", property = "pushChanges" )
-    private boolean pushChanges = true;
-    
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
     

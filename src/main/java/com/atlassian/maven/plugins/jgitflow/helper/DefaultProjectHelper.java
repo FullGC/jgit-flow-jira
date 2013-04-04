@@ -27,7 +27,7 @@ public class DefaultProjectHelper implements ProjectHelper
     private PrettyPrompter prompter;
     private Map<String,String> originalVersions;
     private Map<String,String> releaseVersions;
-    private Map<String,String> nextVersions;
+    private Map<String,String> developmentVersions;
     
     @Override
     public String getReleaseVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException
@@ -93,6 +93,69 @@ public class DefaultProjectHelper implements ProjectHelper
     }
 
     @Override
+    public String getDevelopmentVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException
+    {
+        String defaultVersion = rootProject.getVersion();
+
+        if (StringUtils.isNotBlank(ctx.getDefaultDevelopmentVersion()))
+        {
+            defaultVersion = ctx.getDefaultDevelopmentVersion();
+        }
+
+        String suggestedVersion = null;
+        String developmentVersion = defaultVersion;
+
+        while(null == developmentVersion || !ArtifactUtils.isSnapshot(developmentVersion))
+        {
+            DefaultVersionInfo info = null;
+            try
+            {
+                info = new DefaultVersionInfo(rootProject.getVersion());
+            }
+            catch (VersionParseException e)
+            {
+                if (ctx.isInteractive())
+                {
+                    try
+                    {
+                        info = new DefaultVersionInfo("1.0");
+                    }
+                    catch (VersionParseException e1)
+                    {
+                        throw new JGitFlowReleaseException("error parsing 1.0 version!!!", e1);
+                    }
+                }
+                else
+                {
+                    throw new JGitFlowReleaseException("error parsing development version: " + e.getMessage(),e);
+                }
+            }
+
+            suggestedVersion = info.getNextVersion().getSnapshotVersionString();
+
+            if(ctx.isInteractive())
+            {
+                String message = MessageFormat.format("What is the development version for \"{0}\"? ({1})",rootProject.getName(), ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
+                try
+                {
+                    developmentVersion = prompter.promptNotBlank(message,suggestedVersion);
+                }
+                catch (PrompterException e)
+                {
+                    throw new JGitFlowReleaseException("Error reading version from command line " + e.getMessage(),e);
+                }
+            }
+            else
+            {
+                developmentVersion = suggestedVersion;
+            }
+
+        }
+
+        return developmentVersion;
+    }
+
+    @Override
     public Map<String, String> getOriginalVersions(List<MavenProject> reactorProjects)
     {
         if(null == originalVersions)
@@ -143,5 +206,24 @@ public class DefaultProjectHelper implements ProjectHelper
         
         return ImmutableMap.copyOf(releaseVersions);
         
+    }
+
+    @Override
+    public Map<String, String> getDevelopmentVersions(List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException
+    {
+        if(null == developmentVersions)
+        {
+            this.developmentVersions = new HashMap<String, String>();
+
+                for (MavenProject project : reactorProjects)
+                {
+                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(),project.getArtifactId());
+                    String developmentVersion = getDevelopmentVersion(ctx, project);
+                    developmentVersions.put(projectId,developmentVersion);
+                }
+        }
+
+        return ImmutableMap.copyOf(developmentVersions);
+
     }
 }
