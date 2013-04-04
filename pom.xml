@@ -40,6 +40,10 @@
         </developer>
     </developers>
 
+    <prerequisites>
+        <maven>2.2.1</maven>
+    </prerequisites>
+    
     <scm>
         <connection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</developerConnection>
@@ -52,6 +56,28 @@
             <groupId>com.atlassian.jgitflow</groupId>
             <artifactId>jgit-flow-core</artifactId>
             <version>${jgitFlowVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>1.4</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom2</artifactId>
+            <version>2.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>14.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -74,27 +100,55 @@
             <version>${mavenVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-settings-builder</artifactId>
-            <version>${mavenVersion}</version>
+            <groupId>org.apache.maven.release</groupId>
+            <artifactId>maven-release-manager</artifactId>
+            <version>${mavenReleaseVersion}</version>
         </dependency>
+        <!--
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-compat</artifactId>
             <version>${mavenVersion}</version>
             <scope>provided</scope>
         </dependency>
+        -->
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
             <version>${mavenPluginPluginVersion}</version>
             <scope>provided</scope>
         </dependency>
+        
+        <!-- scm -->
+        <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-providers-standard</artifactId>
+            <version>${scmVersion}</version>
+            <type>pom</type>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-manager-plexus</artifactId>
+            <version>${scmVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-api</artifactId>
+            <version>${scmVersion}</version>
+        </dependency>
+        
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>3.8.1</version>
+            <version>4.11</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
+            <version>2.2.1</version>
         </dependency>
     </dependencies>
     
@@ -113,12 +167,29 @@
                     <tagNameFormat>mvn-@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>3.2</version>
+                <configuration>
+                    <!-- see http://jira.codehaus.org/browse/MNG-5346 -->
+                    <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                </configuration>
+                <executions>
+                <execution>
+                    <id>mojo-descriptor</id>
+                    <goals>
+                        <goal>descriptor</goal>
+                    </goals>
+                </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <profiles>
         <profile>
-            <id>release-sign-artifacts</id>
+            <id>releaseBranchPrefix-sign-artifacts</id>
             <activation>
                 <property>
                     <name>performRelease</name>
@@ -147,8 +218,10 @@
     </profiles>
     
     <properties>
-        <mavenVersion>3.0</mavenVersion>
+        <mavenVersion>2.2.1</mavenVersion>
         <mavenPluginPluginVersion>3.1</mavenPluginPluginVersion>
         <jgitFlowVersion>0.5</jgitFlowVersion>
+        <scmVersion>1.8</scmVersion>
+        <mavenReleaseVersion>2.4</mavenReleaseVersion>
     </properties>
 </project>
