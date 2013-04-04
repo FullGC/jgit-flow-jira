@@ -14,6 +14,20 @@
                     <role>com.atlassian.maven.plugins.jgitflow.rewrite.ProjectRewriter</role>
                     <field-name>projectRewriter</field-name>
                 </requirement>
+                <requirement>
+                    <role>com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper</role>
+                    <field-name>mavenExecutionHelper</field-name>
+                </requirement>
+            </requirements>
+        </component>
+        <component>
+            <role>com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper</role>
+            <implementation>com.atlassian.maven.plugins.jgitflow.helper.DefaultMavenExecutionHelper</implementation>
+            <requirements>
+                <requirement>
+                    <role>org.apache.maven.shared.release.exec.MavenExecutor</role>
+                    <field-name>mavenExecutors</field-name>
+                </requirement>
             </requirements>
         </component>
         <component>
