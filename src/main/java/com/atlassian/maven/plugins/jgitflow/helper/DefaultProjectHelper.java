@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
+import org.apache.maven.shared.release.version.HotfixVersionInfo;
 import org.apache.maven.shared.release.versions.DefaultVersionInfo;
 import org.apache.maven.shared.release.versions.VersionParseException;
 import org.codehaus.plexus.components.interactivity.PrompterException;
@@ -28,6 +29,7 @@ public class DefaultProjectHelper implements ProjectHelper
     private Map<String,String> originalVersions;
     private Map<String,String> releaseVersions;
     private Map<String,String> developmentVersions;
+    private Map<String,String> hotfixVersions;
     
     @Override
     public String getReleaseVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException
@@ -92,6 +94,93 @@ public class DefaultProjectHelper implements ProjectHelper
         return releaseVersion;
     }
 
+    @Override
+    public String getHotfixVersion(ReleaseContext ctx, MavenProject rootProject, String lastRelease) throws JGitFlowReleaseException
+    {
+        String defaultVersion = rootProject.getVersion();
+
+        HotfixVersionInfo hotfixInfo = null;
+        if (StringUtils.isNotBlank(lastRelease) && !ArtifactUtils.isSnapshot(lastRelease))
+        {
+            try
+            {
+                hotfixInfo = new HotfixVersionInfo(lastRelease);
+                defaultVersion = hotfixInfo.getHotfixVersionString();
+            }
+            catch (VersionParseException e)
+            {
+                //just ignore
+            }
+        }
+        else
+        {
+            try
+            {
+                hotfixInfo = new HotfixVersionInfo(rootProject.getVersion());
+                defaultVersion = hotfixInfo.getDecrementedHotfixVersionString();
+            }
+            catch (VersionParseException e)
+            {
+                //ignore
+            }
+        }
+
+        String suggestedVersion = defaultVersion;
+        String hotfixVersion = null;
+
+        while(null == suggestedVersion || ArtifactUtils.isSnapshot(suggestedVersion))
+        {
+            HotfixVersionInfo info = null;
+            try
+            {
+                info = new HotfixVersionInfo(rootProject.getVersion());
+            }
+            catch (VersionParseException e)
+            {
+                if (ctx.isInteractive())
+                {
+                    try
+                    {
+                        info = new HotfixVersionInfo("2.0");
+                    }
+                    catch (VersionParseException e1)
+                    {
+                        throw new JGitFlowReleaseException("error parsing 2.0 version!!!", e1);
+                    }
+                }
+                else
+                {
+                    throw new JGitFlowReleaseException("error parsing release version: " + e.getMessage(),e);
+                }
+            }
+
+            suggestedVersion = info.getDecrementedHotfixVersionString();
+        }
+
+        while(null == hotfixVersion || ArtifactUtils.isSnapshot(hotfixVersion))
+        {
+            if(ctx.isInteractive())
+            {
+                String message = MessageFormat.format("What is the hotfix version for \"{0}\"? ({1})",rootProject.getName(), ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
+                try
+                {
+                    hotfixVersion = prompter.promptNotBlank(message,suggestedVersion);
+                }
+                catch (PrompterException e)
+                {
+                    throw new JGitFlowReleaseException("Error reading version from command line " + e.getMessage(),e);
+                }
+            }
+            else
+            {
+                hotfixVersion = suggestedVersion;
+            }
+
+        }
+
+        return hotfixVersion;
+    }
+    
     @Override
     public String getDevelopmentVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException
     {
@@ -206,6 +295,57 @@ public class DefaultProjectHelper implements ProjectHelper
         
         return ImmutableMap.copyOf(releaseVersions);
         
+    }
+
+    @Override
+    public Map<String, String> getHotfixVersions(List<MavenProject> reactorProjects, ReleaseContext ctx, Map<String,String> lastReleaseVersions) throws JGitFlowReleaseException
+    {
+        if(null == hotfixVersions)
+        {
+            this.hotfixVersions = new HashMap<String, String>();
+
+            MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
+            
+            if(ctx.isAutoVersionSubmodules())
+            {
+                String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(),rootProject.getArtifactId());
+
+                String lastRootRelease = "";
+
+                if(null != lastReleaseVersions)
+                {
+                    lastRootRelease = lastReleaseVersions.get(rootProjectId);
+                }
+                
+                String rootHotfixVersion = getHotfixVersion(ctx,rootProject,lastRootRelease);
+
+                hotfixVersions.put(rootProjectId,rootHotfixVersion);
+
+                for(MavenProject subProject : reactorProjects)
+                {
+                    String subProjectId = ArtifactUtils.versionlessKey(subProject.getGroupId(),subProject.getArtifactId());
+                    hotfixVersions.put(subProjectId,rootHotfixVersion);
+                }
+            }
+            else
+            {
+                for (MavenProject project : reactorProjects)
+                {
+                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(),project.getArtifactId());
+                    String lastRelease = "";
+
+                    if(null != lastReleaseVersions)
+                    {
+                        lastRelease = lastReleaseVersions.get(projectId);
+                    }
+
+                    String hotfixVersion = getHotfixVersion(ctx, project, lastRelease);
+                    hotfixVersions.put(projectId,hotfixVersion);
+                }
+            }
+        }
+
+        return ImmutableMap.copyOf(hotfixVersions);
     }
 
     @Override

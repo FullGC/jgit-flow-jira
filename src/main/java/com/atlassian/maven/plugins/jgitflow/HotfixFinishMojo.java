@@ -12,8 +12,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 /**
  * @since version
  */
-@Mojo(name = "release-finish", aggregator = true)
-public class ReleaseFinishMojo extends AbstractJGitFlowMojo
+@Mojo(name = "hotfix-finish", aggregator = true)
+public class HotfixFinishMojo extends AbstractJGitFlowMojo
 {
     /**
      * Default version to use for new local working copy.
@@ -46,24 +46,24 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
 
     @Parameter( property = "tagMessage" )
     private String tagMessage;
-    
-    @Component(hint = "release")
+
+    @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
-    
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
-                .setDefaultDevelopmentVersion(developmentVersion)
-                .setPush(pushChanges)
-                .setKeepBranch(keepBranch)
-                .setSquash(squash)
-                .setNoTag(noTag)
-                .setNoDeploy(noDeploy)
-                .setUseReleaseProfile(useReleaseProfile)
-                .setTagMessage(tagMessage)
-                .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
+           .setDefaultDevelopmentVersion(developmentVersion)
+           .setPush(pushChanges)
+           .setKeepBranch(keepBranch)
+           .setSquash(squash)
+           .setNoTag(noTag)
+           .setNoDeploy(noDeploy)
+           .setUseReleaseProfile(useReleaseProfile)
+           .setTagMessage(tagMessage)
+           .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
         {
@@ -71,7 +71,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
         }
         catch (JGitFlowReleaseException e)
         {
-            throw new MojoExecutionException("Error finishing release: " + e.getMessage(),e);
+            throw new MojoExecutionException("Error finishing hotfix: " + e.getMessage(),e);
         }
     }
 }

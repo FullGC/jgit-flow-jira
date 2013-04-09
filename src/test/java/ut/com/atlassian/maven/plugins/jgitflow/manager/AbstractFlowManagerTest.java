@@ -167,10 +167,15 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     
     protected List<MavenProject> createReactorProjects(String path, String subpath) throws Exception
     {
-        return createReactorProjects(path, path, subpath);
+        return createReactorProjects(path, path, subpath, true);
+    }
+
+    protected List<MavenProject> createReactorProjectsNoClean(String path, String subpath) throws Exception
+    {
+        return createReactorProjects(path, path, subpath, false);
     }
     
-    protected List<MavenProject> createReactorProjects( String path, String targetPath, String subpath )
+    protected List<MavenProject> createReactorProjects( String path, String targetPath, String subpath, boolean clean )
             throws Exception
     {
         File testFile = getTestFile( "target/test-classes/projects/" + path + "/" + subpath + "/pom.xml" );
@@ -207,7 +212,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
             File newFile = getTestFile( "target/test-classes/" + StringUtils.replace( filePath, path, targetPath ) );
 
-            if(!cleaned.equals(newFile.getParentFile().getName()))
+            if(clean && !cleaned.equals(newFile.getParentFile().getName()))
             {
                 //clean the parent dir
                 FileUtils.cleanDirectory(newFile.getParentFile());

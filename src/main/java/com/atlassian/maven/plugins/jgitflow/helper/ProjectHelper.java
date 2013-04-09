@@ -14,12 +14,16 @@ import org.apache.maven.project.MavenProject;
 public interface ProjectHelper
 {
     String getReleaseVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException;
-
+    
+    String getHotfixVersion(ReleaseContext ctx, MavenProject rootProject, String lastRelease) throws JGitFlowReleaseException;
+    
     String getDevelopmentVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException;
 
     Map<String,String> getOriginalVersions(List<MavenProject> reactorProjects);
 
     Map<String,String> getReleaseVersions(List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+
+    Map<String,String> getHotfixVersions(List<MavenProject> reactorProjects, ReleaseContext ctx, Map<String,String> lastReleaseVersions) throws JGitFlowReleaseException;
 
     Map<String,String> getDevelopmentVersions(List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
 }

@@ -30,9 +30,6 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter( defaultValue = "${reactorProjects}", readonly = true, required = true )
     private List<MavenProject> reactorProjects;
 
-    @Parameter ( defaultValue = "${maven.repo.local}" )
-    private File localRepoDirectory;
-
     @Parameter
     private FlowInitContext flowInitContext;
 

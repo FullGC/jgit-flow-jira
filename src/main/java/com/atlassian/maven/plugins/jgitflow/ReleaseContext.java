@@ -20,6 +20,7 @@ public class ReleaseContext
     private boolean squash;
     private boolean noTag;
     private boolean noDeploy;
+    private boolean noBuild;
     private boolean useReleaseProfile;
     private String args;
     private String tagMessage;
@@ -42,6 +43,7 @@ public class ReleaseContext
         this.squash = false;
         this.noTag = false;
         this.noDeploy = false;
+        this.noBuild = false;
         this.useReleaseProfile = true;
         this.args = "";
         this.tagMessage = "tagging release ${version}";
@@ -182,6 +184,20 @@ public class ReleaseContext
     public ReleaseContext setNoDeploy(boolean deploy)
     {
         this.noDeploy = deploy;
+        return this;
+    }
+
+    public boolean isNoBuild()
+    {
+        return noBuild;
+    }
+
+    /*
+     * NOTE: This should only be used for testing!!!
+     */
+    public ReleaseContext setNoBuild(boolean nobuild)
+    {
+        this.noBuild = nobuild;
         return this;
     }
 

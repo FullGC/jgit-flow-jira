@@ -12,10 +12,9 @@ import org.apache.maven.plugins.annotations.Parameter;
 /**
  * @since version
  */
-@Mojo(name = "release-start", aggregator = true)
-public class ReleaseStartMojo extends AbstractJGitFlowMojo
+@Mojo(name = "hotfix-start", aggregator = true)
+public class HotfixStartMojo extends AbstractJGitFlowMojo
 {
-    
     /**
      * Whether to automatically assign submodules the parent version. If set to false, the user will be prompted for the
      * version of each submodules.
@@ -39,21 +38,21 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
     private String releaseVersion;
 
     @Parameter( defaultValue = "true", property = "updateDependencies" )
-    private boolean updateDependencies;
+    private boolean updateDependencies = true;
 
-    @Component(hint = "release")
+    @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
-    
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setAutoVersionSubmodules(autoVersionSubmodules)
-                .setInteractive(getSettings().isInteractiveMode())
-                .setDefaultReleaseVersion(releaseVersion)
-                .setAllowSnapshots(allowSnapshots)
-                .setUpdateDependencies(updateDependencies)
-                .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
+           .setInteractive(getSettings().isInteractiveMode())
+           .setDefaultReleaseVersion(releaseVersion)
+           .setAllowSnapshots(allowSnapshots)
+           .setUpdateDependencies(updateDependencies)
+           .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
         {
@@ -61,7 +60,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
         }
         catch (JGitFlowReleaseException e)
         {
-            throw new MojoExecutionException("Error starting release: " + e.getMessage(),e);
+            throw new MojoExecutionException("Error starting hotfix: " + e.getMessage(),e);
         }
     }
 }
