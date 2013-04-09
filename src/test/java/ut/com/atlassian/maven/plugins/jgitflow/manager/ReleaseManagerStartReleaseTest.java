@@ -32,7 +32,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setDefaultReleaseVersion("1.0");
-        ctx.setInteractive(false);
+        ctx.setInteractive(false).setNoTag(true).setPush(false);
 
         try
         {
@@ -70,7 +70,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         FlowReleaseManager relman = getReleaseManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        ctx.setInteractive(false);
+        ctx.setInteractive(false).setNoTag(true).setPush(false);
         
         relman.start(ctx,projects);
 
@@ -104,7 +104,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         FlowReleaseManager relman = getReleaseManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        ctx.setInteractive(false);
+        ctx.setInteractive(false).setNoTag(true).setPush(false);
 
         relman.start(ctx,projects);
 
@@ -265,7 +265,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         FlowReleaseManager relman = getReleaseManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        ctx.setInteractive(false);
+        ctx.setInteractive(false).setNoTag(true).setPush(false);
 
         relman.start(ctx,projects);
 

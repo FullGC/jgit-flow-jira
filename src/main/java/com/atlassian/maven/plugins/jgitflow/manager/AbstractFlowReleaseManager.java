@@ -3,6 +3,8 @@ package com.atlassian.maven.plugins.jgitflow.manager;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.transport.RefSpec;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -186,7 +189,8 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 ensureOrigin(reactorProjects, flow);
             }
-            
+
+            getLogger().info("running jgitflow release finish...");
             flow.releaseFinish(releaseLabel)
                 .setPush(ctx.isPush())
                 .setKeepBranch(ctx.isKeepBranch())
@@ -202,6 +206,12 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             updatePomsWithDevelopmentVersion(ctx, reactorProjects);
 
             commitAllChanges(flow.git(), "updating poms for " + developLabel + " development");
+            
+            if(ctx.isPush())
+            {
+                RefSpec developSpec = new RefSpec(ctx.getFlowInitContext().getDevelop());
+                flow.git().push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(developSpec).call();
+            }
 
             MavenJGitFlowConfiguration config = configManager.getConfiguration(flow.git());
             config.setLastReleaseVersions(originalVersions);
@@ -265,7 +275,8 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 ensureOrigin(reactorProjects, flow);
             }
-            
+
+            getLogger().info("running jgitflow hotfix finish...");
             flow.hotfixFinish(hotfixLabel)
                 .setPush(ctx.isPush())
                 .setKeepBranch(ctx.isKeepBranch())
@@ -515,6 +526,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
     private void ensureOrigin(List<MavenProject> reactorProjects, JGitFlow flow) throws JGitFlowReleaseException
     {
+        getLogger().info("ensuring origin exists...");
         boolean foundGitScm = false;
         for (MavenProject project : reactorProjects)
         {
@@ -546,9 +558,17 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                         String delimiter = ScmUrlUtils.getDelimiter(scmUrl);
 
                         String cleanScmUrl = scmUrl.substring(4);
-                        int firstDelimiterIndex = cleanScmUrl.indexOf(delimiter);
+                        int gitDelimiterIndex = cleanScmUrl.indexOf(delimiter);
 
-                        cleanScmUrl = cleanScmUrl.substring(firstDelimiterIndex + 1, cleanScmUrl.length());
+                        cleanScmUrl = cleanScmUrl.substring(gitDelimiterIndex + 1, cleanScmUrl.length());
+                        
+                        URI uri = new URI(cleanScmUrl);
+                        
+                        String scheme = uri.getScheme();
+                        if("ssh".equals(scheme))
+                        {
+                            cleanScmUrl = uri.getAuthority() + ":" + uri.getPath().substring(1);
+                        }
                         
                         if(!Strings.isNullOrEmpty(scmUrl) && "git".equals(ScmUrlUtils.getProvider(scmUrl)))
                         {
@@ -557,6 +577,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                             String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"url");
                             if(Strings.isNullOrEmpty(originUrl) || !cleanScmUrl.equals(originUrl))
                             {
+                                getLogger().info("adding origin from scm...");
                                 config.setString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"url",cleanScmUrl);
                                 config.setString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"fetch","+refs/heads/*:refs/remotes/origin/*");
                                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getMasterBranchName(),"remote",Constants.DEFAULT_REMOTE_NAME);
@@ -575,6 +596,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                                     throw new JGitFlowReleaseException("error configuring remote git repo", e);
                                 }
 
+                                getLogger().info("pulling changes from new origin...");
                                 Ref originMaster = GitHelper.getRemoteBranch(flow.git(),flow.getMasterBranchName());
                                 Ref localMaster = GitHelper.getLocalBranch(flow.git(),flow.getMasterBranchName());
                                 RefUpdate update = flow.git().getRepository().updateRef(localMaster.getName());
@@ -601,6 +623,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                     throw new JGitFlowReleaseException("error configuring remote git repo", e);
                 }
                 catch (JGitFlowIOException e)
+                {
+                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
+                }
+                catch (URISyntaxException e)
                 {
                     throw new JGitFlowReleaseException("error configuring remote git repo", e);
                 }

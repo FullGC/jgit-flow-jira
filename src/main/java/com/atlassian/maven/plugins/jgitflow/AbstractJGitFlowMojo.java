@@ -30,7 +30,7 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter( defaultValue = "${reactorProjects}", readonly = true, required = true )
     private List<MavenProject> reactorProjects;
 
-    @Parameter
+    @Parameter(defaultValue = "${flowInitContext}")
     private FlowInitContext flowInitContext;
 
     Settings getSettings()

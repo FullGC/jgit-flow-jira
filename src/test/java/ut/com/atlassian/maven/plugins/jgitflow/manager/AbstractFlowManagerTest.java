@@ -102,8 +102,8 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         {
             ctx.setDefaultReleaseVersion(releaseVersion);
         }
-        
-        ctx.setInteractive(false);
+
+        ctx.setInteractive(false).setNoTag(true).setPush(false);
 
         basicReleaseRewriteTest(projectName, ctx);
     }

@@ -31,7 +31,11 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         File remoteDir = getTestFile( "target/test-classes/projects/remote-git-project");
         
         //make sure we're clean
-        FileUtils.cleanDirectory(new File(remoteDir,".git"));
+        File remoteGitDir = new File(remoteDir,".git");
+        if(remoteGitDir.exists())
+        {
+            FileUtils.cleanDirectory(remoteGitDir);
+        }
         
         remoteGit = RepoUtil.createRepositoryWithMasterAndDevelop(remoteDir);
 
