@@ -44,6 +44,9 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "true", property = "useReleaseProfile" )
     private boolean useReleaseProfile = true;
 
+    @Parameter( defaultValue = "true", property = "updateDependencies" )
+    private boolean updateDependencies;
+    
     @Parameter( property = "tagMessage" )
     private String tagMessage;
 
@@ -63,6 +66,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setNoDeploy(noDeploy)
            .setUseReleaseProfile(useReleaseProfile)
            .setTagMessage(tagMessage)
+           .setUpdateDependencies(updateDependencies)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
