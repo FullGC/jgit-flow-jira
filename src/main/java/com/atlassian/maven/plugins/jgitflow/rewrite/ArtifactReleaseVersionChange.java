@@ -21,7 +21,7 @@ import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.ge
  */
 public class ArtifactReleaseVersionChange implements ProjectChange
 {
-    private static final String LF = System.lineSeparator() + "  - ";
+    private static final String LF = System.getProperty("line.separator") + "  - ";
     private final Map<String, String> originalVersions;
     private final Map<String, String> releaseVersions;
     private final boolean updateDependencies;

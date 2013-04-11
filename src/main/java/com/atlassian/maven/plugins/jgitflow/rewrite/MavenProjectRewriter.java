@@ -23,7 +23,7 @@ import org.jdom2.output.XMLOutputter;
 public class MavenProjectRewriter implements ProjectRewriter
 {
     private static final int POM_INDENTATION = 4;
-    private static final String ls = System.lineSeparator();
+    private static final String ls = System.getProperty("line.separator");
     
     @Override
     public void applyChanges(MavenProject project, ProjectChangeset changes) throws ProjectRewriteException
