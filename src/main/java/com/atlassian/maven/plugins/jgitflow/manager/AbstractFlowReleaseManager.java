@@ -54,7 +54,7 @@ import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultTagChange.s
  */
 public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled implements FlowReleaseManager
 {
-    private static final String ls = System.lineSeparator();
+    private static final String ls = System.getProperty("line.separator");
     protected ProjectHelper projectHelper;
     protected MavenProjectRewriter projectRewriter;
     protected MavenExecutionHelper mavenExecutionHelper;
