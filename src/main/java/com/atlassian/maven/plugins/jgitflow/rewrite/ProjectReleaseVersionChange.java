@@ -9,6 +9,9 @@ import com.google.common.base.Strings;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.project.MavenProject;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
+
+import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
 
 /**
  * @since version
@@ -32,7 +35,9 @@ public class ProjectReleaseVersionChange implements ProjectChange
     {
         boolean modified = false;
 
-        Element versionElement = root.getChild("version", root.getNamespace());
+        Namespace ns = getNamespaceOrNull(root);
+
+        Element versionElement = root.getChild("version", ns);
         String projectId = ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId());
         String releaseVersion = releaseVersions.get(projectId);
         
@@ -54,7 +59,7 @@ public class ProjectReleaseVersionChange implements ProjectChange
             
             if(!releaseVersion.equals(parentVersion))
             {
-                Element artifactId = root.getChild("artifactId", root.getNamespace());
+                Element artifactId = root.getChild("artifactId", ns);
                 versionElement = new Element("version");
 
                 versionElement.setText(releaseVersion);

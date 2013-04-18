@@ -7,6 +7,9 @@ import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.project.MavenProject;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
+
+import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
 
 /**
  * @since version
@@ -34,7 +37,8 @@ public class ParentReleaseVersionChange implements ProjectChange
 
         if (project.hasParent())
         {
-            Element parentVersionElement = root.getChild("parent", root.getNamespace()).getChild("version", root.getNamespace());
+            Namespace ns = getNamespaceOrNull(root);
+            Element parentVersionElement = root.getChild("parent", ns).getChild("version", ns);
             MavenProject parent = project.getParent();
             String parentId = ArtifactUtils.versionlessKey(parent.getGroupId(), parent.getArtifactId());
 

@@ -45,6 +45,7 @@ import org.jdom2.input.SAXBuilder;
 
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
+import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectReleaseVersionChange.projectReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultHeadTagChange.scmDefaultHeadTagChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultTagChange.scmDefaultTagChange;
@@ -550,7 +551,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                     Document document = builder.build(new StringReader( content ));
                     Element root = document.getRootElement();
 
-                    Element scmElement = root.getChild("scm", root.getNamespace());
+                    Element scmElement = root.getChild("scm", getNamespaceOrNull(root));
 
                     if(null != scmElement)
                     {
