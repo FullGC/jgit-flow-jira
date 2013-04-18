@@ -542,6 +542,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                     throw new JGitFlowReleaseException("pom file must be readable! " + pomPath);
                 }
 
+                String cleanScmUrl = "not defined";
                 try
                 {
                     String content = ReleaseUtil.readXmlFile(pomFile, ls);
@@ -555,9 +556,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                     {
                         String scmUrl = (null != scm.getDeveloperConnection()) ? scm.getDeveloperConnection() : scm.getConnection();
 
-                        String delimiter = ScmUrlUtils.getDelimiter(scmUrl);
-
-                        String cleanScmUrl = scmUrl.substring(4);
+                        cleanScmUrl = scmUrl.substring(8);
                         
                         if(!Strings.isNullOrEmpty(scmUrl) && "git".equals(ScmUrlUtils.getProvider(scmUrl)))
                         {
@@ -582,7 +581,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                                 }
                                 catch (Exception e)
                                 {
-                                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
+                                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
                                 }
 
                                 getLogger().info("pulling changes from new origin...");
@@ -605,15 +604,15 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                 }
                 catch (IOException e)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
+                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
                 }
                 catch (JDOMException e)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
+                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
                 }
                 catch (JGitFlowIOException e)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
+                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
                 }
             }
         }
