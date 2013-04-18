@@ -11,7 +11,9 @@ import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.scm.provider.ScmUrlUtils;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 
+import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getOrCreateElement;
 
 /**
@@ -39,7 +41,8 @@ public class ScmDefaultTagChange implements ProjectChange
         Scm scm = project.getScm();
         if(null != scm)
         {
-            Element scmElement = root.getChild("scm", root.getNamespace());
+            Namespace ns = getNamespaceOrNull(root);
+            Element scmElement = root.getChild("scm", ns);
             
             if(null != scmElement)
             {
@@ -55,7 +58,7 @@ public class ScmDefaultTagChange implements ProjectChange
                         throw new ProjectRewriteException("Release version for " + project.getName() + " was not found");
                     }
                     
-                    Element tag = getOrCreateElement(scmElement,"tag");
+                    Element tag = getOrCreateElement(scmElement,"tag",ns);
                     tag.setText(releaseVersion);
                     modified = true;
                 }

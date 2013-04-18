@@ -45,6 +45,7 @@ import org.jdom2.input.SAXBuilder;
 
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
+import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectReleaseVersionChange.projectReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultHeadTagChange.scmDefaultHeadTagChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultTagChange.scmDefaultTagChange;
@@ -542,6 +543,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                     throw new JGitFlowReleaseException("pom file must be readable! " + pomPath);
                 }
 
+                String cleanScmUrl = "not defined";
                 try
                 {
                     String content = ReleaseUtil.readXmlFile(pomFile, ls);
@@ -549,26 +551,13 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                     Document document = builder.build(new StringReader( content ));
                     Element root = document.getRootElement();
 
-                    Element scmElement = root.getChild("scm", root.getNamespace());
+                    Element scmElement = root.getChild("scm", getNamespaceOrNull(root));
 
                     if(null != scmElement)
                     {
                         String scmUrl = (null != scm.getDeveloperConnection()) ? scm.getDeveloperConnection() : scm.getConnection();
 
-                        String delimiter = ScmUrlUtils.getDelimiter(scmUrl);
-
-                        String cleanScmUrl = scmUrl.substring(4);
-                        int gitDelimiterIndex = cleanScmUrl.indexOf(delimiter);
-
-                        cleanScmUrl = cleanScmUrl.substring(gitDelimiterIndex + 1, cleanScmUrl.length());
-                        
-                        URI uri = new URI(cleanScmUrl);
-                        
-                        String scheme = uri.getScheme();
-                        if("ssh".equals(scheme))
-                        {
-                            cleanScmUrl = uri.getAuthority() + ":" + uri.getPath().substring(1);
-                        }
+                        cleanScmUrl = scmUrl.substring(8);
                         
                         if(!Strings.isNullOrEmpty(scmUrl) && "git".equals(ScmUrlUtils.getProvider(scmUrl)))
                         {
@@ -593,7 +582,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                                 }
                                 catch (Exception e)
                                 {
-                                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
+                                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
                                 }
 
                                 getLogger().info("pulling changes from new origin...");
@@ -616,19 +605,15 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                 }
                 catch (IOException e)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
+                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
                 }
                 catch (JDOMException e)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
+                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
                 }
                 catch (JGitFlowIOException e)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
-                }
-                catch (URISyntaxException e)
-                {
-                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
+                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
                 }
             }
         }

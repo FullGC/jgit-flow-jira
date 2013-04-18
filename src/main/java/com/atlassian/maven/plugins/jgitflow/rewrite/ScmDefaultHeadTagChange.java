@@ -8,7 +8,9 @@ import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.scm.provider.ScmUrlUtils;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 
+import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getOrCreateElement;
 
 /**
@@ -34,7 +36,8 @@ public class ScmDefaultHeadTagChange implements ProjectChange
         Scm scm = project.getScm();
         if(null != scm)
         {
-            Element scmElement = root.getChild("scm", root.getNamespace());
+            Namespace ns = getNamespaceOrNull(root);
+            Element scmElement = root.getChild("scm", ns);
 
             if(null != scmElement)
             {
@@ -42,7 +45,7 @@ public class ScmDefaultHeadTagChange implements ProjectChange
 
                 if(!Strings.isNullOrEmpty(scmUrl) && "git".equals(ScmUrlUtils.getProvider(scmUrl)))
                 {
-                    Element tag = getOrCreateElement(scmElement,"tag");
+                    Element tag = getOrCreateElement(scmElement,"tag",ns);
                     tag.setText("HEAD");
                     modified = true;
                 }
