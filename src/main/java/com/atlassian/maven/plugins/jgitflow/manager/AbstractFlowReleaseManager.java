@@ -558,17 +558,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                         String delimiter = ScmUrlUtils.getDelimiter(scmUrl);
 
                         String cleanScmUrl = scmUrl.substring(4);
-                        int gitDelimiterIndex = cleanScmUrl.indexOf(delimiter);
-
-                        cleanScmUrl = cleanScmUrl.substring(gitDelimiterIndex + 1, cleanScmUrl.length());
-                        
-                        URI uri = new URI(cleanScmUrl);
-                        
-                        String scheme = uri.getScheme();
-                        if("ssh".equals(scheme))
-                        {
-                            cleanScmUrl = uri.getAuthority() + ":" + uri.getPath().substring(1);
-                        }
                         
                         if(!Strings.isNullOrEmpty(scmUrl) && "git".equals(ScmUrlUtils.getProvider(scmUrl)))
                         {
@@ -623,10 +612,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                     throw new JGitFlowReleaseException("error configuring remote git repo", e);
                 }
                 catch (JGitFlowIOException e)
-                {
-                    throw new JGitFlowReleaseException("error configuring remote git repo", e);
-                }
-                catch (URISyntaxException e)
                 {
                     throw new JGitFlowReleaseException("error configuring remote git repo", e);
                 }
