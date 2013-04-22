@@ -81,6 +81,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
         catch (ReleaseBranchExistsException e)
         {
+            //TODO: make sure the one that exists is the one we're releasing
             //since the release branch already exists, just check it out
             try
             {
@@ -126,6 +127,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
         catch (HotfixBranchExistsException e)
         {
+            //TODO: make sure the one that exists is the one we're releasing
             //since the release branch already exists, just check it out
             try
             {
