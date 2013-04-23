@@ -224,7 +224,7 @@
     <properties>
         <mavenVersion>2.2.1</mavenVersion>
         <mavenPluginPluginVersion>3.1</mavenPluginPluginVersion>
-        <jgitFlowVersion>0.7</jgitFlowVersion>
+        <jgitFlowVersion>0.9</jgitFlowVersion>
         <scmVersion>1.8</scmVersion>
         <mavenReleaseVersion>2.4</mavenReleaseVersion>
     </properties>

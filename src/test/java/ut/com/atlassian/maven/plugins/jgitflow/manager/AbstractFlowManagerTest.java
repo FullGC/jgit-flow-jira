@@ -3,6 +3,7 @@ package ut.com.atlassian.maven.plugins.jgitflow.manager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.*;
 
 import com.atlassian.jgitflow.core.JGitFlow;
@@ -56,6 +57,9 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected ArtifactRepository localRepository;
 
+    protected File testFileBase;
+    private static final SecureRandom random = new SecureRandom();
+
     private static final DefaultContext EMPTY_CONTEXT = new DefaultContext()
     {
         public Object get( Object key ) throws ContextException
@@ -71,6 +75,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         ArtifactRepositoryLayout layout = (ArtifactRepositoryLayout) lookup(ArtifactRepositoryLayout.ROLE, "default");
         String localRepoPath = getTestFile("target/local-repository").getAbsolutePath().replace('\\', '/');
         localRepository = new DefaultArtifactRepository("local", "file://" + localRepoPath, layout);
+        this.testFileBase = newTempDir();
     }
 
     @After
@@ -78,6 +83,18 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     {
         ((Contextualizable) projectBuilder).contextualize(EMPTY_CONTEXT);
         ((Contextualizable) lookup(WagonManager.ROLE)).contextualize(EMPTY_CONTEXT);
+
+        if(null != testFileBase && testFileBase.exists())
+        {
+            try
+            {
+                FileUtils.deleteDirectory(testFileBase);
+            }
+            catch (IOException e)
+            {
+                //ignore
+            }
+        }
     }
 
     @Override
@@ -178,7 +195,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     protected List<MavenProject> createReactorProjects( String path, String targetPath, String subpath, boolean clean )
             throws Exception
     {
-        File testFile = getTestFile( "target/test-classes/projects/" + path + "/" + subpath + "/pom.xml" );
+        File testFile = new File( testFileBase, "projects/" + path + "/" + subpath + "/pom.xml" );
         Stack<File> projectFiles = new Stack<File>();
         projectFiles.push( testFile );
 
@@ -207,14 +224,15 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
             
             //FileUtils.copyDirectory(srcDir,file.getParentFile());
             String filePath = file.getPath();
-            int index = filePath.indexOf( "test-classes" ) + "test-classes".length() + 1;
+            int index = filePath.indexOf( "projects" );
             filePath = filePath.substring( index ).replace( '\\', '/' );
 
-            File newFile = getTestFile( "target/test-classes/" + StringUtils.replace( filePath, path, targetPath ) );
+            File newFile = new File( testFileBase, StringUtils.replace( filePath, path, targetPath ) );
 
             if(clean && !cleaned.equals(newFile.getParentFile().getName()))
             {
                 //clean the parent dir
+                newFile.mkdirs();
                 FileUtils.cleanDirectory(newFile.getParentFile());
     
                 File srcDir = new File(getTestFile( "src/test/resources/"),filePath).getParentFile();
@@ -334,5 +352,35 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         String actualPom = ReleaseUtil.readXmlFile(actualFile);
 
         assertEquals(expectedPom,actualPom);
+    }
+
+    public File newTempDir()
+    {
+        File baseDir = new File(System.getProperty("java.io.tmpdir"));
+        String name = randomName("mvngf-");
+        File tmp = new File(baseDir,name);
+
+        tmp.mkdirs();
+
+        return tmp;
+    }
+
+    public File newDir(String name)
+    {
+        return new File(testFileBase,name);
+    }
+
+    public File newDir()
+    {
+
+        return newDir(randomName("mvngftest"));
+    }
+
+    private String randomName(String base)
+    {
+        long n = random.nextLong();
+        n = (n == Long.MIN_VALUE) ? 0 : Math.abs(n);
+
+        return base + Long.toString(n);
     }
 }

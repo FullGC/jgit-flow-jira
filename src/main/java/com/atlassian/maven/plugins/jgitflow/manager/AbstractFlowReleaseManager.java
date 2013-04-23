@@ -9,10 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.exception.HotfixBranchExistsException;
-import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
-import com.atlassian.jgitflow.core.exception.ReleaseBranchExistsException;
+import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
@@ -81,13 +78,34 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
         catch (ReleaseBranchExistsException e)
         {
-            //TODO: make sure the one that exists is the one we're releasing
-            //since the release branch already exists, just check it out
             try
             {
-                flow.git().checkout().setName(flow.getReleaseBranchPrefix() + releaseLabel).call();
+                List<Ref> refs = GitHelper.listBranchesWithPrefix(flow.git(),flow.getReleaseBranchPrefix());
+                boolean foundOurRelease = false;
+                for(Ref ref : refs)
+                {
+                    if(ref.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + releaseLabel))
+                    {
+                        foundOurRelease = true;
+                        break;
+                    }
+                }
+                
+                if(foundOurRelease)
+                {
+                    //since the release branch already exists, just check it out
+                    flow.git().checkout().setName(flow.getReleaseBranchPrefix() + releaseLabel).call();
+                }
+                else
+                {
+                    throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+                }
             }
             catch (GitAPIException e1)
+            {
+                throw new JGitFlowReleaseException("Error checking out existing release branch: " + e1.getMessage(), e1);
+            }
+            catch (JGitFlowGitAPIException e1)
             {
                 throw new JGitFlowReleaseException("Error checking out existing release branch: " + e1.getMessage(), e1);
             }
@@ -127,15 +145,37 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
         catch (HotfixBranchExistsException e)
         {
-            //TODO: make sure the one that exists is the one we're releasing
-            //since the release branch already exists, just check it out
             try
             {
-                flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel).call();
+                List<Ref> refs = GitHelper.listBranchesWithPrefix(flow.git(),flow.getHotfixBranchPrefix());
+                boolean foundOurRelease = false;
+                for(Ref ref : refs)
+                {
+                    if(ref.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + hotfixLabel))
+                    {
+                        foundOurRelease = true;
+                        break;
+                    }
+                }
+
+                if(foundOurRelease)
+                {
+                    //since the release branch already exists, just check it out
+                    flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel).call();   
+                }
+                else
+                {
+                    throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+                }
+                
             }
             catch (GitAPIException e1)
             {
                 throw new JGitFlowReleaseException("Error checking out existing hotfix branch: " + e1.getMessage(), e1);
+            }
+            catch (JGitFlowGitAPIException e1)
+            {
+                e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
         catch (JGitFlowException e)
