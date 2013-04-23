@@ -28,7 +28,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         String projectName = "basic-pom";
         Git git = null;
         Git remoteGit = null;
-        File remoteDir = getTestFile( "target/test-classes/projects/remote-git-project");
+        File remoteDir = new File(testFileBase, "projects/remote-git-project");
         
         //make sure we're clean
         File remoteGitDir = new File(remoteDir,".git");
