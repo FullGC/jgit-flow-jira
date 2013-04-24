@@ -1,15 +1,14 @@
 package com.atlassian.maven.plugins.jgitflow.manager;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.exception.HotfixBranchExistsException;
+import com.atlassian.jgitflow.core.exception.JGitFlowException;
+import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
+import com.atlassian.jgitflow.core.exception.ReleaseBranchExistsException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
@@ -20,29 +19,20 @@ import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.rewrite.MavenProjectRewriter;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 
-import com.google.common.base.Strings;
-
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.scm.provider.ScmUrlUtils;
 import org.apache.maven.shared.release.ReleaseExecutionException;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.RefSpec;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
-import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectReleaseVersionChange.projectReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultHeadTagChange.scmDefaultHeadTagChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultTagChange.scmDefaultTagChange;
@@ -71,7 +61,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
             if(ctx.isPush() || !ctx.isNoTag())
             {
-                ensureOrigin(reactorProjects, flow);
+                projectHelper.ensureOrigin(reactorProjects, flow);
             }
             
             flow.releaseStart(releaseLabel).call();
@@ -117,7 +107,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
         updatePomsWithReleaseVersion(ctx, reactorProjects);
 
-        commitAllChanges(flow.git(), "updating poms for " + releaseLabel + " release");
+        projectHelper.commitAllChanges(flow.git(), "updating poms for " + releaseLabel + " release");
     }
 
     protected void startHotfix(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
@@ -135,7 +125,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
             if(ctx.isPush() || !ctx.isNoTag())
             {
-                ensureOrigin(reactorProjects, flow);
+                projectHelper.ensureOrigin(reactorProjects, flow);
             }
             
             config = configManager.getConfiguration(flow.git());
@@ -189,7 +179,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
         updatePomsWithHotfixVersion(ctx, reactorProjects, config);
 
-        commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
+        projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
 
         try
         {
@@ -230,7 +220,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             
             if(ctx.isPush() || !ctx.isNoTag())
             {
-                ensureOrigin(reactorProjects, flow);
+                projectHelper.ensureOrigin(reactorProjects, flow);
             }
 
             getLogger().info("running jgitflow release finish...");
@@ -248,7 +238,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             String developLabel = getDevelopmentLabel(ctx, reactorProjects);
             updatePomsWithDevelopmentVersion(ctx, reactorProjects);
 
-            commitAllChanges(flow.git(), "updating poms for " + developLabel + " development");
+            projectHelper.commitAllChanges(flow.git(), "updating poms for " + developLabel + " development");
             
             if(ctx.isPush())
             {
@@ -316,7 +306,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
             if(ctx.isPush() || !ctx.isNoTag())
             {
-                ensureOrigin(reactorProjects, flow);
+                projectHelper.ensureOrigin(reactorProjects, flow);
             }
 
             getLogger().info("running jgitflow hotfix finish...");
@@ -332,7 +322,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
             updatePomsWithPreviousVersions(ctx, reactorProjects, config);
 
-            commitAllChanges(flow.git(), "updating poms for development");
+            projectHelper.commitAllChanges(flow.git(), "updating poms for development");
 
             config.setLastReleaseVersions(originalVersions);
             configManager.saveConfiguration(config,flow.git());
@@ -550,119 +540,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         if (hasSnapshotProject)
         {
             throw new JGitFlowReleaseException("Some reactor projects contain SNAPSHOT versions!");
-        }
-    }
-
-    protected void commitAllChanges(Git git, String message) throws JGitFlowReleaseException
-    {
-        try
-        {
-            git.add().addFilepattern(".").call();
-            git.commit().setMessage(message).call();
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("error committing pom changes: " + e.getMessage(), e);
-        }
-
-    }
-
-    private void ensureOrigin(List<MavenProject> reactorProjects, JGitFlow flow) throws JGitFlowReleaseException
-    {
-        getLogger().info("ensuring origin exists...");
-        boolean foundGitScm = false;
-        for (MavenProject project : reactorProjects)
-        {
-            Scm scm = project.getScm();
-            if(null != scm)
-            {
-                File pomFile = project.getFile();
-
-                if(null == pomFile || !pomFile.exists() || !pomFile.canRead())
-                {
-                    String pomPath = (null == pomFile) ? "null" : pomFile.getAbsolutePath();
-
-                    throw new JGitFlowReleaseException("pom file must be readable! " + pomPath);
-                }
-
-                String cleanScmUrl = "not defined";
-                try
-                {
-                    String content = ReleaseUtil.readXmlFile(pomFile, ls);
-                    SAXBuilder builder = new SAXBuilder();
-                    Document document = builder.build(new StringReader( content ));
-                    Element root = document.getRootElement();
-
-                    Element scmElement = root.getChild("scm", getNamespaceOrNull(root));
-
-                    if(null != scmElement)
-                    {
-                        String scmUrl = (null != scm.getDeveloperConnection()) ? scm.getDeveloperConnection() : scm.getConnection();
-
-                        cleanScmUrl = scmUrl.substring(8);
-                        
-                        if(!Strings.isNullOrEmpty(scmUrl) && "git".equals(ScmUrlUtils.getProvider(scmUrl)))
-                        {
-                            foundGitScm = true;
-                            StoredConfig config = flow.git().getRepository().getConfig();
-                            String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"url");
-                            if(Strings.isNullOrEmpty(originUrl) || !cleanScmUrl.equals(originUrl))
-                            {
-                                getLogger().info("adding origin from scm...");
-                                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"url",cleanScmUrl);
-                                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"fetch","+refs/heads/*:refs/remotes/origin/*");
-                                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getMasterBranchName(),"remote",Constants.DEFAULT_REMOTE_NAME);
-                                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getMasterBranchName(),"merge",Constants.R_HEADS + flow.getMasterBranchName());
-                                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getDevelopBranchName(),"remote",Constants.DEFAULT_REMOTE_NAME);
-                                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getDevelopBranchName(),"merge",Constants.R_HEADS + flow.getDevelopBranchName());
-                                config.save();
-
-                                try
-                                {
-                                    config.load();
-                                    flow.git().fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
-                                }
-                                catch (Exception e)
-                                {
-                                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
-                                }
-
-                                getLogger().info("pulling changes from new origin...");
-                                Ref originMaster = GitHelper.getRemoteBranch(flow.git(),flow.getMasterBranchName());
-                                Ref localMaster = GitHelper.getLocalBranch(flow.git(),flow.getMasterBranchName());
-                                RefUpdate update = flow.git().getRepository().updateRef(localMaster.getName());
-                                update.setNewObjectId(originMaster.getObjectId());
-                                update.forceUpdate();
-
-                                Ref originDevelop = GitHelper.getRemoteBranch(flow.git(),flow.getDevelopBranchName());
-                                Ref localDevelop = GitHelper.getLocalBranch(flow.git(),flow.getDevelopBranchName());
-                                RefUpdate updateDevelop = flow.git().getRepository().updateRef(localDevelop.getName());
-                                updateDevelop.setNewObjectId(originDevelop.getObjectId());
-                                updateDevelop.forceUpdate();
-                                
-                                commitAllChanges(flow.git(),"committing changes from new origin");
-                            }
-                        }
-                    }
-                }
-                catch (IOException e)
-                {
-                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
-                }
-                catch (JDOMException e)
-                {
-                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
-                }
-                catch (JGitFlowIOException e)
-                {
-                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
-                }
-            }
-        }
-
-        if(!foundGitScm)
-        {
-            throw new JGitFlowReleaseException("No GIT Scm url found in reactor projects!");
         }
     }
 }
