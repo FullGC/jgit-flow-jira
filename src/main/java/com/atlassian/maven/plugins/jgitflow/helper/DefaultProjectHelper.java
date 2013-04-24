@@ -376,16 +376,32 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         {
             this.developmentVersions = new HashMap<String, String>();
 
+            MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
+            if(ctx.isAutoVersionSubmodules())
+            {
+                String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(),rootProject.getArtifactId());
+                String rootDevelopmentVersion = getDevelopmentVersion(ctx,rootProject);
+
+                developmentVersions.put(rootProjectId,rootDevelopmentVersion);
+
+                for(MavenProject subProject : reactorProjects)
+                {
+                    String subProjectId = ArtifactUtils.versionlessKey(subProject.getGroupId(),subProject.getArtifactId());
+                    developmentVersions.put(subProjectId,rootDevelopmentVersion);
+                }
+            }
+            else
+            {
                 for (MavenProject project : reactorProjects)
                 {
                     String projectId = ArtifactUtils.versionlessKey(project.getGroupId(),project.getArtifactId());
                     String developmentVersion = getDevelopmentVersion(ctx, project);
                     developmentVersions.put(projectId,developmentVersion);
                 }
+            }
         }
 
         return ImmutableMap.copyOf(developmentVersions);
-
     }
 
     @Override
