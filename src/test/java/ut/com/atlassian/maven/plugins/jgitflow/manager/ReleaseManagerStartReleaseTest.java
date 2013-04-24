@@ -4,14 +4,24 @@ import java.io.File;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowInitCommand;
 import com.atlassian.jgitflow.core.exception.DirtyWorkingTreeException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.helper.DefaultProjectHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.RefUpdate;
 import org.junit.Test;
+
+import ut.com.atlassian.maven.plugins.jgitflow.testutils.RepoUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -284,6 +294,46 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     public void releaseWithReleasedParent() throws Exception
     {
         basicReleaseRewriteTest("pom-with-released-parent");
+    }
+
+    @Test
+    public void startReleaseWithMasterOnly() throws Exception
+    {
+        ProjectHelper projectHelper = (ProjectHelper) lookup(ProjectHelper.class.getName());
+
+        Git git = null;
+        Git remoteGit = null;
+
+        List<MavenProject> remoteProjects = createReactorProjects("remote-git-project",null);
+
+        File remoteDir = remoteProjects.get(0).getBasedir();
+
+        //make sure we're clean
+        File remoteGitDir = new File(remoteDir,".git");
+        if(remoteGitDir.exists())
+        {
+            FileUtils.cleanDirectory(remoteGitDir);
+        }
+
+        remoteGit = RepoUtil.createRepositoryWithMaster(remoteDir);
+        projectHelper.commitAllChanges(remoteGit,"remote commit");
+
+        File localProject = new File( testFileBase, "projects/local/local-git-project" );
+        git = Git.cloneRepository().setDirectory(localProject).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
+        
+        List<MavenProject> projects = createReactorProjects("remote-git-project","local/local-git-project",null,false);
+        File projectRoot = projects.get(0).getBasedir();
+
+        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
+        JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
+
+        projectHelper.ensureOrigin(projects,flow);
+
+        flow.releaseStart("1.0").setFetch(true).call();
+
+        assertEquals(flow.getReleaseBranchPrefix() + "1.0", git.getRepository().getBranch());
+
+
     }
 
 }

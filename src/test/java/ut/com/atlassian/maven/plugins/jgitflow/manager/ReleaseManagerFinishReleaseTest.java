@@ -28,7 +28,11 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         String projectName = "basic-pom";
         Git git = null;
         Git remoteGit = null;
-        File remoteDir = new File(testFileBase, "projects/remote-git-project");
+
+        String projectSubdir = "basic-pom";
+        List<MavenProject> remoteProjects = createReactorProjects("remote-git-project",null);
+        
+        File remoteDir = remoteProjects.get(0).getBasedir();
         
         //make sure we're clean
         File remoteGitDir = new File(remoteDir,".git");

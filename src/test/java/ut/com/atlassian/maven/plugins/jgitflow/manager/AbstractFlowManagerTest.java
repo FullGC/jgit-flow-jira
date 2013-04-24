@@ -195,7 +195,17 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     protected List<MavenProject> createReactorProjects( String path, String targetPath, String subpath, boolean clean )
             throws Exception
     {
-        File testFile = new File( testFileBase, "projects/" + path + "/" + subpath + "/pom.xml" );
+        File testFile = null;
+     
+        if(Strings.isNullOrEmpty(subpath))
+        {
+            testFile = new File( testFileBase, "projects/" + path + "/pom.xml" );
+        }
+        else
+        {
+            testFile = new File( testFileBase, "projects/" + path + "/" + subpath + "/pom.xml" );
+        }
+        
         Stack<File> projectFiles = new Stack<File>();
         projectFiles.push( testFile );
 
