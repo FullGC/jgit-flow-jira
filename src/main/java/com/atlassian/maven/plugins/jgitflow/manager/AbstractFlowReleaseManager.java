@@ -54,23 +54,28 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     protected void startRelease(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
 
-        checkPomForSnapshot(reactorProjects);
-        
-        if(!ctx.isAllowSnapshots())
-        {
-            List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
-            if(!snapshots.isEmpty())
-            {
-                String details = Joiner.on(ls).join(snapshots);
-                throw new UnresolvedSnapshotsException("Cannot start a release due to snapshot dependencies:" + ls + details);
-            }
-        }
-
         JGitFlow flow = null;
-        String releaseLabel = getReleaseLabel(ctx, reactorProjects);
+        String releaseLabel = "";
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            //make sure we're on develop
+            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+
+            checkPomForSnapshot(reactorProjects);
+
+            if(!ctx.isAllowSnapshots())
+            {
+                List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
+                if(!snapshots.isEmpty())
+                {
+                    String details = Joiner.on(ls).join(snapshots);
+                    throw new UnresolvedSnapshotsException("Cannot start a release due to snapshot dependencies:" + ls + details);
+                }
+            }
+
+            releaseLabel = getReleaseLabel(ctx, reactorProjects);
 
             if(ctx.isPush() || !ctx.isNoTag())
             {
@@ -78,6 +83,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             }
             
             flow.releaseStart(releaseLabel).call();
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
         }
         catch (ReleaseBranchExistsException e)
         {
@@ -125,18 +134,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
     protected void startHotfix(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
-        checkPomForSnapshot(reactorProjects);
-
-        if(!ctx.isAllowSnapshots())
-        {
-            List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
-            if(!snapshots.isEmpty())
-            {
-                String details = Joiner.on(ls).join(snapshots);
-                throw new UnresolvedSnapshotsException("Cannot start a hotfix due to snapshot dependencies:" + ls + details);
-            }
-        }
-        
         Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
 
         JGitFlow flow = null;
@@ -145,6 +142,21 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            //make sure we're on master
+            flow.git().checkout().setName(flow.getMasterBranchName()).call();
+
+            checkPomForRelease(reactorProjects);
+
+            if(!ctx.isAllowSnapshots())
+            {
+                List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
+                if(!snapshots.isEmpty())
+                {
+                    String details = Joiner.on(ls).join(snapshots);
+                    throw new UnresolvedSnapshotsException("Cannot start a hotfix due to snapshot dependencies:" + ls + details);
+                }
+            }
 
             if(ctx.isPush() || !ctx.isNoTag())
             {
@@ -155,6 +167,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
             hotfixLabel = getHotfixLabel(ctx, reactorProjects, config);
             flow.hotfixStart(hotfixLabel).call();
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (HotfixBranchExistsException e)
         {
