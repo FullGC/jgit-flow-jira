@@ -70,6 +70,10 @@
                     <role-hint>pretty</role-hint>
                     <field-name>prompter</field-name>
                 </requirement>
+                <requirement>
+                    <role>org.apache.maven.artifact.factory.ArtifactFactory</role>
+                    <field-name>artifactFactory</field-name>
+                </requirement>
             </requirements>
         </component>
         <component>

@@ -16,6 +16,14 @@ import org.apache.maven.plugins.annotations.Parameter;
 public class HotfixFinishMojo extends AbstractJGitFlowMojo
 {
     /**
+     * Whether to automatically assign submodules the parent version. If set to false, the user will be prompted for the
+     * version of each submodules.
+     *
+     */
+    @Parameter( defaultValue = "false", property = "autoVersionSubmodules" )
+    private boolean autoVersionSubmodules = false;
+    
+    /**
      * Default version to use for new local working copy.
      *
      */
@@ -58,6 +66,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     {
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
+           .setAutoVersionSubmodules(autoVersionSubmodules)
            .setDefaultDevelopmentVersion(developmentVersion)
            .setPush(pushChanges)
            .setKeepBranch(keepBranch)

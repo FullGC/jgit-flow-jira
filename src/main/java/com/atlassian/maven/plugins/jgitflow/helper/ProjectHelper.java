@@ -15,6 +15,14 @@ import org.eclipse.jgit.api.Git;
  */
 public interface ProjectHelper
 {
+    public static final String AT_PARENT = "parent";
+    public static final String AT_DEPENDENCY = "dependency";
+    public static final String AT_DEPENDENCY_MGNT = "dependency management";
+    public static final String AT_PLUGIN = "plugin";
+    public static final String AT_PLUGIN_MGNT = "plugin management";
+    public static final String AT_REPORT = "report";
+    public static final String AT_EXTENSIONS = "extensions";
+    
     String getReleaseVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException;
     
     String getHotfixVersion(ReleaseContext ctx, MavenProject rootProject, String lastRelease) throws JGitFlowReleaseException;
@@ -32,4 +40,6 @@ public interface ProjectHelper
     void ensureOrigin(List<MavenProject> reactorProjects, JGitFlow flow) throws JGitFlowReleaseException;
 
     void commitAllChanges(Git git, String message) throws JGitFlowReleaseException;
+    
+    List<String> checkForNonReactorSnapshots(List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 }
