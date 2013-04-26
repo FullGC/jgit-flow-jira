@@ -9,16 +9,13 @@ import com.atlassian.jgitflow.core.exception.DirtyWorkingTreeException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
-import com.atlassian.maven.plugins.jgitflow.helper.DefaultProjectHelper;
+import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefUpdate;
 import org.junit.Test;
 
 import ut.com.atlassian.maven.plugins.jgitflow.testutils.RepoUtil;
@@ -35,22 +32,22 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     public void uncommittedChangesFails() throws Exception
     {
         String projectSubdir = "basic-pom";
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectSubdir);
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir);
         File projectRoot = projects.get(0).getBasedir();
-        
+
         FlowReleaseManager relman = getReleaseManager();
-        
+
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setDefaultReleaseVersion("1.0");
         ctx.setInteractive(false).setNoTag(true).setPush(false);
 
         try
         {
-            relman.start(ctx,projects);
+            relman.start(ctx, projects);
         }
         catch (JGitFlowReleaseException e)
         {
-            assertEquals(DirtyWorkingTreeException.class,e.getCause().getClass());
+            assertEquals(DirtyWorkingTreeException.class, e.getCause().getClass());
             throw e;
         }
     }
@@ -59,7 +56,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     public void existingSameReleaseIsCheckedOut() throws Exception
     {
         String projectSubdir = "basic-pom";
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectSubdir);
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir);
         File projectRoot = projects.get(0).getBasedir();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
@@ -67,22 +64,22 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         assertOnDevelop(flow);
 
         initialCommitAll(flow);
-        
+
         flow.git().checkout().setCreateBranch(true).setName(flow.getReleaseBranchPrefix() + "1.0").call();
-        
+
         //go back to develop
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-        
+
         assertOnDevelop(flow);
-        
-        assertTrue(GitHelper.localBranchExists(flow.git(),flow.getReleaseBranchPrefix() + "1.0"));
-        
+
+        assertTrue(GitHelper.localBranchExists(flow.git(), flow.getReleaseBranchPrefix() + "1.0"));
+
         FlowReleaseManager relman = getReleaseManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true).setPush(false);
-        
-        relman.start(ctx,projects);
+
+        relman.start(ctx, projects);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
@@ -93,7 +90,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     public void existingDifferentReleaseThrows() throws Exception
     {
         String projectSubdir = "basic-pom";
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectSubdir);
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir);
         File projectRoot = projects.get(0).getBasedir();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
@@ -109,14 +106,14 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         assertOnDevelop(flow);
 
-        assertTrue(GitHelper.localBranchExists(flow.git(),flow.getReleaseBranchPrefix() + "0.2"));
+        assertTrue(GitHelper.localBranchExists(flow.git(), flow.getReleaseBranchPrefix() + "0.2"));
 
         FlowReleaseManager relman = getReleaseManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true).setPush(false);
 
-        relman.start(ctx,projects);
+        relman.start(ctx, projects);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
@@ -126,7 +123,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     @Test
     public void releaseBasicPom() throws Exception
     {
-        basicReleaseRewriteTest("basic-pom","1.0");
+        basicReleaseRewriteTest("basic-pom", "1.0");
     }
 
     @Test
@@ -147,28 +144,116 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         basicReleaseRewriteTest("basic-pom-with-tag-base");
     }
 
-    @Test
+    @Test(expected = JGitFlowReleaseException.class)
     public void releaseWithInternalDifferingSnapshotDeps() throws Exception
     {
-        basicReleaseRewriteTest("internal-differing-snapshot-dependencies");
+        try
+        {
+            basicReleaseRewriteTest("internal-differing-snapshot-dependencies");
+        }
+        catch (JGitFlowReleaseException e)
+        {
+            assertEquals(UnresolvedSnapshotsException.class, e.getClass());
+            throw e;
+        }
     }
 
     @Test
+    public void releaseWithInternalDifferingSnapshotDepsAllow() throws Exception
+    {
+        String projectName = "internal-differing-snapshot-dependencies";
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectName);
+        File projectRoot = projects.get(0).getBasedir();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+
+        ctx.setInteractive(false).setNoTag(true).setPush(false).setAllowSnapshots(true);
+
+        basicReleaseRewriteTest(projectName, ctx);
+    }
+
+    @Test(expected = JGitFlowReleaseException.class)
     public void releaseWithInternalDifferingSnapshotExtension() throws Exception
     {
-        basicReleaseRewriteTest("internal-differing-snapshot-extension");
+        try
+        {
+            basicReleaseRewriteTest("internal-differing-snapshot-extension");
+        }
+        catch (JGitFlowReleaseException e)
+        {
+            assertEquals(UnresolvedSnapshotsException.class, e.getClass());
+            throw e;
+        }
     }
 
     @Test
+    public void releaseWithInternalDifferingSnapshotExtensionAllow() throws Exception
+    {
+        String projectName = "internal-differing-snapshot-extension";
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectName);
+        File projectRoot = projects.get(0).getBasedir();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+
+        ctx.setInteractive(false).setNoTag(true).setPush(false).setAllowSnapshots(true);
+
+        basicReleaseRewriteTest(projectName, ctx);
+    }
+
+    @Test(expected = JGitFlowReleaseException.class)
     public void releaseWithInternalDifferingSnapshotPlugins() throws Exception
     {
-        basicReleaseRewriteTest("internal-differing-snapshot-plugins");
+        try
+        {
+            basicReleaseRewriteTest("internal-differing-snapshot-plugins");
+        }
+        catch (JGitFlowReleaseException e)
+        {
+            assertEquals(UnresolvedSnapshotsException.class, e.getClass());
+            throw e;
+        }
     }
 
     @Test
+    public void releaseWithInternalDifferingSnapshotPluginsAllow() throws Exception
+    {
+        String projectName = "internal-differing-snapshot-plugins";
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectName);
+        File projectRoot = projects.get(0).getBasedir();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+
+        ctx.setInteractive(false).setNoTag(true).setPush(false).setAllowSnapshots(true);
+
+        basicReleaseRewriteTest(projectName, ctx);
+    }
+
+    @Test(expected = JGitFlowReleaseException.class)
     public void releaseWithInternalDifferingSnapshotReportPlugins() throws Exception
     {
-        basicReleaseRewriteTest("internal-differing-snapshot-report-plugins");
+        try
+        {
+            basicReleaseRewriteTest("internal-differing-snapshot-report-plugins");
+        }
+        catch (JGitFlowReleaseException e)
+        {
+            assertEquals(UnresolvedSnapshotsException.class, e.getClass());
+            throw e;
+        }
+    }
+
+    @Test
+    public void releaseWithInternalDifferingSnapshotReportPluginsAllow() throws Exception
+    {
+        String projectName = "internal-differing-snapshot-report-plugins";
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectName);
+        File projectRoot = projects.get(0).getBasedir();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+
+        ctx.setInteractive(false).setNoTag(true).setPush(false).setAllowSnapshots(true);
+
+        basicReleaseRewriteTest(projectName, ctx);
     }
 
     @Test
@@ -264,7 +349,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     @Test
     public void releaseWithFlatParent() throws Exception
     {
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release/pom-with-parent-flat","root-project");
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release/pom-with-parent-flat", "root-project");
         File projectRoot = projects.get(0).getBasedir();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
@@ -277,7 +362,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true).setPush(false);
 
-        relman.start(ctx,projects);
+        relman.start(ctx, projects);
 
         assertOnRelease(flow, "1.0");
 
@@ -304,30 +389,30 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         Git git = null;
         Git remoteGit = null;
 
-        List<MavenProject> remoteProjects = createReactorProjects("remote-git-project",null);
+        List<MavenProject> remoteProjects = createReactorProjects("remote-git-project", null);
 
         File remoteDir = remoteProjects.get(0).getBasedir();
 
         //make sure we're clean
-        File remoteGitDir = new File(remoteDir,".git");
-        if(remoteGitDir.exists())
+        File remoteGitDir = new File(remoteDir, ".git");
+        if (remoteGitDir.exists())
         {
             FileUtils.cleanDirectory(remoteGitDir);
         }
 
         remoteGit = RepoUtil.createRepositoryWithMaster(remoteDir);
-        projectHelper.commitAllChanges(remoteGit,"remote commit");
+        projectHelper.commitAllChanges(remoteGit, "remote commit");
 
-        File localProject = new File( testFileBase, "projects/local/local-git-project" );
+        File localProject = new File(testFileBase, "projects/local/local-git-project");
         git = Git.cloneRepository().setDirectory(localProject).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
-        
-        List<MavenProject> projects = createReactorProjects("remote-git-project","local/local-git-project",null,false);
+
+        List<MavenProject> projects = createReactorProjects("remote-git-project", "local/local-git-project", null, false);
         File projectRoot = projects.get(0).getBasedir();
 
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
-        projectHelper.ensureOrigin(projects,flow);
+        projectHelper.ensureOrigin(projects, flow);
 
         flow.releaseStart("1.0").setFetch(true).call();
 

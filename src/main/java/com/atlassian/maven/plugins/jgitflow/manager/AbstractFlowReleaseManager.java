@@ -14,10 +14,13 @@ import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
+import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.rewrite.MavenProjectRewriter;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
+
+import com.google.common.base.Joiner;
 
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
@@ -52,6 +55,16 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     {
 
         checkPomForSnapshot(reactorProjects);
+        
+        if(!ctx.isAllowSnapshots())
+        {
+            List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
+            if(!snapshots.isEmpty())
+            {
+                String details = Joiner.on(ls).join(snapshots);
+                throw new UnresolvedSnapshotsException("Cannot start a release due to snapshot dependencies:" + ls + details);
+            }
+        }
 
         JGitFlow flow = null;
         String releaseLabel = getReleaseLabel(ctx, reactorProjects);
@@ -114,6 +127,16 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     {
         checkPomForSnapshot(reactorProjects);
 
+        if(!ctx.isAllowSnapshots())
+        {
+            List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
+            if(!snapshots.isEmpty())
+            {
+                String details = Joiner.on(ls).join(snapshots);
+                throw new UnresolvedSnapshotsException("Cannot start a hotfix due to snapshot dependencies:" + ls + details);
+            }
+        }
+        
         Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
 
         JGitFlow flow = null;
@@ -196,6 +219,17 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     protected void finishRelease(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
         checkPomForRelease(reactorProjects);
+
+        if(!ctx.isAllowSnapshots())
+        {
+            List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
+            if(!snapshots.isEmpty())
+            {
+                String details = Joiner.on(ls).join(snapshots);
+                throw new UnresolvedSnapshotsException("Cannot finish a release due to snapshot dependencies:" + ls + details);
+            }
+        }
+        
         JGitFlow flow = null;
 
         Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
@@ -272,6 +306,17 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     protected void finishHotfix(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
         checkPomForRelease(reactorProjects);
+
+        if(!ctx.isAllowSnapshots())
+        {
+            List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
+            if(!snapshots.isEmpty())
+            {
+                String details = Joiner.on(ls).join(snapshots);
+                throw new UnresolvedSnapshotsException("Cannot finish a hotfix due to snapshot dependencies:" + ls + details);
+            }
+        }
+        
         JGitFlow flow = null;
 
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);

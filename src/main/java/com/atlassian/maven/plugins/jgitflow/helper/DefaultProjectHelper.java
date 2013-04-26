@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
@@ -17,10 +15,14 @@ import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
-import org.apache.maven.model.Scm;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.model.*;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.artifact.InvalidDependencyVersionException;
 import org.apache.maven.scm.provider.ScmUrlUtils;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.apache.maven.shared.release.version.HotfixVersionInfo;
@@ -38,6 +40,7 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * @since version
@@ -47,6 +50,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     private static final String ls = System.getProperty("line.separator");
     
     private PrettyPrompter prompter;
+    private ArtifactFactory artifactFactory;
     private Map<String,String> originalVersions;
     private Map<String,String> releaseVersions;
     private Map<String,String> developmentVersions;
@@ -525,5 +529,152 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             throw new JGitFlowReleaseException("error committing pom changes: " + e.getMessage(), e);
         }
 
+    }
+
+    @Override
+    public List<String> checkForNonReactorSnapshots(List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    {
+        List<String> snapshots = newArrayList();
+        
+        getLogger().info("Checking dependencies and plugins for snapshots ...");
+        Map<String, String> originalReactorVersions = getOriginalVersions(reactorProjects);
+        
+        for(MavenProject project : reactorProjects)
+        {
+            snapshots.addAll(checkProjectForNonReactorSnapshots(project, originalReactorVersions));
+        }
+        
+        return snapshots;
+    }
+
+    private List<String> checkProjectForNonReactorSnapshots(MavenProject project, Map<String, String> originalReactorVersions) throws JGitFlowReleaseException
+    {
+        List<String> snapshots = newArrayList();
+        
+        Map<String, Artifact> artifactMap = ArtifactUtils.artifactMapByVersionlessId(project.getArtifacts());
+        if ( project.getParentArtifact() != null )
+        {
+            String parentSnap = checkArtifact(getArtifactFromMap(project.getParentArtifact(), artifactMap), originalReactorVersions, AT_PARENT);
+            if(!Strings.isNullOrEmpty(parentSnap))
+            {
+                snapshots.add(parentSnap);
+            }
+        }
+        
+        //Dependencies
+        try
+        {
+            Set<Artifact> dependencyArtifacts = project.createArtifacts( artifactFactory, null, null );
+            snapshots.addAll(checkArtifacts(dependencyArtifacts, originalReactorVersions, AT_DEPENDENCY));
+        }
+        catch ( InvalidDependencyVersionException e )
+        {
+            throw new JGitFlowReleaseException("Failed to create dependency artifacts", e);
+        }
+        
+        //Dependency Management
+        DependencyManagement dmgnt = project.getDependencyManagement();
+        if(null != dmgnt)
+        {
+            List<Dependency> mgntDependencies = dmgnt.getDependencies();
+            if(null != mgntDependencies)
+            {
+                for(Dependency dep : mgntDependencies)
+                {
+                    String depSnap = checkArtifact(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), originalReactorVersions, AT_DEPENDENCY_MGNT);
+                    if(!Strings.isNullOrEmpty(depSnap))
+                    {
+                        snapshots.add(depSnap);
+                    }
+                }
+            }
+        }
+                
+        //Plugins
+        Set<Artifact> pluginArtifacts = project.getPluginArtifacts();
+        snapshots.addAll(checkArtifacts(pluginArtifacts,originalReactorVersions,AT_PLUGIN));
+
+        //Plugin Management
+        PluginManagement pmgnt = project.getPluginManagement();
+        if(null != pmgnt)
+        {
+            List<Plugin> mgntPlugins = pmgnt.getPlugins();
+            
+            for(Plugin plugin : mgntPlugins)
+            {
+                String pluginSnap = checkArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), originalReactorVersions, AT_PLUGIN_MGNT);
+                if(!Strings.isNullOrEmpty(pluginSnap))
+                {
+                    snapshots.add(pluginSnap);
+                }
+            }
+        }
+
+        //Reports
+        Set<Artifact> reportArtifacts = project.getReportArtifacts();
+        snapshots.addAll(checkArtifacts(reportArtifacts,originalReactorVersions,AT_REPORT));
+
+        //Extensions
+        Set<Artifact> extensionArtifacts = project.getExtensionArtifacts();
+        snapshots.addAll(checkArtifacts(extensionArtifacts,originalReactorVersions,AT_EXTENSIONS));
+        
+        return snapshots;
+    }
+
+    private List<String> checkArtifacts(Set<Artifact> artifacts, Map<String, String> originalReactorVersions, String type)
+    {
+        List<String> snapshots = newArrayList();
+        
+        for(Artifact artifact : artifacts)
+        {
+            String snap = checkArtifact(artifact, originalReactorVersions, type);
+
+            if(!Strings.isNullOrEmpty(snap))
+            {
+                snapshots.add(snap);
+            }
+        }
+        
+        return snapshots;
+    }
+    
+    private String checkArtifact(Artifact artifact, Map<String, String> originalReactorVersions, String type)
+    {
+        String versionlessArtifactKey = ArtifactUtils.versionlessKey(artifact.getGroupId(), artifact.getArtifactId());
+
+        boolean isSnapshot = (artifact.isSnapshot() && !artifact.getBaseVersion().equals(originalReactorVersions.get(versionlessArtifactKey)));
+        
+        if(isSnapshot)
+        {
+            return type + " - " + versionlessArtifactKey;
+        }
+        
+        return null;
+    }
+
+    private String checkArtifact(String groupId, String artifactId, String version, Map<String, String> originalReactorVersions, String type)
+    {
+        String versionlessArtifactKey = ArtifactUtils.versionlessKey(groupId, artifactId);
+
+        boolean isSnapshot = (ArtifactUtils.isSnapshot(version) && !version.equals(originalReactorVersions.get(versionlessArtifactKey)));
+
+        if(isSnapshot)
+        {
+            return type + " - " + versionlessArtifactKey;
+        }
+
+        return null;
+    }
+
+    private Artifact getArtifactFromMap(Artifact originalArtifact, Map<String,Artifact> artifactMap) 
+    {
+        String versionlessId = ArtifactUtils.versionlessKey(originalArtifact);
+        Artifact checkArtifact = artifactMap.get(versionlessId);
+
+        if (checkArtifact == null)
+        {
+            checkArtifact = originalArtifact;
+        }
+        return checkArtifact;
     }
 }
