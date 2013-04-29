@@ -26,6 +26,7 @@ public class ReleaseContext
     private String tagMessage;
     private String defaultReleaseVersion;
     private String defaultDevelopmentVersion;
+    private String defaultFeatureName;
     private InitContext flowInitContext;
     private final File baseDir;
     
@@ -236,5 +237,16 @@ public class ReleaseContext
     {
         this.args = args;
         return this;
+    }
+
+    public ReleaseContext setDefaultFeatureName(String defaultFeatureName)
+    {
+        this.defaultFeatureName = defaultFeatureName;
+        return this;
+    }
+    
+    public String getDefaultFeatureName()
+    {
+        return defaultFeatureName;
     }
 }
