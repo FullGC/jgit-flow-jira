@@ -21,6 +21,7 @@ public class ReleaseContext
     private boolean noTag;
     private boolean noDeploy;
     private boolean noBuild;
+    private boolean featureRebase;
     private boolean useReleaseProfile;
     private String args;
     private String tagMessage;
@@ -45,6 +46,7 @@ public class ReleaseContext
         this.noTag = false;
         this.noDeploy = false;
         this.noBuild = false;
+        this.featureRebase = false;
         this.useReleaseProfile = true;
         this.args = "";
         this.tagMessage = "tagging release ${version}";
@@ -199,6 +201,17 @@ public class ReleaseContext
     public ReleaseContext setNoBuild(boolean nobuild)
     {
         this.noBuild = nobuild;
+        return this;
+    }
+
+    public boolean isFeatureRebase()
+    {
+        return featureRebase;
+    }
+
+    public ReleaseContext setFeatureRebase(boolean rebase)
+    {
+        this.featureRebase = rebase;
         return this;
     }
 

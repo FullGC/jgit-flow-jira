@@ -7,6 +7,7 @@ import java.text.MessageFormat;
 import java.util.*;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
@@ -689,7 +690,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         }
         else
         {
-            if(StringUtils.isEmpty(featureName))
+            if(StringUtils.isBlank(featureName))
             {
                 throw new JGitFlowReleaseException("Missing featureName mojo option.");
             }
@@ -703,7 +704,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     {
         String featureName = StringUtils.defaultString(ctx.getDefaultFeatureName());
         
-        if(StringUtils.isEmpty(featureName))
+        if(StringUtils.isBlank(featureName))
         {
             String currentBranch = null;
             
@@ -724,11 +725,33 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         
         if(ctx.isInteractive())
         {
-            featureName = promptForFeatureName(flow.getFeatureBranchPrefix(), featureName);
+            List<String> possibleValues = new ArrayList<String>();
+            if(null == featureName)
+            {
+                featureName = "";
+            }
+            
+            try
+            {
+                String rheadPrefix = Constants.R_HEADS + flow.getFeatureBranchPrefix();
+                List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(),flow.getFeatureBranchPrefix());
+                
+                for(Ref branch : branches)
+                {
+                    String simpleName = branch.getName().substring(branch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
+                    possibleValues.add(simpleName);
+                }
+
+                featureName = promptForExistingFeatureName(flow.getFeatureBranchPrefix(),featureName,possibleValues);
+            }
+            catch (JGitFlowGitAPIException e)
+            {
+                throw new JGitFlowReleaseException("Unable to determine feature names", e);
+            }
         } 
         else
         {
-            if(StringUtils.isEmpty(featureName))
+            if(StringUtils.isBlank(featureName))
             {
                 throw new JGitFlowReleaseException("Missing featureName mojo option.");
             }
@@ -739,17 +762,35 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     
     private String promptForFeatureName(String prefix, String defaultFeatureName) throws JGitFlowReleaseException
     {
-        String message = MessageFormat.format("What is the feature branch name \"{0}{1}\" ? (\"{1}\")", new Object[] { prefix,  defaultFeatureName});
-   
+        String message = "What is the feature branch name? " + prefix;
+        String name = "";
+        
         try
         {
-            defaultFeatureName = prompter.promptNotBlank(message);
+            name = prompter.promptNotBlank(message, defaultFeatureName);
         }
         catch (PrompterException e)
         {
             throw new JGitFlowReleaseException("Error reading feature name from command line " + e.getMessage(), e);
         }
         
-        return defaultFeatureName;
+        return name;
+    }
+
+    private String promptForExistingFeatureName(String prefix, String defaultFeatureName, List<String> featureBranches) throws JGitFlowReleaseException
+    {
+        String message = "What is the feature branch name? " + prefix;
+
+        String name = "";
+        try
+        {
+            name = prompter.promptNumberedList(message, featureBranches, defaultFeatureName);
+        }
+        catch (PrompterException e)
+        {
+            throw new JGitFlowReleaseException("Error reading feature name from command line " + e.getMessage(), e);
+        }
+
+        return name;
     }
 }

@@ -106,10 +106,12 @@
             <requirements>
                 <requirement>
                     <role>org.codehaus.plexus.components.interactivity.OutputHandler</role>
+                    <role-hint>test</role-hint>
                     <field-name>outputHandler</field-name>
                 </requirement>
                 <requirement>
                     <role>org.codehaus.plexus.components.interactivity.InputHandler</role>
+                    <role-hint>test</role-hint>
                     <field-name>inputHandler</field-name>
                 </requirement>
             </requirements>
@@ -117,6 +119,18 @@
         <component>
             <role>com.atlassian.maven.plugins.jgitflow.rewrite.ProjectRewriter</role>
             <implementation>com.atlassian.maven.plugins.jgitflow.rewrite.MavenProjectRewriter</implementation>
+        </component>
+
+        <component>
+            <role>org.codehaus.plexus.components.interactivity.OutputHandler</role>
+            <role-hint>test</role-hint>
+            <implementation>com.atlassian.maven.plugins.jgitflow.TestOutputHandler</implementation>
+        </component>
+
+        <component>
+            <role>org.codehaus.plexus.components.interactivity.InputHandler</role>
+            <role-hint>test</role-hint>
+            <implementation>com.atlassian.maven.plugins.jgitflow.TestInputHandler</implementation>
         </component>
     </components>
 </component-set>

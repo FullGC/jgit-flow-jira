@@ -1,7 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow.manager;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -23,14 +22,12 @@ import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 
 import com.google.common.base.Joiner;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.ReleaseExecutionException;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
-import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
@@ -248,11 +245,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
             featureName = getFeatureStartName(ctx, flow);
-
-            if(ctx.isPush() || !ctx.isNoTag())
-            {
-                projectHelper.ensureOrigin(reactorProjects, flow);
-            }
             
             flow.featureStart(featureName).call();
         }
@@ -334,7 +326,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
             MavenJGitFlowConfiguration config = configManager.getConfiguration(flow.git());
             config.setLastReleaseVersions(originalVersions);
-            configManager.saveConfiguration(config,flow.git());
+            configManager.saveConfiguration(config, flow.git());
             
         }
         catch (JGitFlowException e)
@@ -444,20 +436,13 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     
     protected void finishFeature(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
-        
         JGitFlow flow = null;
 
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
-            
-            if(ctx.isPush() || !ctx.isNoTag())
-            {
-                projectHelper.ensureOrigin(reactorProjects, flow);
-            }
             
             String featureLabel = getFeatureFinishName(ctx, flow);
             
@@ -480,21 +465,11 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             flow.featureFinish(featureLabel)
                 .setKeepBranch(ctx.isKeepBranch())
                 .setSquash(ctx.isSquash())
+                .setRebase(ctx.isFeatureRebase())
                 .call();
 
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-            
-//            String developLabel = getDevelopmentLabel(ctx, reactorProjects);
-//
-//            projectHelper.commitAllChanges(flow.git(), "updating poms for " + developLabel + " development");
-            
-            if(ctx.isPush())
-            {
-                RefSpec developSpec = new RefSpec(ctx.getFlowInitContext().getDevelop());
-                flow.git().push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(developSpec).call();
-            }
-
             
         }
         catch (JGitFlowException e)
