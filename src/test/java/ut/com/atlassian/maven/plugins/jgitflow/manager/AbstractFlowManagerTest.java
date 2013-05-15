@@ -167,6 +167,18 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         }
     }
 
+    protected void assertOnFeature(JGitFlow flow, String feature) throws Exception
+    {
+        if(Strings.isNullOrEmpty(feature))
+        {
+            assertTrue(flow.git().getRepository().getBranch().startsWith(flow.getFeatureBranchPrefix()));
+        }
+        else
+        {
+            assertEquals(flow.getFeatureBranchPrefix() + feature, flow.git().getRepository().getBranch());
+        }
+    }
+
     protected void assertOnHotfix(JGitFlow flow, String version) throws Exception
     {
         assertEquals(flow.getHotfixBranchPrefix() + version, flow.git().getRepository().getBranch());
@@ -174,7 +186,12 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     
     protected FlowReleaseManager getReleaseManager() throws Exception
     {
-        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName());    
+        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"release");    
+    }
+
+    protected FlowReleaseManager getFeatureManager() throws Exception
+    {
+        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"feature");
     }
 
     protected String readTestProjectFile(String fileName) throws IOException

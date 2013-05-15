@@ -21,11 +21,13 @@ public class ReleaseContext
     private boolean noTag;
     private boolean noDeploy;
     private boolean noBuild;
+    private boolean featureRebase;
     private boolean useReleaseProfile;
     private String args;
     private String tagMessage;
     private String defaultReleaseVersion;
     private String defaultDevelopmentVersion;
+    private String defaultFeatureName;
     private InitContext flowInitContext;
     private final File baseDir;
     
@@ -44,6 +46,7 @@ public class ReleaseContext
         this.noTag = false;
         this.noDeploy = false;
         this.noBuild = false;
+        this.featureRebase = false;
         this.useReleaseProfile = true;
         this.args = "";
         this.tagMessage = "tagging release ${version}";
@@ -201,6 +204,17 @@ public class ReleaseContext
         return this;
     }
 
+    public boolean isFeatureRebase()
+    {
+        return featureRebase;
+    }
+
+    public ReleaseContext setFeatureRebase(boolean rebase)
+    {
+        this.featureRebase = rebase;
+        return this;
+    }
+
     public String getTagMessage()
     {
         return tagMessage;
@@ -236,5 +250,16 @@ public class ReleaseContext
     {
         this.args = args;
         return this;
+    }
+
+    public ReleaseContext setDefaultFeatureName(String defaultFeatureName)
+    {
+        this.defaultFeatureName = defaultFeatureName;
+        return this;
+    }
+    
+    public String getDefaultFeatureName()
+    {
+        return defaultFeatureName;
     }
 }

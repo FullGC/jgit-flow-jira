@@ -231,6 +231,34 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             //just ignore for now
         }
     }
+    
+    protected void startFeature(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    {
+        
+        JGitFlow flow = null;
+        String featureName = null;
+        try
+        {
+            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            //make sure we're on develop
+            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+
+            featureName = getFeatureStartName(ctx, flow);
+            
+            flow.featureStart(featureName).call();
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+        catch (JGitFlowException e)
+        {
+            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+        
+        projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureName + " branch");
+    }
 
     protected void finishRelease(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
@@ -298,7 +326,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
             MavenJGitFlowConfiguration config = configManager.getConfiguration(flow.git());
             config.setLastReleaseVersions(originalVersions);
-            configManager.saveConfiguration(config,flow.git());
+            configManager.saveConfiguration(config, flow.git());
             
         }
         catch (JGitFlowException e)
@@ -405,6 +433,55 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
         }
     }
+    
+    protected void finishFeature(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
+    {
+        JGitFlow flow = null;
+
+        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
+        
+        try
+        {
+            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            
+            String featureLabel = getFeatureFinishName(ctx, flow);
+            
+            // make sure we are on specific feature branch
+            flow.git().checkout().setName(flow.getFeatureBranchPrefix() + featureLabel).call();
+            
+            if(!ctx.isNoBuild())
+            {
+                try
+                {
+                    mavenExecutionHelper.execute(rootProject, ctx, session);
+                }
+                catch (MavenExecutorException e)
+                {
+                    throw new JGitFlowReleaseException("Error building: " + e.getMessage(), e);
+                }
+            }
+            
+            getLogger().info("running jgitflow feature finish...");
+            flow.featureFinish(featureLabel)
+                .setKeepBranch(ctx.isKeepBranch())
+                .setSquash(ctx.isSquash())
+                .setRebase(ctx.isFeatureRebase())
+                .call();
+
+            //make sure we're on develop
+            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+            
+        }
+        catch (JGitFlowException e)
+        {
+            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+        }
+        
+    }
 
     protected String getReleaseLabel(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
@@ -428,6 +505,16 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
         return developmentVersions.get(rootProjectId);
+    }
+    
+    protected String getFeatureStartName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException
+    {
+        return projectHelper.getFeatureStartName(ctx, flow);
+    }
+    
+    protected String getFeatureFinishName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException
+    {
+        return projectHelper.getFeatureFinishName(ctx, flow);
     }
 
     protected void updatePomsWithReleaseVersion(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException

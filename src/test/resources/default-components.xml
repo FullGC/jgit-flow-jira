@@ -48,6 +48,29 @@
             </requirements>
         </component>
         <component>
+            <role>com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager</role>
+            <role-hint>feature</role-hint>
+            <implementation>com.atlassian.maven.plugins.jgitflow.manager.DefaultFlowFeatureManager</implementation>
+            <requirements>
+                <requirement>
+                    <role>com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper</role>
+                    <field-name>projectHelper</field-name>
+                </requirement>
+                <requirement>
+                    <role>com.atlassian.maven.plugins.jgitflow.rewrite.ProjectRewriter</role>
+                    <field-name>projectRewriter</field-name>
+                </requirement>
+                <requirement>
+                    <role>com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper</role>
+                    <field-name>mavenExecutionHelper</field-name>
+                </requirement>
+                <requirement>
+                    <role>com.atlassian.maven.plugins.jgitflow.manager.MavenJGitFlowConfigManager</role>
+                    <field-name>configManager</field-name>
+                </requirement>
+            </requirements>
+        </component>
+        <component>
             <role>com.atlassian.maven.plugins.jgitflow.manager.MavenJGitFlowConfigManager</role>
             <implementation>com.atlassian.maven.plugins.jgitflow.manager.DefaultMavenJGitFlowConfigManager</implementation>
         </component>
@@ -83,10 +106,12 @@
             <requirements>
                 <requirement>
                     <role>org.codehaus.plexus.components.interactivity.OutputHandler</role>
+                    <role-hint>test</role-hint>
                     <field-name>outputHandler</field-name>
                 </requirement>
                 <requirement>
                     <role>org.codehaus.plexus.components.interactivity.InputHandler</role>
+                    <role-hint>test</role-hint>
                     <field-name>inputHandler</field-name>
                 </requirement>
             </requirements>
@@ -94,6 +119,18 @@
         <component>
             <role>com.atlassian.maven.plugins.jgitflow.rewrite.ProjectRewriter</role>
             <implementation>com.atlassian.maven.plugins.jgitflow.rewrite.MavenProjectRewriter</implementation>
+        </component>
+
+        <component>
+            <role>org.codehaus.plexus.components.interactivity.OutputHandler</role>
+            <role-hint>test</role-hint>
+            <implementation>com.atlassian.maven.plugins.jgitflow.TestOutputHandler</implementation>
+        </component>
+
+        <component>
+            <role>org.codehaus.plexus.components.interactivity.InputHandler</role>
+            <role-hint>test</role-hint>
+            <implementation>com.atlassian.maven.plugins.jgitflow.TestInputHandler</implementation>
         </component>
     </components>
 </component-set>

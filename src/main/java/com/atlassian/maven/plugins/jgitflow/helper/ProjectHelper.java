@@ -42,4 +42,8 @@ public interface ProjectHelper
     void commitAllChanges(Git git, String message) throws JGitFlowReleaseException;
     
     List<String> checkForNonReactorSnapshots(List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+
+    String getFeatureStartName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException;
+    
+    String getFeatureFinishName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException;
 }

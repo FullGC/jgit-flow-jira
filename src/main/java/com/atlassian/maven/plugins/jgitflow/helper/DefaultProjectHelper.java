@@ -7,6 +7,7 @@ import java.text.MessageFormat;
 import java.util.*;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
@@ -48,7 +49,7 @@ import static com.google.common.collect.Lists.newArrayList;
 public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectHelper
 {
     private static final String ls = System.getProperty("line.separator");
-    
+
     private PrettyPrompter prompter;
     private ArtifactFactory artifactFactory;
     private Map<String,String> originalVersions;
@@ -343,7 +344,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 }
                 
                 String rootHotfixVersion = getHotfixVersion(ctx,rootProject,lastRootRelease);
-
+                
                 hotfixVersions.put(rootProjectId,rootHotfixVersion);
 
                 for(MavenProject subProject : reactorProjects)
@@ -564,10 +565,10 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         //Dependencies
         try
         {
-            Set<Artifact> dependencyArtifacts = project.createArtifacts( artifactFactory, null, null );
+            Set<Artifact> dependencyArtifacts = project.createArtifacts(artifactFactory, null, null );
             snapshots.addAll(checkArtifacts(dependencyArtifacts, originalReactorVersions, AT_DEPENDENCY));
         }
-        catch ( InvalidDependencyVersionException e )
+        catch (InvalidDependencyVersionException e)
         {
             throw new JGitFlowReleaseException("Failed to create dependency artifacts", e);
         }
@@ -589,7 +590,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 }
             }
         }
-                
+        
         //Plugins
         Set<Artifact> pluginArtifacts = project.getPluginArtifacts();
         snapshots.addAll(checkArtifacts(pluginArtifacts,originalReactorVersions,AT_PLUGIN));
@@ -666,7 +667,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         return null;
     }
 
-    private Artifact getArtifactFromMap(Artifact originalArtifact, Map<String,Artifact> artifactMap) 
+    private Artifact getArtifactFromMap(Artifact originalArtifact, Map<String,Artifact> artifactMap)
     {
         String versionlessId = ArtifactUtils.versionlessKey(originalArtifact);
         Artifact checkArtifact = artifactMap.get(versionlessId);
@@ -676,5 +677,120 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             checkArtifact = originalArtifact;
         }
         return checkArtifact;
+    }
+
+    @Override
+    public String getFeatureStartName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException
+    {
+        String featureName = StringUtils.defaultString(ctx.getDefaultFeatureName());
+        
+        if(ctx.isInteractive())
+        {
+            featureName = promptForFeatureName(flow.getFeatureBranchPrefix(), featureName);
+        }
+        else
+        {
+            if(StringUtils.isBlank(featureName))
+            {
+                throw new JGitFlowReleaseException("Missing featureName mojo option.");
+            }
+        }
+        
+        return featureName;
+    }
+    
+    @Override
+    public String getFeatureFinishName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException
+    {
+        String featureName = StringUtils.defaultString(ctx.getDefaultFeatureName());
+        
+        if(StringUtils.isBlank(featureName))
+        {
+            String currentBranch = null;
+            
+            try
+            {
+                 currentBranch = flow.git().getRepository().getBranch();
+            }
+            catch (IOException e) 
+            {
+                throw new JGitFlowReleaseException(e); 
+            }
+            
+            if(currentBranch.startsWith(flow.getFeatureBranchPrefix()))
+            {
+                featureName = currentBranch.replaceFirst(flow.getFeatureBranchPrefix(), "");
+            }
+        }
+        
+        if(ctx.isInteractive())
+        {
+            List<String> possibleValues = new ArrayList<String>();
+            if(null == featureName)
+            {
+                featureName = "";
+            }
+            
+            try
+            {
+                String rheadPrefix = Constants.R_HEADS + flow.getFeatureBranchPrefix();
+                List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(),flow.getFeatureBranchPrefix());
+                
+                for(Ref branch : branches)
+                {
+                    String simpleName = branch.getName().substring(branch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
+                    possibleValues.add(simpleName);
+                }
+
+                featureName = promptForExistingFeatureName(flow.getFeatureBranchPrefix(),featureName,possibleValues);
+            }
+            catch (JGitFlowGitAPIException e)
+            {
+                throw new JGitFlowReleaseException("Unable to determine feature names", e);
+            }
+        } 
+        else
+        {
+            if(StringUtils.isBlank(featureName))
+            {
+                throw new JGitFlowReleaseException("Missing featureName mojo option.");
+            }
+        }
+        
+        return featureName;
+    }
+    
+    private String promptForFeatureName(String prefix, String defaultFeatureName) throws JGitFlowReleaseException
+    {
+        String message = "What is the feature branch name? " + prefix;
+        String name = "";
+        
+        try
+        {
+            name = prompter.promptNotBlank(message, defaultFeatureName);
+        }
+        catch (PrompterException e)
+        {
+            throw new JGitFlowReleaseException("Error reading feature name from command line " + e.getMessage(), e);
+        }
+        
+        return name;
+    }
+
+    private String promptForExistingFeatureName(String prefix, String defaultFeatureName, List<String> featureBranches) throws JGitFlowReleaseException
+    {
+        String message = "What is the feature branch name? " + prefix;
+
+        String name = "";
+        try
+        {
+            name = prompter.promptNumberedList(message, featureBranches, defaultFeatureName);
+        }
+        catch (PrompterException e)
+        {
+            throw new JGitFlowReleaseException("Error reading feature name from command line " + e.getMessage(), e);
+        }
+
+        return name;
     }
 }
