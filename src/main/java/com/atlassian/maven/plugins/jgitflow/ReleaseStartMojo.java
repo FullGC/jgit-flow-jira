@@ -57,7 +57,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
 
         try
         {
-            releaseManager.start(ctx,getReactorProjects());
+            releaseManager.start(ctx,getReactorProjects(),session);
         }
         catch (JGitFlowReleaseException e)
         {

@@ -2,6 +2,7 @@ package ut.com.atlassian.maven.plugins.jgitflow.manager;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.LocalBranchExistsException;
@@ -10,7 +11,9 @@ import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -52,7 +55,9 @@ public class FeatureManagerStartFeatureTest extends AbstractFlowManagerTest
 
         try
         {
-            relman.start(ctx, projects);
+            MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+
+            relman.start(ctx, projects,session);
         }
         catch (JGitFlowReleaseException e)
         {

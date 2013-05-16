@@ -25,6 +25,7 @@ import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Profile;
@@ -35,6 +36,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectSorter;
+import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.PlexusJUnit4TestCase;
 import org.codehaus.plexus.context.ContextException;
@@ -137,7 +139,9 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         initialCommitAll(flow);
         FlowReleaseManager relman = getReleaseManager();
 
-        relman.start(ctx,projects);
+        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+
+        relman.start(ctx,projects,session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 

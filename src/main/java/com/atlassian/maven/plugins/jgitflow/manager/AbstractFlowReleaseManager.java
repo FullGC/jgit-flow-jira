@@ -1,6 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow.manager;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
+import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
@@ -29,6 +31,7 @@ import org.apache.maven.shared.release.ReleaseExecutionException;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
@@ -45,463 +48,33 @@ import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultTagChange.s
  */
 public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled implements FlowReleaseManager
 {
-    private static final String ls = System.getProperty("line.separator");
+    protected static final String ls = System.getProperty("line.separator");
+    private static final SecureRandom random = new SecureRandom();
+    
     protected ProjectHelper projectHelper;
     protected MavenProjectRewriter projectRewriter;
     protected MavenExecutionHelper mavenExecutionHelper;
     protected MavenJGitFlowConfigManager configManager;
 
-    protected void startRelease(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    protected String getReleaseLabel(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
-
-        JGitFlow flow = null;
-        String releaseLabel = "";
-        try
-        {
-            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
-
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-
-            checkPomForSnapshot(reactorProjects);
-
-            if(!ctx.isAllowSnapshots())
-            {
-                List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
-                if(!snapshots.isEmpty())
-                {
-                    String details = Joiner.on(ls).join(snapshots);
-                    throw new UnresolvedSnapshotsException("Cannot start a release due to snapshot dependencies:" + ls + details);
-                }
-            }
-
-            releaseLabel = getReleaseLabel(ctx, reactorProjects);
-
-            if(ctx.isPush() || !ctx.isNoTag())
-            {
-                projectHelper.ensureOrigin(reactorProjects, flow);
-            }
-            
-            flow.releaseStart(releaseLabel).call();
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (ReleaseBranchExistsException e)
-        {
-            try
-            {
-                List<Ref> refs = GitHelper.listBranchesWithPrefix(flow.git(),flow.getReleaseBranchPrefix());
-                boolean foundOurRelease = false;
-                for(Ref ref : refs)
-                {
-                    if(ref.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + releaseLabel))
-                    {
-                        foundOurRelease = true;
-                        break;
-                    }
-                }
-                
-                if(foundOurRelease)
-                {
-                    //since the release branch already exists, just check it out
-                    flow.git().checkout().setName(flow.getReleaseBranchPrefix() + releaseLabel).call();
-                }
-                else
-                {
-                    throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-                }
-            }
-            catch (GitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing release branch: " + e1.getMessage(), e1);
-            }
-            catch (JGitFlowGitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing release branch: " + e1.getMessage(), e1);
-            }
-        }
-        catch (JGitFlowException e)
-        {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-        }
-
-        updatePomsWithReleaseVersion(ctx, reactorProjects);
-
-        projectHelper.commitAllChanges(flow.git(), "updating poms for " + releaseLabel + " release");
-    }
-
-    protected void startHotfix(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
-    {
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
-
-        JGitFlow flow = null;
-        String hotfixLabel = "";
-        MavenJGitFlowConfiguration config = null;
-        try
-        {
-            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
-
-            //make sure we're on master
-            flow.git().checkout().setName(flow.getMasterBranchName()).call();
-
-            checkPomForRelease(reactorProjects);
-
-            if(!ctx.isAllowSnapshots())
-            {
-                List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
-                if(!snapshots.isEmpty())
-                {
-                    String details = Joiner.on(ls).join(snapshots);
-                    throw new UnresolvedSnapshotsException("Cannot start a hotfix due to snapshot dependencies:" + ls + details);
-                }
-            }
-
-            if(ctx.isPush() || !ctx.isNoTag())
-            {
-                projectHelper.ensureOrigin(reactorProjects, flow);
-            }
-            
-            config = configManager.getConfiguration(flow.git());
-
-            hotfixLabel = getHotfixLabel(ctx, reactorProjects, config);
-            flow.hotfixStart(hotfixLabel).call();
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
-        }
-        catch (HotfixBranchExistsException e)
-        {
-            try
-            {
-                List<Ref> refs = GitHelper.listBranchesWithPrefix(flow.git(),flow.getHotfixBranchPrefix());
-                boolean foundOurRelease = false;
-                for(Ref ref : refs)
-                {
-                    if(ref.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + hotfixLabel))
-                    {
-                        foundOurRelease = true;
-                        break;
-                    }
-                }
-
-                if(foundOurRelease)
-                {
-                    //since the release branch already exists, just check it out
-                    flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel).call();   
-                }
-                else
-                {
-                    throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
-                }
-                
-            }
-            catch (GitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing hotfix branch: " + e1.getMessage(), e1);
-            }
-            catch (JGitFlowGitAPIException e1)
-            {
-                e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-        catch (JGitFlowException e)
-        {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
-        }
-        catch (IOException e)
-        {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
-        }
-
-        updatePomsWithHotfixVersion(ctx, reactorProjects, config);
-
-        projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
-
-        try
-        {
-            //save original versions to file so we can use them when we finish
-            config.setPreHotfixVersions(originalVersions);
-            configManager.saveConfiguration(config, flow.git());
-        }
-        catch (IOException e)
-        {
-            //just ignore for now
-        }
-    }
-    
-    protected void startFeature(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
-    {
-        
-        JGitFlow flow = null;
-        String featureName = null;
-        try
-        {
-            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
-
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-
-            featureName = getFeatureStartName(ctx, flow);
-            
-            flow.featureStart(featureName).call();
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
-        }
-        catch (JGitFlowException e)
-        {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
-        }
-        
-        projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureName + " branch");
-    }
-
-    protected void finishRelease(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
-    {
-        checkPomForRelease(reactorProjects);
-
-        if(!ctx.isAllowSnapshots())
-        {
-            List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
-            if(!snapshots.isEmpty())
-            {
-                String details = Joiner.on(ls).join(snapshots);
-                throw new UnresolvedSnapshotsException("Cannot finish a release due to snapshot dependencies:" + ls + details);
-            }
-        }
-        
-        JGitFlow flow = null;
-
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
-        String releaseLabel = getReleaseLabel(ctx, reactorProjects);
-        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-        
-        if(!ctx.isNoBuild())
-        {
-            try
-            {
-                mavenExecutionHelper.execute(rootProject, ctx, session);
-            }
-            catch (MavenExecutorException e)
-            {
-                throw new JGitFlowReleaseException("Error building: " + e.getMessage(), e);
-            }
-        }
-        
-        try
-        {
-            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
-            
-            if(ctx.isPush() || !ctx.isNoTag())
-            {
-                projectHelper.ensureOrigin(reactorProjects, flow);
-            }
-
-            getLogger().info("running jgitflow release finish...");
-            flow.releaseFinish(releaseLabel)
-                .setPush(ctx.isPush())
-                .setKeepBranch(ctx.isKeepBranch())
-                .setNoTag(ctx.isNoTag())
-                .setSquash(ctx.isSquash())
-                .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
-                .call();
-
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-            
-            String developLabel = getDevelopmentLabel(ctx, reactorProjects);
-            updatePomsWithDevelopmentVersion(ctx, reactorProjects);
-
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + developLabel + " development");
-            
-            if(ctx.isPush())
-            {
-                RefSpec developSpec = new RefSpec(ctx.getFlowInitContext().getDevelop());
-                flow.git().push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(developSpec).call();
-            }
-
-            MavenJGitFlowConfiguration config = configManager.getConfiguration(flow.git());
-            config.setLastReleaseVersions(originalVersions);
-            configManager.saveConfiguration(config, flow.git());
-            
-        }
-        catch (JGitFlowException e)
-        {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
-        }
-        catch (ReleaseExecutionException e)
-        {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
-        }
-        catch (IOException e)
-        {
-            //ignore
-        }
-    }
-
-    protected void finishHotfix(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
-    {
-        checkPomForRelease(reactorProjects);
-
-        if(!ctx.isAllowSnapshots())
-        {
-            List<String> snapshots = projectHelper.checkForNonReactorSnapshots(reactorProjects);
-            if(!snapshots.isEmpty())
-            {
-                String details = Joiner.on(ls).join(snapshots);
-                throw new UnresolvedSnapshotsException("Cannot finish a hotfix due to snapshot dependencies:" + ls + details);
-            }
-        }
-        
-        JGitFlow flow = null;
-
-        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-        
-        if(!ctx.isNoBuild())
-        {
-            try
-            {
-                mavenExecutionHelper.execute(rootProject, ctx, session);
-            }
-            catch (MavenExecutorException e)
-            {
-                throw new JGitFlowReleaseException("Error building: " + e.getMessage(), e);
-            }
-        }
-
-        try
-        {
-            Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
-            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
-
-            MavenJGitFlowConfiguration config = configManager.getConfiguration(flow.git());
-            String hotfixLabel = getReleaseLabel(ctx, reactorProjects);
-            
-            //We need to commit the hotfix versioned poms to develop to avoid a merge conflict
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-            updatePomsWithReleaseVersion(ctx, reactorProjects);
-            flow.git().add().addFilepattern(".").call();
-            flow.git().commit().setMessage("updating develop with hotfix versions to avoid merge conflicts").call();
-            
-            flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel);
-
-            if(ctx.isPush() || !ctx.isNoTag())
-            {
-                projectHelper.ensureOrigin(reactorProjects, flow);
-            }
-
-            getLogger().info("running jgitflow hotfix finish...");
-            flow.hotfixFinish(hotfixLabel)
-                .setPush(ctx.isPush())
-                .setKeepBranch(ctx.isKeepBranch())
-                .setNoTag(ctx.isNoTag())
-                .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
-                .call();
-
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-
-            updatePomsWithPreviousVersions(ctx, reactorProjects, config);
-
-            projectHelper.commitAllChanges(flow.git(), "updating poms for development");
-
-            config.setLastReleaseVersions(originalVersions);
-            configManager.saveConfiguration(config,flow.git());
-        }
-        catch (JGitFlowException e)
-        {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
-        }
-        catch (ReleaseExecutionException e)
-        {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
-        }
-        catch (IOException e)
-        {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
-        }
-    }
-    
-    protected void finishFeature(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
-    {
-        JGitFlow flow = null;
-
-        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-        
-        try
-        {
-            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
-            
-            String featureLabel = getFeatureFinishName(ctx, flow);
-            
-            // make sure we are on specific feature branch
-            flow.git().checkout().setName(flow.getFeatureBranchPrefix() + featureLabel).call();
-            
-            if(!ctx.isNoBuild())
-            {
-                try
-                {
-                    mavenExecutionHelper.execute(rootProject, ctx, session);
-                }
-                catch (MavenExecutorException e)
-                {
-                    throw new JGitFlowReleaseException("Error building: " + e.getMessage(), e);
-                }
-            }
-            
-            getLogger().info("running jgitflow feature finish...");
-            flow.featureFinish(featureLabel)
-                .setKeepBranch(ctx.isKeepBranch())
-                .setSquash(ctx.isSquash())
-                .setRebase(ctx.isFeatureRebase())
-                .call();
-
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-            
-        }
-        catch (JGitFlowException e)
-        {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
-        }
-        
-    }
-
-    protected String getReleaseLabel(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
-    {
-        Map<String, String> releaseVersions = projectHelper.getReleaseVersions(reactorProjects, ctx);
+        Map<String, String> releaseVersions = projectHelper.getReleaseVersions(key, reactorProjects, ctx);
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
         return releaseVersions.get(rootProjectId);
     }
 
-    protected String getHotfixLabel(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
+    protected String getHotfixLabel(String key, ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
     {
-        Map<String, String> hotfixVersions = projectHelper.getHotfixVersions(reactorProjects, ctx, config.getLastReleaseVersions());
+        Map<String, String> hotfixVersions = projectHelper.getHotfixVersions(key, reactorProjects, ctx, config.getLastReleaseVersions());
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
         return hotfixVersions.get(rootProjectId);
     }
 
-    protected String getDevelopmentLabel(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    protected String getDevelopmentLabel(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
-        Map<String, String> developmentVersions = projectHelper.getDevelopmentVersions(reactorProjects, ctx);
+        Map<String, String> developmentVersions = projectHelper.getDevelopmentVersions(key, reactorProjects, ctx);
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
         return developmentVersions.get(rootProjectId);
@@ -517,10 +90,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         return projectHelper.getFeatureFinishName(ctx, flow);
     }
 
-    protected void updatePomsWithReleaseVersion(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    protected void updatePomsWithReleaseVersion(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
-        Map<String, String> releaseVersions = projectHelper.getReleaseVersions(reactorProjects, ctx);
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> releaseVersions = projectHelper.getReleaseVersions(key, reactorProjects, ctx);
 
         getLogger().info("updating poms for all projects...");
         getLogger().info("turn on debug logging with -X to see exact changes");
@@ -549,15 +122,47 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
     }
 
-    protected void updatePomsWithPreviousVersions(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
+    protected void updatePomsWithVersionCopy(ReleaseContext ctx, List<MavenProject> projectsToUpdate, List<MavenProject> projectsWithVersions) throws JGitFlowReleaseException
     {
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(randomName("copy"), projectsToUpdate);
+        Map<String, String> releaseVersions = projectHelper.getOriginalVersions(randomName("copy"), projectsWithVersions);
+
+        getLogger().info("updating poms for all projects...");
+        getLogger().info("turn on debug logging with -X to see exact changes");
+        for (MavenProject project : projectsToUpdate)
+        {
+            ProjectChangeset changes = new ProjectChangeset()
+                    .with(parentReleaseVersionChange(originalVersions, releaseVersions))
+                    .with(projectReleaseVersionChange(releaseVersions))
+                    .with(artifactReleaseVersionChange(originalVersions, releaseVersions, ctx.isUpdateDependencies()))
+                    .with(scmDefaultTagChange(releaseVersions));
+            try
+            {
+                getLogger().info("updating pom for " + project.getName() + "...");
+
+                for (String desc : changes.getChangeDescriptionsOrSummaries())
+                {
+                    getLogger().debug("  " + desc);
+                }
+
+                projectRewriter.applyChanges(project, changes);
+            }
+            catch (ProjectRewriteException e)
+            {
+                throw new JGitFlowReleaseException("Error updating poms with release versions", e);
+            }
+        }
+    }
+
+    protected void updatePomsWithPreviousVersions(String key, ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
+    {
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
         Map<String, String> preHotfixVersions = config.getPreHotfixVersions();
         
         if(null == preHotfixVersions || preHotfixVersions.isEmpty())
         {
             //uh, not sure what to do here other than set to next develop version
-            updatePomsWithDevelopmentVersion(ctx,reactorProjects);
+            updatePomsWithDevelopmentVersion(key, ctx,reactorProjects);
             
             return;
         }
@@ -589,10 +194,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
     }
     
-    protected void updatePomsWithHotfixVersion(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
+    protected void updatePomsWithHotfixVersion(String key, ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
     {
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
-        Map<String, String> hotfixVersions = projectHelper.getHotfixVersions(reactorProjects, ctx, config.getLastReleaseVersions());
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> hotfixVersions = projectHelper.getHotfixVersions(key, reactorProjects, ctx, config.getLastReleaseVersions());
 
         getLogger().info("updating poms for all projects...");
         getLogger().info("turn on debug logging with -X to see exact changes");
@@ -621,10 +226,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
     }
 
-    protected void updatePomsWithDevelopmentVersion(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    protected void updatePomsWithDevelopmentVersion(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(reactorProjects);
-        Map<String, String> developmentVersions = projectHelper.getDevelopmentVersions(reactorProjects, ctx);
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> developmentVersions = projectHelper.getDevelopmentVersions(key, reactorProjects, ctx);
 
         getLogger().info("updating poms for all projects...");
         getLogger().info("turn on debug logging with -X to see exact changes");
@@ -689,5 +294,28 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         {
             throw new JGitFlowReleaseException("Some reactor projects contain SNAPSHOT versions!");
         }
+    }
+    
+    protected MavenSession getSessionForBranch(JGitFlow flow, String branchName, List<MavenProject> originalProjects, MavenSession oldSession) throws GitAPIException, ReactorReloadException, IOException
+    {
+        String originalBranch = flow.git().getRepository().getBranch();
+        
+        flow.git().checkout().setName(branchName).call();
+
+        //reload the reactor projects
+        MavenProject rootProject = ReleaseUtil.getRootProject(originalProjects);
+        MavenSession newSession = mavenExecutionHelper.reloadReactor(rootProject,oldSession);
+        
+        flow.git().checkout().setName(originalBranch).call();
+        
+        return newSession;
+    }
+
+    protected String randomName(String base)
+    {
+        long n = random.nextLong();
+        n = (n == Long.MIN_VALUE) ? 0 : Math.abs(n);
+
+        return base + Long.toString(n);
     }
 }

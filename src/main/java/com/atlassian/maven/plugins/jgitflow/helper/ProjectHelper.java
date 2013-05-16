@@ -29,19 +29,19 @@ public interface ProjectHelper
     
     String getDevelopmentVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException;
 
-    Map<String,String> getOriginalVersions(List<MavenProject> reactorProjects);
+    Map<String,String> getOriginalVersions(String key, List<MavenProject> reactorProjects);
 
-    Map<String,String> getReleaseVersions(List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String,String> getReleaseVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
 
-    Map<String,String> getHotfixVersions(List<MavenProject> reactorProjects, ReleaseContext ctx, Map<String,String> lastReleaseVersions) throws JGitFlowReleaseException;
+    Map<String,String> getHotfixVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx, Map<String,String> lastReleaseVersions) throws JGitFlowReleaseException;
 
-    Map<String,String> getDevelopmentVersions(List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String,String> getDevelopmentVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
 
     void ensureOrigin(List<MavenProject> reactorProjects, JGitFlow flow) throws JGitFlowReleaseException;
 
     void commitAllChanges(Git git, String message) throws JGitFlowReleaseException;
     
-    List<String> checkForNonReactorSnapshots(List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+    List<String> checkForNonReactorSnapshots(String key, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
     String getFeatureStartName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException;
     
