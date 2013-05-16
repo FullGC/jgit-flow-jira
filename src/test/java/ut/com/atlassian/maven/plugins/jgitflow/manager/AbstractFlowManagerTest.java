@@ -145,7 +145,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
-        comparePomFiles(projects);
+        compareSnapPomFiles(projects);
     }
     
     protected void initialCommitAll(JGitFlow flow) throws Exception
@@ -369,10 +369,26 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         }
     }
 
+    protected void compareSnapPomFiles(List<MavenProject> reactorProjects)throws IOException
+    {
+        for (MavenProject project : reactorProjects)
+        {
+            compareSnapPomFiles(project);
+        }
+    }
+
     protected void comparePomFiles(MavenProject project) throws IOException
     {
         File actualFile = project.getFile();
         File expectedFile = new File(actualFile.getParentFile(), "expected-pom.xml" );
+
+        comparePomFiles(expectedFile, actualFile);
+    }
+
+    protected void compareSnapPomFiles(MavenProject project) throws IOException
+    {
+        File actualFile = project.getFile();
+        File expectedFile = new File(actualFile.getParentFile(), "expected-snap-pom.xml" );
 
         comparePomFiles(expectedFile, actualFile);
     }

@@ -90,7 +90,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
-        comparePomFiles(projects);
+        compareSnapPomFiles(projects);
     }
 
     @Test(expected = JGitFlowReleaseException.class)
@@ -126,7 +126,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
-        comparePomFiles(projects);
+        compareSnapPomFiles(projects);
     }
 
     @Test
@@ -377,7 +377,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         assertOnRelease(flow, "1.0");
 
-        comparePomFiles(projects);
+        compareSnapPomFiles(projects);
     }
 
     @Test

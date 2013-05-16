@@ -22,8 +22,12 @@ import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.rewrite.MavenProjectRewriter;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
@@ -104,6 +108,100 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                     .with(projectReleaseVersionChange(releaseVersions))
                     .with(artifactReleaseVersionChange(originalVersions, releaseVersions, ctx.isUpdateDependencies()))
                     .with(scmDefaultTagChange(releaseVersions));
+            try
+            {
+                getLogger().info("updating pom for " + project.getName() + "...");
+
+                for (String desc : changes.getChangeDescriptionsOrSummaries())
+                {
+                    getLogger().debug("  " + desc);
+                }
+
+                projectRewriter.applyChanges(project, changes);
+            }
+            catch (ProjectRewriteException e)
+            {
+                throw new JGitFlowReleaseException("Error updating poms with release versions", e);
+            }
+        }
+    }
+
+    protected void updatePomsWithReleaseVersion(String key, final String releaseLabel, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    {
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> releaseSnapshotVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+
+        Map<String, String> releaseVersions = Maps.transformValues(releaseSnapshotVersions,new Function<String, String>() {
+            @Override
+            public String apply(String input)
+            {
+                if(input.equalsIgnoreCase(releaseLabel + "-SNAPSHOT"))
+                {
+                    return StringUtils.substringBeforeLast(input,"-SNAPSHOT");
+                }
+                else
+                {
+                    return input;
+                }
+            }
+        });
+
+        getLogger().info("updating poms for all projects...");
+        getLogger().info("turn on debug logging with -X to see exact changes");
+        for (MavenProject project : reactorProjects)
+        {
+            ProjectChangeset changes = new ProjectChangeset()
+                    .with(parentReleaseVersionChange(originalVersions, releaseVersions))
+                    .with(projectReleaseVersionChange(releaseVersions))
+                    .with(artifactReleaseVersionChange(originalVersions, releaseVersions, ctx.isUpdateDependencies()))
+                    .with(scmDefaultTagChange(releaseVersions));
+            try
+            {
+                getLogger().info("updating pom for " + project.getName() + "...");
+
+                for (String desc : changes.getChangeDescriptionsOrSummaries())
+                {
+                    getLogger().debug("  " + desc);
+                }
+
+                projectRewriter.applyChanges(project, changes);
+            }
+            catch (ProjectRewriteException e)
+            {
+                throw new JGitFlowReleaseException("Error updating poms with release versions", e);
+            }
+        }
+    }
+
+    protected void updatePomsWithReleaseSnapshotVersion(String key, final String releaseLabel, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    {
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> releaseVersions = projectHelper.getReleaseVersions(key, reactorProjects, ctx);
+
+        Map<String, String> releaseSnapshotVersions = Maps.transformValues(releaseVersions,new Function<String, String>() {
+            @Override
+            public String apply(String input)
+            {
+                if(input.equalsIgnoreCase(releaseLabel))
+                {
+                    return input + "-SNAPSHOT";
+                }
+                else
+                {
+                    return input;
+                }
+            }
+        });
+        
+        getLogger().info("updating poms for all projects...");
+        getLogger().info("turn on debug logging with -X to see exact changes");
+        for (MavenProject project : reactorProjects)
+        {
+            ProjectChangeset changes = new ProjectChangeset()
+                    .with(parentReleaseVersionChange(originalVersions, releaseSnapshotVersions))
+                    .with(projectReleaseVersionChange(releaseSnapshotVersions))
+                    .with(artifactReleaseVersionChange(originalVersions, releaseSnapshotVersions, ctx.isUpdateDependencies()))
+                    .with(scmDefaultHeadTagChange(releaseSnapshotVersions));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -226,6 +324,100 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
     }
 
+    protected void updatePomsWithHotfixVersion(String key, final String hotfixLabel, ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
+    {
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> hotfixSnapshotVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+
+        Map<String, String> hotfixVersions = Maps.transformValues(hotfixSnapshotVersions,new Function<String, String>() {
+            @Override
+            public String apply(String input)
+            {
+                if(input.equalsIgnoreCase(hotfixLabel + "-SNAPSHOT"))
+                {
+                    return StringUtils.substringBeforeLast(input,"-SNAPSHOT");
+                }
+                else
+                {
+                    return input;
+                }
+            }
+        });
+
+        getLogger().info("updating poms for all projects...");
+        getLogger().info("turn on debug logging with -X to see exact changes");
+        for (MavenProject project : reactorProjects)
+        {
+            ProjectChangeset changes = new ProjectChangeset()
+                    .with(parentReleaseVersionChange(originalVersions, hotfixVersions))
+                    .with(projectReleaseVersionChange(hotfixVersions))
+                    .with(artifactReleaseVersionChange(originalVersions, hotfixVersions, ctx.isUpdateDependencies()))
+                    .with(scmDefaultTagChange(hotfixVersions));
+            try
+            {
+                getLogger().info("updating pom for " + project.getName() + "...");
+
+                for (String desc : changes.getChangeDescriptionsOrSummaries())
+                {
+                    getLogger().debug("  " + desc);
+                }
+
+                projectRewriter.applyChanges(project, changes);
+            }
+            catch (ProjectRewriteException e)
+            {
+                throw new JGitFlowReleaseException("Error updating poms with hotfix versions", e);
+            }
+        }
+    }
+
+    protected void updatePomsWithHotfixSnapshotVersion(String key, final String hotfixLabel, ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
+    {
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> hotfixVersions = projectHelper.getHotfixVersions(key, reactorProjects, ctx,config.getLastReleaseVersions());
+
+        Map<String, String> hotfixSnapshotVersions = Maps.transformValues(hotfixVersions,new Function<String, String>() {
+            @Override
+            public String apply(String input)
+            {
+                if(input.equalsIgnoreCase(hotfixLabel))
+                {
+                    return input + "-SNAPSHOT";
+                }
+                else
+                {
+                    return input;
+                }
+            }
+        });
+
+        getLogger().info("updating poms for all projects...");
+        getLogger().info("turn on debug logging with -X to see exact changes");
+        for (MavenProject project : reactorProjects)
+        {
+            ProjectChangeset changes = new ProjectChangeset()
+                    .with(parentReleaseVersionChange(originalVersions, hotfixSnapshotVersions))
+                    .with(projectReleaseVersionChange(hotfixSnapshotVersions))
+                    .with(artifactReleaseVersionChange(originalVersions, hotfixSnapshotVersions, ctx.isUpdateDependencies()))
+                    .with(scmDefaultHeadTagChange(hotfixSnapshotVersions));
+            try
+            {
+                getLogger().info("updating pom for " + project.getName() + "...");
+
+                for (String desc : changes.getChangeDescriptionsOrSummaries())
+                {
+                    getLogger().debug("  " + desc);
+                }
+
+                projectRewriter.applyChanges(project, changes);
+            }
+            catch (ProjectRewriteException e)
+            {
+                throw new JGitFlowReleaseException("Error updating poms with release versions", e);
+            }
+        }
+    }
+
     protected void updatePomsWithDevelopmentVersion(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
         Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
@@ -239,7 +431,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
                     .with(parentReleaseVersionChange(originalVersions, developmentVersions))
                     .with(projectReleaseVersionChange(developmentVersions))
                     .with(artifactReleaseVersionChange(originalVersions, developmentVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultHeadTagChange());
+                    .with(scmDefaultHeadTagChange(developmentVersions));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");

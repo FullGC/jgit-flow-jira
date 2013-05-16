@@ -36,14 +36,13 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
     {
         JGitFlow flow = null;
         MavenJGitFlowConfiguration config = null;
-
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
             config = configManager.getConfiguration(flow.git());
 
             String hotfixLabel = startHotfix(flow, config, ctx, originalProjects, session);
-            updateHotfixPoms(hotfixLabel, flow, ctx, config, originalProjects, session);
+            updateHotfixPomsWithSnapshot(hotfixLabel, flow, ctx, config, originalProjects, session);
         }
         catch (JGitFlowException e)
         {
@@ -202,6 +201,13 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             MavenSession hotfixSession = getSessionForBranch(flow, flow.getHotfixBranchPrefix() + hotfixLabel, originalProjects, session);
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
 
+            updateHotfixPomsWithRelease(hotfixLabel,flow,ctx,config,originalProjects,session);
+            projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
+
+            //reload the reactor projects for hotfix
+            hotfixSession = getSessionForBranch(flow, flow.getHotfixBranchPrefix() + hotfixLabel, originalProjects, session);
+            hotfixProjects = hotfixSession.getSortedProjects();
+            
             checkPomForRelease(hotfixProjects);
 
             if (!ctx.isAllowSnapshots())
@@ -302,6 +308,56 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             MavenSession hotfixSession = getSessionForBranch(flow, flow.getHotfixBranchPrefix() + hotfixLabel, originalProjects, session);
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixVersion("hotfixlabel", ctx, hotfixProjects, config);
+
+            projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+        }
+        catch (ReactorReloadException e)
+        {
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+        }
+        catch (IOException e)
+        {
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+        }
+    }
+
+    private void updateHotfixPomsWithRelease(String hotfixLabel, JGitFlow flow, ReleaseContext ctx, MavenJGitFlowConfiguration config, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    {
+        try
+        {
+            //reload the reactor projects for hotfix
+            MavenSession hotfixSession = getSessionForBranch(flow, flow.getHotfixBranchPrefix() + hotfixLabel, originalProjects, session);
+            List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
+            updatePomsWithHotfixVersion("hotfixlabel", hotfixLabel, ctx, hotfixProjects, config);
+
+            projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+        }
+        catch (ReactorReloadException e)
+        {
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+        }
+        catch (IOException e)
+        {
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+        }
+    }
+
+    private void updateHotfixPomsWithSnapshot(String hotfixLabel, JGitFlow flow, ReleaseContext ctx, MavenJGitFlowConfiguration config, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    {
+        try
+        {
+            //reload the reactor projects for hotfix
+            MavenSession hotfixSession = getSessionForBranch(flow, flow.getHotfixBranchPrefix() + hotfixLabel, originalProjects, session);
+            List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
+            updatePomsWithHotfixSnapshotVersion("hotfixlabel", hotfixLabel, ctx, hotfixProjects, config);
 
             projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
         }

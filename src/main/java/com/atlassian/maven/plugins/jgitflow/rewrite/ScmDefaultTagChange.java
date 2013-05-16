@@ -58,8 +58,15 @@ public class ScmDefaultTagChange implements ProjectChange
                         throw new ProjectRewriteException("Release version for " + project.getName() + " was not found");
                     }
                     
+                    String tagVersion = releaseVersion;
+                    
+                    if(releaseVersion.endsWith("-SNAPSHOT"))
+                    {
+                        tagVersion = "HEAD";
+                    }
+                    
                     Element tag = getOrCreateElement(scmElement,"tag",ns);
-                    tag.setText(releaseVersion);
+                    tag.setText(tagVersion);
                     modified = true;
                 }
             }
