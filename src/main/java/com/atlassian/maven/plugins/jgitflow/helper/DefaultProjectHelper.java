@@ -131,14 +131,30 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     @Override
     public String getHotfixVersion(ReleaseContext ctx, MavenProject rootProject, String lastRelease) throws JGitFlowReleaseException
     {
-        String defaultVersion = rootProject.getVersion();
-
+        String projectVersion = rootProject.getVersion();
+        String defaultVersion = projectVersion;
+        
+        
         HotfixVersionInfo hotfixInfo = null;
         if (StringUtils.isNotBlank(lastRelease) && !ArtifactUtils.isSnapshot(lastRelease))
         {
             try
             {
-                hotfixInfo = new HotfixVersionInfo(lastRelease);
+                DefaultVersionInfo projectInfo = new DefaultVersionInfo(projectVersion);
+                DefaultVersionInfo lastReleaseInfo = new DefaultVersionInfo(lastRelease);
+                
+                String higherVersion = projectVersion;
+                
+                if(projectInfo.isSnapshot())
+                {
+                    higherVersion = lastRelease;
+                }
+                else if(projectInfo.compareTo(lastReleaseInfo) < 1)
+                {
+                    higherVersion = lastRelease;
+                }
+                
+                hotfixInfo = new HotfixVersionInfo(higherVersion);
                 defaultVersion = hotfixInfo.getHotfixVersionString();
             }
             catch (VersionParseException e)
@@ -150,8 +166,8 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         {
             try
             {
-                hotfixInfo = new HotfixVersionInfo(rootProject.getVersion());
-                defaultVersion = hotfixInfo.getDecrementedHotfixVersionString();
+                hotfixInfo = new HotfixVersionInfo(projectVersion);
+                defaultVersion = hotfixInfo.getHotfixVersionString();
             }
             catch (VersionParseException e)
             {
