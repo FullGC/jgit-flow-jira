@@ -210,6 +210,102 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
     }
 
+    protected void updatePomsWithFeatureVersion(String key, final String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    {
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> featureVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+
+        Map<String, String> featureSuffixedVersions = Maps.transformValues(featureVersions,new Function<String, String>() {
+            @Override
+            public String apply(String input)
+            {
+                if(input.endsWith("-SNAPSHOT"))
+                {
+                    return StringUtils.substringBeforeLast(input,"-SNAPSHOT") + "-" + featureVersion + "-SNAPSHOT";
+                }
+                else
+                {
+                    return input;
+                }
+            }
+        });
+
+        getLogger().info("updating poms for all projects...");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
+        for (MavenProject project : reactorProjects)
+        {
+            ProjectChangeset changes = new ProjectChangeset()
+                    .with(parentReleaseVersionChange(originalVersions, featureSuffixedVersions))
+                    .with(projectReleaseVersionChange(featureSuffixedVersions))
+                    .with(artifactReleaseVersionChange(originalVersions, featureSuffixedVersions, ctx.isUpdateDependencies()))
+                    .with(scmDefaultHeadTagChange(featureSuffixedVersions));
+            try
+            {
+                getLogger().info("updating pom for " + project.getName() + "...");
+
+                projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
+            }
+            catch (ProjectRewriteException e)
+            {
+                throw new JGitFlowReleaseException("Error updating poms with feature versions", e);
+            }
+        }
+    }
+
+    protected void updatePomsWithNonFeatureVersion(String key, final String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    {
+        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> featureSuffixedVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+
+        final String featureSuffix = "-" + featureVersion + "-SNAPSHOT";
+
+        Map<String, String> featureVersions = Maps.transformValues(featureSuffixedVersions,new Function<String, String>() {
+            @Override
+            public String apply(String input)
+            {
+                if(input.endsWith(featureSuffix))
+                {
+                    return StringUtils.substringBeforeLast(input,featureSuffix) + "-SNAPSHOT";
+                }
+                else
+                {
+                    return input;
+                }
+            }
+        });
+
+        getLogger().info("updating poms for all projects...");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
+        for (MavenProject project : reactorProjects)
+        {
+            ProjectChangeset changes = new ProjectChangeset()
+                    .with(parentReleaseVersionChange(originalVersions, featureVersions))
+                    .with(projectReleaseVersionChange(featureVersions))
+                    .with(artifactReleaseVersionChange(originalVersions, featureVersions, ctx.isUpdateDependencies()))
+                    .with(scmDefaultTagChange(featureVersions));
+            try
+            {
+                getLogger().info("updating pom for " + project.getName() + "...");
+
+                projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
+            }
+            catch (ProjectRewriteException e)
+            {
+                throw new JGitFlowReleaseException("Error updating poms with non-feature versions", e);
+            }
+        }
+    }
+
     protected void updatePomsWithVersionCopy(ReleaseContext ctx, List<MavenProject> projectsToUpdate, List<MavenProject> projectsWithVersions) throws JGitFlowReleaseException
     {
         Map<String, String> originalVersions = projectHelper.getOriginalVersions(randomName("copy"), projectsToUpdate);

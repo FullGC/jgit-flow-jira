@@ -31,6 +31,9 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
 
     @Parameter( defaultValue = "false", property = "featureRebase" )
     private boolean featureRebase = false;
+
+    @Parameter( defaultValue = "true", property = "enableFeatureVersions" )
+    private boolean enableFeatureVersions = true;
     
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
@@ -41,6 +44,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setNoDeploy(true)
+                .setEnableFeatureVersions(enableFeatureVersions)
                 .setKeepBranch(keepBranch)
                 .setSquash(squash)
                 .setFeatureRebase(featureRebase)

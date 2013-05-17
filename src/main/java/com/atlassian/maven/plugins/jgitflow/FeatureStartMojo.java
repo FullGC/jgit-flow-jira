@@ -23,6 +23,8 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
     @Parameter( property = "featureName" )
     private String featureName;
 
+    @Parameter( defaultValue = "true", property = "enableFeatureVersions" )
+    private boolean enableFeatureVersions = true;
     
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
@@ -33,6 +35,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setDefaultFeatureName(featureName)
+                .setEnableFeatureVersions(enableFeatureVersions)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

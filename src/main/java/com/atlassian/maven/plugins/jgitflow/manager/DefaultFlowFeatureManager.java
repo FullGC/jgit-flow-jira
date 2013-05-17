@@ -1,11 +1,14 @@
 package com.atlassian.maven.plugins.jgitflow.manager;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
+import com.atlassian.maven.plugins.jgitflow.util.NamingUtil;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
@@ -33,6 +36,13 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             featureName = getFeatureStartName(ctx, flow);
 
             flow.featureStart(featureName).call();
+            
+            if(ctx.isEnableFeatureVersions())
+            {
+                updateFeaturePomsWithFeatureVersion(featureName, flow, ctx, reactorProjects, session);
+            }
+
+            projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureName + " branch");
         }
         catch (GitAPIException e)
         {
@@ -43,7 +53,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
         }
 
-        projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureName + " branch");
     }
 
     @Override
@@ -52,6 +61,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         JGitFlow flow = null;
 
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
+        MavenSession currentSession = session;
 
         try
         {
@@ -62,11 +72,23 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             // make sure we are on specific feature branch
             flow.git().checkout().setName(flow.getFeatureBranchPrefix() + featureLabel).call();
 
+            if(ctx.isEnableFeatureVersions())
+            {
+                updateFeaturePomsWithNonFeatureVersion(featureLabel, flow, ctx, reactorProjects, session);
+                
+                //reload the reactor projects
+                MavenSession featureSession = getSessionForBranch(flow, flow.getFeatureBranchPrefix() + featureLabel, reactorProjects, session);
+                List<MavenProject> featureProjects = featureSession.getSortedProjects();
+
+                currentSession = featureSession;
+                rootProject = ReleaseUtil.getRootProject(featureProjects);
+            }
+
             if(!ctx.isNoBuild())
             {
                 try
                 {
-                    mavenExecutionHelper.execute(rootProject, ctx, session);
+                    mavenExecutionHelper.execute(rootProject, ctx, currentSession);
                 }
                 catch (MavenExecutorException e)
                 {
@@ -93,6 +115,71 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
         }
+        catch (ReactorReloadException e)
+        {
+            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+        }
+        catch (IOException e)
+        {
+            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+        }
     }
+
+    private void updateFeaturePomsWithFeatureVersion(String featureName, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    {
+        try
+        {
+            //reload the reactor projects
+            MavenSession featureSession = getSessionForBranch(flow, flow.getFeatureBranchPrefix() + featureName, originalProjects, session);
+            List<MavenProject> featureProjects = featureSession.getSortedProjects();
+            
+            String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureName);
+            
+            updatePomsWithFeatureVersion("featureStartLabel", featureVersion, ctx, featureProjects);
+
+            projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureVersion + " version");
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+        catch (ReactorReloadException e)
+        {
+            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+        catch (IOException e)
+        {
+            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+    }
+
+    private void updateFeaturePomsWithNonFeatureVersion(String featureLabel, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    {
+        try
+        {
+            //reload the reactor projects
+            MavenSession featureSession = getSessionForBranch(flow, flow.getFeatureBranchPrefix() + featureLabel, originalProjects, session);
+            List<MavenProject> featureProjects = featureSession.getSortedProjects();
+
+            String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureLabel);
+
+            updatePomsWithNonFeatureVersion("featureFinishLabel", featureVersion, ctx, featureProjects);
+
+            projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureVersion + " version");
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error finishing feature: " + e.getMessage(), e);
+        }
+        catch (ReactorReloadException e)
+        {
+            throw new JGitFlowReleaseException("Error finishing feature: " + e.getMessage(), e);
+        }
+        catch (IOException e)
+        {
+            throw new JGitFlowReleaseException("Error finishing feature: " + e.getMessage(), e);
+        }
+    }
+
 
 }
