@@ -99,7 +99,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 projectHelper.ensureOrigin(developProjects, flow);
             }
 
-            releaseLabel = getReleaseLabel("releaseLabel", ctx, developProjects);
+            releaseLabel = getReleaseLabel("releaseStartLabel", ctx, developProjects);
     
             flow.releaseStart(releaseLabel).call();
         }
@@ -282,7 +282,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             //reload the reactor projects for release
             MavenSession releaseSession = getSessionForBranch(flow, flow.getReleaseBranchPrefix() + releaseLabel, originalProjects, session);
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
-            updatePomsWithReleaseSnapshotVersion("releaseLabel", releaseLabel, ctx, releaseProjects);
+            updatePomsWithReleaseSnapshotVersion("releaseStartLabel", releaseLabel, ctx, releaseProjects);
 
             projectHelper.commitAllChanges(flow.git(), "updating poms for " + releaseLabel + " release");
         }
@@ -307,7 +307,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             //reload the reactor projects for release
             MavenSession releaseSession = getSessionForBranch(flow, flow.getReleaseBranchPrefix() + releaseLabel, originalProjects, session);
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
-            updatePomsWithReleaseVersion("releaseLabel", releaseLabel, ctx, releaseProjects);
+            updatePomsWithReleaseVersion("releaseFinishLabel", releaseLabel, ctx, releaseProjects);
 
             projectHelper.commitAllChanges(flow.git(), "updating poms for " + releaseLabel + " release");
         }

@@ -1,9 +1,12 @@
 package com.atlassian.maven.plugins.jgitflow.rewrite;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 import org.apache.maven.artifact.ArtifactUtils;
@@ -22,10 +25,13 @@ import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.ge
 public class ScmDefaultHeadTagChange implements ProjectChange
 {
     private final Map<String, String> releaseVersions;
+
+    private final List<String> workLog;
     
     private ScmDefaultHeadTagChange(Map<String, String> releaseVersions)
     {
         this.releaseVersions = releaseVersions;
+        this.workLog = new ArrayList<String>();
     }
 
     public static ScmDefaultHeadTagChange scmDefaultHeadTagChange(Map<String, String> releaseVersions)
@@ -61,6 +67,8 @@ public class ScmDefaultHeadTagChange implements ProjectChange
                     if(releaseVersion.endsWith("-SNAPSHOT"))
                     {
                         Element tag = getOrCreateElement(scmElement,"tag",ns);
+
+                        workLog.add("setting tag version to 'HEAD'");
                         tag.setText("HEAD");
                         modified = true;
                     }
@@ -71,4 +79,16 @@ public class ScmDefaultHeadTagChange implements ProjectChange
         return modified;
     }
 
+    @Override
+    public String toString()
+    {
+        if(workLog.isEmpty())
+        {
+            return "[Update SCM Tag Version]";
+        }
+        else
+        {
+            return "[Update SCM Tag Version]\n - " + Joiner.on("\n - ").join(workLog);
+        }
+    }
 }

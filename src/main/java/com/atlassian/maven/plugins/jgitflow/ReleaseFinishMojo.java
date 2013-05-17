@@ -64,6 +64,9 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
 
     @Parameter( property = "tagMessage" )
     private String tagMessage;
+
+    @Parameter( property = "releaseBranchVersionSuffix", defaultValue = "")
+    private String releaseBranchVersionSuffix;
     
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
@@ -75,6 +78,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setAutoVersionSubmodules(autoVersionSubmodules)
                 .setDefaultDevelopmentVersion(developmentVersion)
+                .setReleaseBranchVersionSuffix(releaseBranchVersionSuffix)
                 .setPush(pushChanges)
                 .setKeepBranch(keepBranch)
                 .setSquash(squash)

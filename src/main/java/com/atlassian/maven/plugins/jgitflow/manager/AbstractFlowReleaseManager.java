@@ -6,40 +6,27 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.exception.HotfixBranchExistsException;
-import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
-import com.atlassian.jgitflow.core.exception.ReleaseBranchExistsException;
-import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
-import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.rewrite.MavenProjectRewriter;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.release.ReleaseExecutionException;
-import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.transport.RefSpec;
 
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
@@ -100,7 +87,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         Map<String, String> releaseVersions = projectHelper.getReleaseVersions(key, reactorProjects, ctx);
 
         getLogger().info("updating poms for all projects...");
-        getLogger().info("turn on debug logging with -X to see exact changes");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
@@ -112,12 +102,9 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
 
-                for (String desc : changes.getChangeDescriptionsOrSummaries())
-                {
-                    getLogger().debug("  " + desc);
-                }
-
                 projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
             }
             catch (ProjectRewriteException e)
             {
@@ -131,13 +118,15 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
         Map<String, String> releaseSnapshotVersions = projectHelper.getOriginalVersions(key, reactorProjects);
 
+        final String releaseSuffix = (StringUtils.isBlank(ctx.getReleaseBranchVersionSuffix())) ? "" : "-" + ctx.getReleaseBranchVersionSuffix();
+        
         Map<String, String> releaseVersions = Maps.transformValues(releaseSnapshotVersions,new Function<String, String>() {
             @Override
             public String apply(String input)
             {
-                if(input.equalsIgnoreCase(releaseLabel + "-SNAPSHOT"))
+                if(input.equalsIgnoreCase(releaseLabel + releaseSuffix + "-SNAPSHOT"))
                 {
-                    return StringUtils.substringBeforeLast(input,"-SNAPSHOT");
+                    return StringUtils.substringBeforeLast(input,releaseSuffix + "-SNAPSHOT");
                 }
                 else
                 {
@@ -147,7 +136,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         });
 
         getLogger().info("updating poms for all projects...");
-        getLogger().info("turn on debug logging with -X to see exact changes");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
@@ -159,12 +151,9 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
 
-                for (String desc : changes.getChangeDescriptionsOrSummaries())
-                {
-                    getLogger().debug("  " + desc);
-                }
-
                 projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
             }
             catch (ProjectRewriteException e)
             {
@@ -177,14 +166,15 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     {
         Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
         Map<String, String> releaseVersions = projectHelper.getReleaseVersions(key, reactorProjects, ctx);
-
+        
+        final String releaseSuffix = (StringUtils.isBlank(ctx.getReleaseBranchVersionSuffix())) ? "" : "-" + ctx.getReleaseBranchVersionSuffix();
         Map<String, String> releaseSnapshotVersions = Maps.transformValues(releaseVersions,new Function<String, String>() {
             @Override
             public String apply(String input)
             {
                 if(input.equalsIgnoreCase(releaseLabel))
                 {
-                    return input + "-SNAPSHOT";
+                    return input + releaseSuffix + "-SNAPSHOT";
                 }
                 else
                 {
@@ -194,7 +184,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         });
         
         getLogger().info("updating poms for all projects...");
-        getLogger().info("turn on debug logging with -X to see exact changes");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
@@ -206,12 +199,9 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
 
-                for (String desc : changes.getChangeDescriptionsOrSummaries())
-                {
-                    getLogger().debug("  " + desc);
-                }
-
                 projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
             }
             catch (ProjectRewriteException e)
             {
@@ -226,7 +216,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         Map<String, String> releaseVersions = projectHelper.getOriginalVersions(randomName("copy"), projectsWithVersions);
 
         getLogger().info("updating poms for all projects...");
-        getLogger().info("turn on debug logging with -X to see exact changes");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
         for (MavenProject project : projectsToUpdate)
         {
             ProjectChangeset changes = new ProjectChangeset()
@@ -238,12 +231,9 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
 
-                for (String desc : changes.getChangeDescriptionsOrSummaries())
-                {
-                    getLogger().debug("  " + desc);
-                }
-
                 projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
             }
             catch (ProjectRewriteException e)
             {
@@ -266,7 +256,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         }
 
         getLogger().info("updating poms for all projects...");
-        getLogger().info("turn on debug logging with -X to see exact changes");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
@@ -278,12 +271,9 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
 
-                for (String desc : changes.getChangeDescriptionsOrSummaries())
-                {
-                    getLogger().debug("  " + desc);
-                }
-
                 projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
             }
             catch (ProjectRewriteException e)
             {
@@ -298,7 +288,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         Map<String, String> hotfixVersions = projectHelper.getHotfixVersions(key, reactorProjects, ctx, config.getLastReleaseVersions());
 
         getLogger().info("updating poms for all projects...");
-        getLogger().info("turn on debug logging with -X to see exact changes");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
@@ -310,12 +303,9 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
 
-                for (String desc : changes.getChangeDescriptionsOrSummaries())
-                {
-                    getLogger().debug("  " + desc);
-                }
-
                 projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
             }
             catch (ProjectRewriteException e)
             {
@@ -345,7 +335,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         });
 
         getLogger().info("updating poms for all projects...");
-        getLogger().info("turn on debug logging with -X to see exact changes");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
@@ -357,12 +350,9 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
 
-                for (String desc : changes.getChangeDescriptionsOrSummaries())
-                {
-                    getLogger().debug("  " + desc);
-                }
-
                 projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
             }
             catch (ProjectRewriteException e)
             {
@@ -392,7 +382,10 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         });
 
         getLogger().info("updating poms for all projects...");
-        getLogger().info("turn on debug logging with -X to see exact changes");
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
@@ -404,12 +397,9 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
 
-                for (String desc : changes.getChangeDescriptionsOrSummaries())
-                {
-                    getLogger().debug("  " + desc);
-                }
-
                 projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
             }
             catch (ProjectRewriteException e)
             {
@@ -424,7 +414,11 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         Map<String, String> developmentVersions = projectHelper.getDevelopmentVersions(key, reactorProjects, ctx);
 
         getLogger().info("updating poms for all projects...");
-        getLogger().info("turn on debug logging with -X to see exact changes");
+        
+        if(!getLogger().isDebugEnabled())
+        {
+            getLogger().info("turn on debug logging with -X to see exact changes");
+        }
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
@@ -436,12 +430,9 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
 
-                for (String desc : changes.getChangeDescriptionsOrSummaries())
-                {
-                    getLogger().debug("  " + desc);
-                }
-
                 projectRewriter.applyChanges(project, changes);
+
+                logChanges(changes);
             }
             catch (ProjectRewriteException e)
             {
@@ -485,6 +476,17 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         if (hasSnapshotProject)
         {
             throw new JGitFlowReleaseException("Some reactor projects contain SNAPSHOT versions!");
+        }
+    }
+    
+    protected void logChanges(ProjectChangeset changes)
+    {
+        if(getLogger().isDebugEnabled())
+        {
+            for (String desc : changes.getChangeDescriptionsOrSummaries())
+            {
+                getLogger().debug("  " + desc);
+            }
         }
     }
     

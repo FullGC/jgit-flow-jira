@@ -21,7 +21,7 @@
 
   <groupId>groupId</groupId>
   <artifactId>artifactId</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0-release-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <!-- NOTE: This comment is part of the test -->
