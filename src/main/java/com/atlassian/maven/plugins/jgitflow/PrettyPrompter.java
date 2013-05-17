@@ -1,6 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -208,6 +209,23 @@ public class PrettyPrompter implements Prompter
         return line;
     }
 
+    public String promptNumberedList(String message, List<String> possibleValues) throws PrompterException
+    {
+        return promptNumberedList(message,possibleValues,null);
+    }
+
+    public String promptNumberedList(String message, List<String> possibleValues, String defaultValue) throws PrompterException
+    {
+        MessageAndAnswers ma = formatNumberedMessage(message, possibleValues,defaultValue);
+
+        String answer = prompt(ma.message, ma.answers, ma.defaultAnswer);
+        
+        int answerInt = Integer.parseInt(answer);
+        
+        return possibleValues.get((answerInt -1));
+    }
+
+
     public String prompt(String message, List possibleValues)
             throws PrompterException
     {
@@ -242,6 +260,18 @@ public class PrettyPrompter implements Prompter
         } else
         {
             return formatPlainMessage(message, possibleValues, defaultReply);
+        }
+    }
+
+    private MessageAndAnswers formatNumberedMessage(String message, List<String> possibleValues, String defaultValue)
+    {
+        if (useAnsiColor)
+        {
+            return formatNumberedAnsiMessage(message, possibleValues, defaultValue);
+        } 
+        else
+        {
+            return formatNumberedPlainMessage(message, possibleValues, defaultValue);
         }
     }
 
@@ -286,6 +316,56 @@ public class PrettyPrompter implements Prompter
         return formatted.toString();
     }
 
+    private MessageAndAnswers formatNumberedAnsiMessage(String message, List<String> possibleValues, String defaultValue)
+    {
+        ANSIBuffer formatted = new ANSIBuffer();
+        formatted.bold(message).append("\n");
+
+        List<String> answers = new ArrayList<String>();
+        String defaultAnswer = "1";
+        int counter = 1;
+
+        for (String val : possibleValues)
+        {
+
+            String answer = String.valueOf(counter);
+            if(val.equals(defaultValue))
+            {
+                formatted.bold(answer);
+                defaultAnswer = answer;
+            }
+            else
+            {
+                formatted.append(answer);
+            }
+
+            if (counter < 10)
+            {
+                formatted.append(":  ");
+            } else
+            {
+                formatted.append(": ");
+            }
+
+            if(val.equals(defaultValue))
+            {
+                formatted.bold(val).append("\n");
+            }
+            else
+            {
+                formatted.append(val).append("\n");
+            }
+
+            answers.add(answer);
+
+            counter++;
+        }
+
+        formatted.bold("Choose a number");
+
+        return new MessageAndAnswers(formatted.toString(),answers,defaultAnswer);
+    }
+
     private String formatPlainMessage(String message, List possibleValues, String defaultReply)
     {
         StringBuffer formatted = new StringBuffer(message.length() * 2);
@@ -321,6 +401,46 @@ public class PrettyPrompter implements Prompter
         return formatted.toString();
     }
 
+    private MessageAndAnswers formatNumberedPlainMessage(String message, List<String> possibleValues, String defaultValue)
+    {
+        StringBuffer formatted = new StringBuffer();
+        formatted.append(message).append("\n");
+
+        List<String> answers = new ArrayList<String>();
+
+        int counter = 1;
+        String defaultAnswer = "1";
+        for (String val : possibleValues)
+        {
+
+            String answer = String.valueOf(counter);
+            formatted.append(answer);
+
+            if(val.equals(defaultValue))
+            {
+                defaultAnswer = answer;
+            }
+
+            if (counter < 10)
+            {
+                formatted.append(":  ");
+            } else
+            {
+                formatted.append(": ");
+            }
+            
+            formatted.append(val).append("\n");
+
+            answers.add(answer);
+
+            counter++;
+        }
+
+        formatted.append("Choose a number");
+
+        return new MessageAndAnswers(formatted.toString(),answers,defaultAnswer);
+    }
+
     private void writePrompt(String message)
             throws IOException
     {
@@ -336,6 +456,21 @@ public class PrettyPrompter implements Prompter
         } catch (IOException e)
         {
             throw new PrompterException("Failed to present prompt", e);
+        }
+
+    }
+    
+    private class MessageAndAnswers
+    {
+        private final String message;
+        private final List<String> answers;
+        private final String defaultAnswer;
+
+        private MessageAndAnswers(String message, List<String> answers, String defaultAnswer)
+        {
+            this.message = message;
+            this.answers = answers;
+            this.defaultAnswer = defaultAnswer;
         }
 
     }

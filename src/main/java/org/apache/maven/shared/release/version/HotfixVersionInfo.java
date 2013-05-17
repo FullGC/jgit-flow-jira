@@ -297,6 +297,7 @@ public class HotfixVersionInfo implements VersionInfo
         return baseVersion;
     }
 
+    //if starting at 1.1, returns 1.1.1
     public String getHotfixVersionString()
     {
         HotfixVersionInfo version = null;
@@ -311,6 +312,7 @@ public class HotfixVersionInfo implements VersionInfo
         return version.getReleaseVersionString();
     }
 
+    //if starting at 1.1, returns 1.0.1
     public String getDecrementedHotfixVersionString()
     {
         HotfixVersionInfo version = null;

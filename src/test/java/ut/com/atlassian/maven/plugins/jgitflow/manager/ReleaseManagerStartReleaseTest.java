@@ -2,6 +2,7 @@ package ut.com.atlassian.maven.plugins.jgitflow.manager;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowInitCommand;
@@ -13,7 +14,9 @@ import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsExcepti
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.junit.Test;
@@ -43,7 +46,9 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         try
         {
-            relman.start(ctx, projects);
+            MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+
+            relman.start(ctx, projects,session);
         }
         catch (JGitFlowReleaseException e)
         {
@@ -79,11 +84,13 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true).setPush(false);
 
-        relman.start(ctx, projects);
+        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+
+        relman.start(ctx, projects,session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
-        comparePomFiles(projects);
+        compareSnapPomFiles(projects);
     }
 
     @Test(expected = JGitFlowReleaseException.class)
@@ -113,11 +120,13 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true).setPush(false);
 
-        relman.start(ctx, projects);
+        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+
+        relman.start(ctx, projects,session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
-        comparePomFiles(projects);
+        compareSnapPomFiles(projects);
     }
 
     @Test
@@ -362,11 +371,13 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true).setPush(false);
 
-        relman.start(ctx, projects);
+        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+
+        relman.start(ctx, projects,session);
 
         assertOnRelease(flow, "1.0");
 
-        comparePomFiles(projects);
+        compareSnapPomFiles(projects);
     }
 
     @Test

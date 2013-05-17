@@ -1,21 +1,27 @@
 package com.atlassian.maven.plugins.jgitflow.helper;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.*;
 
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
+import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 
 import com.google.common.base.Joiner;
 
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.model.Profile;
 import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.project.MavenProject;
+import org.apache.maven.profiles.DefaultProfileManager;
+import org.apache.maven.profiles.ProfileManager;
+import org.apache.maven.project.*;
 import org.apache.maven.shared.release.ReleaseResult;
 import org.apache.maven.shared.release.env.DefaultReleaseEnvironment;
 import org.apache.maven.shared.release.env.ReleaseEnvironment;
 import org.apache.maven.shared.release.exec.MavenExecutor;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
+import org.codehaus.plexus.util.dag.CycleDetectedException;
 
 /**
  * @since version
@@ -24,6 +30,9 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
 {
     @Component
     protected Map<String, MavenExecutor> mavenExecutors;
+
+    @Component
+    protected MavenProjectBuilder projectBuilder;
     
     @Override
     public void execute(MavenProject project, ReleaseContext ctx, MavenSession session) throws MavenExecutorException
@@ -62,6 +71,66 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         
         mavenExecutor.executeGoals(ctx.getBaseDir(),goal,env,ctx.isInteractive(),additionalArgs,result);
 
+    }
+
+    @Override
+    public MavenSession reloadReactor(MavenProject rootProject, MavenSession oldSession) throws ReactorReloadException
+    {
+        Stack<File> projectFiles = new Stack<File>();
+        projectFiles.push(rootProject.getFile());
+
+        List<MavenProject> reactorProjects = new ArrayList<MavenProject>();
+        
+        try
+        {
+            while(!projectFiles.isEmpty())
+            {
+                File file = (File) projectFiles.pop();
+    
+                MavenProject project = projectBuilder.build(file, oldSession.getLocalRepository(), new DefaultProfileManager(oldSession.getContainer(),oldSession.getExecutionProperties()));
+                
+                List<String> moduleNames = project.getModules();
+                
+                for(String moduleName : moduleNames)
+                {
+                    projectFiles.push(new File(file.getParentFile(), moduleName + "/pom.xml"));
+                }
+    
+                reactorProjects.add(project);
+            }
+    
+            ReactorManager reactorManager = new ReactorManager(reactorProjects);
+            MavenSession newSession = new MavenSession(
+                    oldSession.getContainer()
+                    ,oldSession.getSettings()
+                    ,oldSession.getLocalRepository()
+                    ,oldSession.getEventDispatcher()
+                    ,reactorManager
+                    ,oldSession.getGoals()
+                    ,oldSession.getExecutionRootDirectory()
+                    ,oldSession.getExecutionProperties()
+                    ,oldSession.getUserProperties()
+                    ,oldSession.getStartTime()
+            );
+            
+            //in case of maven 3
+            try
+            {
+                Method setProjectsMethod = newSession.getClass().getMethod("setProjects",List.class);
+                setProjectsMethod.invoke(newSession,reactorManager.getSortedProjects());
+            }
+            catch (Exception ignore)
+            {
+                //ignore
+            }
+            
+            return newSession;
+        }
+        catch (Exception e)
+        {
+            throw new ReactorReloadException("Error reloading Maven reacotr projects", e);
+        }
+        
     }
 
     private List<String> getActiveProfileIds(MavenProject project, MavenSession session)

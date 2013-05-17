@@ -21,11 +21,15 @@ public class ReleaseContext
     private boolean noTag;
     private boolean noDeploy;
     private boolean noBuild;
+    private boolean featureRebase;
     private boolean useReleaseProfile;
+    private boolean enableFeatureVersions;
     private String args;
     private String tagMessage;
     private String defaultReleaseVersion;
     private String defaultDevelopmentVersion;
+    private String defaultFeatureName;
+    private String releaseBranchVersionSuffix;
     private InitContext flowInitContext;
     private final File baseDir;
     
@@ -44,8 +48,11 @@ public class ReleaseContext
         this.noTag = false;
         this.noDeploy = false;
         this.noBuild = false;
+        this.featureRebase = false;
         this.useReleaseProfile = true;
         this.args = "";
+        this.releaseBranchVersionSuffix = "release";
+        this.enableFeatureVersions = true;
         this.tagMessage = "tagging release ${version}";
         this.flowInitContext = new InitContext();
     }
@@ -201,6 +208,17 @@ public class ReleaseContext
         return this;
     }
 
+    public boolean isFeatureRebase()
+    {
+        return featureRebase;
+    }
+
+    public ReleaseContext setFeatureRebase(boolean rebase)
+    {
+        this.featureRebase = rebase;
+        return this;
+    }
+
     public String getTagMessage()
     {
         return tagMessage;
@@ -235,6 +253,39 @@ public class ReleaseContext
     public ReleaseContext setArgs(String args)
     {
         this.args = args;
+        return this;
+    }
+
+    public ReleaseContext setDefaultFeatureName(String defaultFeatureName)
+    {
+        this.defaultFeatureName = defaultFeatureName;
+        return this;
+    }
+    
+    public String getDefaultFeatureName()
+    {
+        return defaultFeatureName;
+    }
+
+    public ReleaseContext setReleaseBranchVersionSuffix(String suffix)
+    {
+        this.releaseBranchVersionSuffix = suffix;
+        return this;
+    }
+
+    public String getReleaseBranchVersionSuffix()
+    {
+        return releaseBranchVersionSuffix;
+    }
+
+    public boolean isEnableFeatureVersions()
+    {
+        return enableFeatureVersions;
+    }
+
+    public ReleaseContext setEnableFeatureVersions(boolean enable)
+    {
+        this.enableFeatureVersions = enable;
         return this;
     }
 }

@@ -13,6 +13,6 @@ import org.apache.maven.project.MavenProject;
  */
 public interface FlowReleaseManager
 {
-    void start(ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+    void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException;
     void finish(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException;
 }
