@@ -1,5 +1,8 @@
 package com.atlassian.maven.plugins.jgitflow.manager;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.List;
@@ -18,6 +21,16 @@ import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
+import com.jcraft.jsch.IdentityRepository;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.agentproxy.AgentProxyException;
+import com.jcraft.jsch.agentproxy.Connector;
+import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
+import com.jcraft.jsch.agentproxy.USocketFactory;
+import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
+import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.ArtifactUtils;
@@ -27,6 +40,11 @@ import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.console.ConsoleCredentialsProvider;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.util.FS;
 
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
@@ -46,6 +64,83 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     protected MavenProjectRewriter projectRewriter;
     protected MavenExecutionHelper mavenExecutionHelper;
     protected MavenJGitFlowConfigManager configManager;
+
+    public AbstractFlowReleaseManager()
+    {
+        if(null != System.console())
+        {
+            ConsoleCredentialsProvider.install();    
+        }
+        
+        JschConfigSessionFactory sessionFactory = new JschConfigSessionFactory() {
+            @Override
+            protected void configure(OpenSshConfig.Host hc, Session session)
+            {
+                session.setConfig("StrictHostKeyChecking", "false");
+            }
+
+            @Override
+            protected JSch createDefaultJSch(FS fs) throws JSchException
+            {
+                Connector con = null;
+                JSch jsch = null;
+                
+                try
+                {
+                    if(SSHAgentConnector.isConnectorAvailable())
+                    {
+                        USocketFactory usf = new JNAUSocketFactory();
+                        con = new SSHAgentConnector(usf);
+                    }
+                }
+                catch (AgentProxyException e)
+                {
+                    System.out.println(e.getMessage());
+                }
+                
+                if(null == con)
+                {
+                    jsch = super.createDefaultJSch(fs);
+                    
+                    return jsch;
+                }
+                else
+                {
+                    jsch = new JSch();
+                    jsch.setConfig("PreferredAuthentications", "publickey");
+                    IdentityRepository irepo = new RemoteIdentityRepository(con);
+                    jsch.setIdentityRepository(irepo);
+                    
+                    //why knownHosts in super is private, I don't know
+                    knownHosts(jsch,fs);
+                    
+                    return jsch;
+                }
+            }
+            
+            //copied from super class
+            private void knownHosts(final JSch sch, FS fs) throws JSchException {
+                final File home = fs.userHome();
+                if (home == null)
+                    return;
+                final File known_hosts = new File(new File(home, ".ssh"), "known_hosts");
+                try {
+                    final FileInputStream in = new FileInputStream(known_hosts);
+                    try {
+                        sch.setKnownHosts(in);
+                    } finally {
+                        in.close();
+                    }
+                } catch (FileNotFoundException none) {
+                    // Oh well. They don't have a known hosts in home.
+                } catch (IOException err) {
+                    // Oh well. They don't have a known hosts in home.
+                }
+            }
+        };
+
+        SshSessionFactory.setInstance(sessionFactory);
+    }
 
     protected String getReleaseLabel(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
