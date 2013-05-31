@@ -1,8 +1,12 @@
 package com.atlassian.maven.plugins.jgitflow.rewrite;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
+
+import com.google.common.base.Joiner;
 
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.project.MavenProject;
@@ -18,11 +22,13 @@ public class ParentReleaseVersionChange implements ProjectChange
 {
     private final Map<String, String> originalVersions;
     private final Map<String, String> releaseVersions;
+    private final List<String> workLog;
 
     private ParentReleaseVersionChange(Map<String, String> originalVersions, Map<String, String> releaseVersions)
     {
         this.originalVersions = originalVersions;
         this.releaseVersions = releaseVersions;
+        this.workLog = new ArrayList<String>();
     }
 
     public static ParentReleaseVersionChange parentReleaseVersionChange(Map<String, String> originalVersions, Map<String, String> releaseVersions)
@@ -53,6 +59,7 @@ public class ParentReleaseVersionChange implements ProjectChange
             }
             else
             {
+                workLog.add("setting parent version to '" + parentVersion + "'");
                 parentVersionElement.setText(parentVersion);
                 modified = true;
             }
@@ -64,6 +71,13 @@ public class ParentReleaseVersionChange implements ProjectChange
     @Override
     public String toString()
     {
-        return "[Update Parent Release Version]";
+        if(workLog.isEmpty())
+        {
+            return "[Update Parent Release Version]";
+        }
+        else
+        {
+            return "[Update Parent Release Version]\n - " + Joiner.on("\n - ").join(workLog);
+        }
     }
 }

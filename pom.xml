@@ -9,7 +9,7 @@
     
     <groupId>com.atlassian.maven.plugins</groupId>
     <artifactId>maven-jgitflow-plugin</artifactId>
-    <version>1.0-alpha8-SNAPSHOT</version>
+    <version>1.0-alpha9-SNAPSHOT</version>
     
     <packaging>maven-plugin</packaging>
     
@@ -55,6 +55,17 @@
             <groupId>com.atlassian.jgitflow</groupId>
             <artifactId>jgit-flow-core</artifactId>
             <version>${jgitFlowVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.console</artifactId>
+            <version>${jgitVersion}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>jline</groupId>
@@ -147,6 +158,23 @@
             <artifactId>maven-artifact</artifactId>
             <version>2.2.1</version>
         </dependency>
+        
+        <!-- jsch agent stuff -->
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch.agentproxy.jsch</artifactId>
+            <version>${jschAgentVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch.agentproxy.usocket-jna</artifactId>
+            <version>${jschAgentVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch.agentproxy.sshagent</artifactId>
+            <version>${jschAgentVersion}</version>
+        </dependency>
     </dependencies>
     
     <build>
@@ -224,8 +252,10 @@
     <properties>
         <mavenVersion>2.2.1</mavenVersion>
         <mavenPluginPluginVersion>3.1</mavenPluginPluginVersion>
-        <jgitFlowVersion>0.9</jgitFlowVersion>
+        <jgitFlowVersion>0.10</jgitFlowVersion>
         <scmVersion>1.8</scmVersion>
         <mavenReleaseVersion>2.4</mavenReleaseVersion>
+        <jschAgentVersion>0.0.5</jschAgentVersion>
+        <jgitVersion>2.2.0.201212191850-r</jgitVersion>
     </properties>
 </project>

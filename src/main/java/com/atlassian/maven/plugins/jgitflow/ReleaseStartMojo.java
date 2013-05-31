@@ -38,6 +38,9 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
     @Parameter( property = "releaseVersion" )
     private String releaseVersion;
 
+    @Parameter( property = "releaseBranchVersionSuffix", defaultValue = "")
+    private String releaseBranchVersionSuffix;
+
     @Parameter( defaultValue = "true", property = "updateDependencies" )
     private boolean updateDependencies;
 
@@ -51,13 +54,14 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
         ctx.setAutoVersionSubmodules(autoVersionSubmodules)
                 .setInteractive(getSettings().isInteractiveMode())
                 .setDefaultReleaseVersion(releaseVersion)
+                .setReleaseBranchVersionSuffix(releaseBranchVersionSuffix)
                 .setAllowSnapshots(allowSnapshots)
                 .setUpdateDependencies(updateDependencies)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
         {
-            releaseManager.start(ctx,getReactorProjects());
+            releaseManager.start(ctx,getReactorProjects(),session);
         }
         catch (JGitFlowReleaseException e)
         {

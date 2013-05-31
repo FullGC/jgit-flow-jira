@@ -59,7 +59,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         initialCommitAll(flow);
         FlowReleaseManager relman = getReleaseManager();
 
-        relman.start(ctx,projects);
+        relman.start(ctx,projects,session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
         

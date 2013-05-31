@@ -25,6 +25,7 @@ import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Profile;
@@ -35,6 +36,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectSorter;
+import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.PlexusJUnit4TestCase;
 import org.codehaus.plexus.context.ContextException;
@@ -137,11 +139,13 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         initialCommitAll(flow);
         FlowReleaseManager relman = getReleaseManager();
 
-        relman.start(ctx,projects);
+        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+
+        relman.start(ctx,projects,session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
-        comparePomFiles(projects);
+        compareSnapPomFiles(projects);
     }
     
     protected void initialCommitAll(JGitFlow flow) throws Exception
@@ -167,6 +171,18 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         }
     }
 
+    protected void assertOnFeature(JGitFlow flow, String feature) throws Exception
+    {
+        if(Strings.isNullOrEmpty(feature))
+        {
+            assertTrue(flow.git().getRepository().getBranch().startsWith(flow.getFeatureBranchPrefix()));
+        }
+        else
+        {
+            assertEquals(flow.getFeatureBranchPrefix() + feature, flow.git().getRepository().getBranch());
+        }
+    }
+
     protected void assertOnHotfix(JGitFlow flow, String version) throws Exception
     {
         assertEquals(flow.getHotfixBranchPrefix() + version, flow.git().getRepository().getBranch());
@@ -174,7 +190,12 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     
     protected FlowReleaseManager getReleaseManager() throws Exception
     {
-        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName());    
+        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"release");    
+    }
+
+    protected FlowReleaseManager getFeatureManager() throws Exception
+    {
+        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"feature");
     }
 
     protected String readTestProjectFile(String fileName) throws IOException
@@ -348,10 +369,26 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         }
     }
 
+    protected void compareSnapPomFiles(List<MavenProject> reactorProjects)throws IOException
+    {
+        for (MavenProject project : reactorProjects)
+        {
+            compareSnapPomFiles(project);
+        }
+    }
+
     protected void comparePomFiles(MavenProject project) throws IOException
     {
         File actualFile = project.getFile();
         File expectedFile = new File(actualFile.getParentFile(), "expected-pom.xml" );
+
+        comparePomFiles(expectedFile, actualFile);
+    }
+
+    protected void compareSnapPomFiles(MavenProject project) throws IOException
+    {
+        File actualFile = project.getFile();
+        File expectedFile = new File(actualFile.getParentFile(), "expected-snap-pom.xml" );
 
         comparePomFiles(expectedFile, actualFile);
     }

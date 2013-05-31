@@ -22,7 +22,13 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
      */
     @Parameter( defaultValue = "false", property = "autoVersionSubmodules" )
     private boolean autoVersionSubmodules = false;
-    
+
+    /**
+     * Whether to allow SNAPSHOT dependencies. Default is to fail when finding any SNAPSHOT.
+     *
+     */
+    @Parameter( defaultValue = "false", property = "allowSnapshots" )
+    private boolean allowSnapshots = false;
     
     /**
      * Default version to use for new local working copy.
@@ -58,6 +64,9 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
 
     @Parameter( property = "tagMessage" )
     private String tagMessage;
+
+    @Parameter( property = "releaseBranchVersionSuffix", defaultValue = "")
+    private String releaseBranchVersionSuffix;
     
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
@@ -69,6 +78,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setAutoVersionSubmodules(autoVersionSubmodules)
                 .setDefaultDevelopmentVersion(developmentVersion)
+                .setReleaseBranchVersionSuffix(releaseBranchVersionSuffix)
                 .setPush(pushChanges)
                 .setKeepBranch(keepBranch)
                 .setSquash(squash)
@@ -77,6 +87,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setUseReleaseProfile(useReleaseProfile)
                 .setTagMessage(tagMessage)
                 .setUpdateDependencies(updateDependencies)
+                .setAllowSnapshots(allowSnapshots)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

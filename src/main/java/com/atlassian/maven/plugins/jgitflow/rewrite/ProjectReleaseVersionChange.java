@@ -1,9 +1,12 @@
 package com.atlassian.maven.plugins.jgitflow.rewrite;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 import org.apache.maven.artifact.ArtifactUtils;
@@ -20,9 +23,12 @@ public class ProjectReleaseVersionChange implements ProjectChange
 {
     private final Map<String, String> releaseVersions;
 
+    private final List<String> workLog;
+    
     private ProjectReleaseVersionChange(Map<String, String> releaseVersions)
     {
         this.releaseVersions = releaseVersions;
+        this.workLog = new ArrayList<String>();
     }
     
     public static ProjectReleaseVersionChange projectReleaseVersionChange(Map<String, String> releaseVersions)
@@ -61,7 +67,8 @@ public class ProjectReleaseVersionChange implements ProjectChange
             {
                 Element artifactId = root.getChild("artifactId", ns);
                 versionElement = new Element("version");
-
+                
+                workLog.add("setting version to '" + releaseVersion + "'");
                 versionElement.setText(releaseVersion);
                 root.getChildren().add(root.indexOf(artifactId) + 1, versionElement);
                 modified = true;
@@ -69,6 +76,7 @@ public class ProjectReleaseVersionChange implements ProjectChange
         }
         else
         {
+            workLog.add("updating version '" + versionElement.getTextTrim() + " to '" + releaseVersion + "'");
             versionElement.setText(releaseVersion);
             modified = true;
         }
@@ -79,6 +87,13 @@ public class ProjectReleaseVersionChange implements ProjectChange
     @Override
     public String toString()
     {
-        return "[Update Project Release Version]";
+        if(workLog.isEmpty())
+        {
+            return "[Update Project Release Version]";
+        }
+        else
+        {
+            return "[Update Project Release Version]\n - " + Joiner.on("\n - ").join(workLog);
+        }
     }
 }

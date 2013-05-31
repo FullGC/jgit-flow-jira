@@ -1,9 +1,15 @@
 package com.atlassian.maven.plugins.jgitflow.rewrite;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
+import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.scm.provider.ScmUrlUtils;
@@ -18,14 +24,19 @@ import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.ge
  */
 public class ScmDefaultHeadTagChange implements ProjectChange
 {
-    private ScmDefaultHeadTagChange()
+    private final Map<String, String> releaseVersions;
+
+    private final List<String> workLog;
+    
+    private ScmDefaultHeadTagChange(Map<String, String> releaseVersions)
     {
-        
+        this.releaseVersions = releaseVersions;
+        this.workLog = new ArrayList<String>();
     }
 
-    public static ScmDefaultHeadTagChange scmDefaultHeadTagChange()
+    public static ScmDefaultHeadTagChange scmDefaultHeadTagChange(Map<String, String> releaseVersions)
     {
-        return new ScmDefaultHeadTagChange();
+        return new ScmDefaultHeadTagChange(releaseVersions);
     }
 
     @Override
@@ -45,9 +56,22 @@ public class ScmDefaultHeadTagChange implements ProjectChange
 
                 if(!Strings.isNullOrEmpty(scmUrl) && "git".equals(ScmUrlUtils.getProvider(scmUrl)))
                 {
-                    Element tag = getOrCreateElement(scmElement,"tag",ns);
-                    tag.setText("HEAD");
-                    modified = true;
+                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId());
+                    String releaseVersion = releaseVersions.get(projectId);
+
+                    if(Strings.isNullOrEmpty(releaseVersion))
+                    {
+                        throw new ProjectRewriteException("Release version for " + project.getName() + " was not found");
+                    }
+                    
+                    if(releaseVersion.endsWith("-SNAPSHOT"))
+                    {
+                        Element tag = getOrCreateElement(scmElement,"tag",ns);
+
+                        workLog.add("setting tag version to 'HEAD'");
+                        tag.setText("HEAD");
+                        modified = true;
+                    }
                 }
             }
         }
@@ -55,4 +79,16 @@ public class ScmDefaultHeadTagChange implements ProjectChange
         return modified;
     }
 
+    @Override
+    public String toString()
+    {
+        if(workLog.isEmpty())
+        {
+            return "[Update SCM Tag Version]";
+        }
+        else
+        {
+            return "[Update SCM Tag Version]\n - " + Joiner.on("\n - ").join(workLog);
+        }
+    }
 }
