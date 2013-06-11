@@ -56,6 +56,9 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "false", property = "noTag" )
     private boolean noTag = false;
 
+    @Parameter( defaultValue = "false", property = "noBuild" )
+    private boolean noBuild = false;
+
     @Parameter( defaultValue = "true", property = "useReleaseProfile" )
     private boolean useReleaseProfile = true;
 
@@ -83,6 +86,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setKeepBranch(keepBranch)
                 .setSquash(squash)
                 .setNoTag(noTag)
+                .setNoBuild(noBuild)
                 .setNoDeploy(noDeploy)
                 .setUseReleaseProfile(useReleaseProfile)
                 .setTagMessage(tagMessage)
