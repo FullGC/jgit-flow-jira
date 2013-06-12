@@ -50,6 +50,8 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+        setupSshAgentIfNeeded();
+
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setAutoVersionSubmodules(autoVersionSubmodules)
                 .setInteractive(getSettings().isInteractiveMode())
