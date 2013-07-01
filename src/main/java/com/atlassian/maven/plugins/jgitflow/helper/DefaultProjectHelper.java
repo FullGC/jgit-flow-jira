@@ -33,6 +33,7 @@ import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.*;
 import org.jdom2.Document;
@@ -554,8 +555,12 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     {
         try
         {
-            git.add().addFilepattern(".").call();
-            git.commit().setMessage(message).call();
+            Status status = git.status().call();
+            if(!status.isClean())
+            {
+                git.add().addFilepattern(".").call();
+                git.commit().setMessage(message).call();
+            }
         }
         catch (GitAPIException e)
         {
