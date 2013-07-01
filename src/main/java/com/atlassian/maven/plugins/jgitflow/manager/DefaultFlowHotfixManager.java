@@ -39,6 +39,9 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             config = configManager.getConfiguration(flow.git());
 
             String hotfixLabel = startHotfix(flow, config, ctx, originalProjects, session);
@@ -73,6 +76,9 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             config = configManager.getConfiguration(flow.git());
             finishHotfix(flow, config, ctx, originalProjects, session);
         }

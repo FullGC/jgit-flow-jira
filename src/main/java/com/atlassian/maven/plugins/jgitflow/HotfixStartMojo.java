@@ -46,14 +46,13 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-        setupSshAgentIfNeeded();
-
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setAutoVersionSubmodules(autoVersionSubmodules)
            .setInteractive(getSettings().isInteractiveMode())
            .setDefaultReleaseVersion(releaseVersion)
            .setAllowSnapshots(allowSnapshots)
            .setUpdateDependencies(updateDependencies)
+           .setEnableSshAgent(enableSshAgent)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

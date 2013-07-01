@@ -32,12 +32,11 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-        setupSshAgentIfNeeded();
-
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setDefaultFeatureName(featureName)
                 .setEnableFeatureVersions(enableFeatureVersions)
+                .setEnableSshAgent(enableSshAgent)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

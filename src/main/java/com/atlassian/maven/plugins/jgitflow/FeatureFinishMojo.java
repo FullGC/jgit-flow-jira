@@ -41,8 +41,6 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-        setupSshAgentIfNeeded();
-        
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setNoDeploy(true)
@@ -51,6 +49,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setSquash(squash)
                 .setFeatureRebase(featureRebase)
                 .setDefaultFeatureName(featureName)
+                .setEnableSshAgent(enableSshAgent)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

@@ -71,8 +71,6 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-        setupSshAgentIfNeeded();
-
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
            .setAutoVersionSubmodules(autoVersionSubmodules)
@@ -86,6 +84,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setUseReleaseProfile(useReleaseProfile)
            .setTagMessage(tagMessage)
            .setUpdateDependencies(updateDependencies)
+           .setEnableSshAgent(enableSshAgent)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

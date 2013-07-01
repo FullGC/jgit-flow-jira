@@ -36,6 +36,8 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         try
         {
             JGitFlow flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            setupSshCredentialProviders(ctx,flow.getReporter());
             
             String releaseLabel = startRelease(flow, ctx, reactorProjects, session);
 
@@ -56,6 +58,9 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             config = configManager.getConfiguration(flow.git());
             finishRelease(flow, config, ctx, originalProjects, session);
         }

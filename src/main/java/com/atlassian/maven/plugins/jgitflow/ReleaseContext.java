@@ -32,6 +32,7 @@ public class ReleaseContext
     private String releaseBranchVersionSuffix;
     private InitContext flowInitContext;
     private final File baseDir;
+    private boolean enableSshAgent;
     
     public ReleaseContext(File baseDir)
     {
@@ -55,6 +56,7 @@ public class ReleaseContext
         this.enableFeatureVersions = true;
         this.tagMessage = "tagging release ${version}";
         this.flowInitContext = new InitContext();
+        this.enableSshAgent = false;
     }
 
     public boolean isAllowSnapshots()
@@ -286,6 +288,17 @@ public class ReleaseContext
     public ReleaseContext setEnableFeatureVersions(boolean enable)
     {
         this.enableFeatureVersions = enable;
+        return this;
+    }
+
+    public boolean isEnableSshAgent()
+    {
+        return enableSshAgent;
+    }
+
+    public ReleaseContext setEnableSshAgent(boolean enableSshAgent)
+    {
+        this.enableSshAgent = enableSshAgent;
         return this;
     }
 }

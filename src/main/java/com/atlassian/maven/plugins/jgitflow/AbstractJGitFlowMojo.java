@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
+import com.atlassian.jgitflow.core.JGitFlowReporter;
+
 import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -52,132 +54,8 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "${flowInitContext}")
     private FlowInitContext flowInitContext;
 
-    @Parameter(defaultValue = "false", property = "enableSshPass")
-    private boolean enableSshPass = false;
-
-    private boolean sshAgentConfigured = false;
-
-    protected void setupSshAgentIfNeeded()
-    {
-        if (enableSshPass && !sshAgentConfigured)
-        {
-            if (null != System.console())
-            {
-                ConsoleCredentialsProvider.install();
-            }
-
-            JschConfigSessionFactory sessionFactory = new JschConfigSessionFactory()
-            {
-                @Override
-                protected void configure(OpenSshConfig.Host hc, Session session)
-                {
-                    session.setConfig("StrictHostKeyChecking", "false");
-                }
-
-                @Override
-                protected JSch createDefaultJSch(FS fs) throws JSchException
-                {
-                    Connector con = null;
-                    JSch jsch = null;
-
-                    try
-                    {
-                        if (SSHAgentConnector.isConnectorAvailable())
-                        {
-                            USocketFactory usf = new JNAUSocketFactory();
-                            con = new SSHAgentConnector(usf);
-
-                        }
-                    }
-                    catch (AgentProxyException e)
-                    {
-                        System.out.println(e.getMessage());
-                    }
-
-                    if (null == con)
-                    {
-                        jsch = super.createDefaultJSch(fs);
-
-                        return jsch;
-                    }
-                    else
-                    {
-                        jsch = new JSch();
-                        jsch.setConfig("PreferredAuthentications", "publickey");
-                        IdentityRepository irepo = new RemoteIdentityRepository(con);
-                        jsch.setIdentityRepository(irepo);
-
-                        //why these in super is private, I don't know
-                        knownHosts(jsch, fs);
-                        identities(jsch, fs);
-                        return jsch;
-                    }
-                }
-
-                //copied from super class
-                private void knownHosts(final JSch sch, FS fs) throws JSchException
-                {
-                    final File home = fs.userHome();
-                    if (home == null)
-                    { return; }
-                    final File known_hosts = new File(new File(home, ".ssh"), "known_hosts");
-                    try
-                    {
-                        final FileInputStream in = new FileInputStream(known_hosts);
-                        try
-                        {
-                            sch.setKnownHosts(in);
-                        }
-                        finally
-                        {
-                            in.close();
-                        }
-                    }
-                    catch (FileNotFoundException none)
-                    {
-                        // Oh well. They don't have a known hosts in home.
-                    }
-                    catch (IOException err)
-                    {
-                        // Oh well. They don't have a known hosts in home.
-                    }
-                }
-
-                private void identities(final JSch sch, FS fs)
-                {
-                    final File home = fs.userHome();
-                    if (home == null)
-                    { return; }
-                    final File sshdir = new File(home, ".ssh");
-                    if (sshdir.isDirectory())
-                    {
-                        loadIdentity(sch, new File(sshdir, "identity"));
-                        loadIdentity(sch, new File(sshdir, "id_rsa"));
-                        loadIdentity(sch, new File(sshdir, "id_dsa"));
-                    }
-                }
-
-                private void loadIdentity(final JSch sch, final File priv)
-                {
-                    if (priv.isFile())
-                    {
-                        try
-                        {
-                            sch.addIdentity(priv.getAbsolutePath());
-                        }
-                        catch (JSchException e)
-                        {
-                            // Instead, pretend the key doesn't exist.
-                        }
-                    }
-                }
-            };
-
-            SshSessionFactory.setInstance(sessionFactory);
-
-            sshAgentConfigured = true;
-        }
-    }
+    @Parameter(defaultValue = "false", property = "enableSshAgent")
+    protected boolean enableSshAgent = false;
 
     Settings getSettings()
     {

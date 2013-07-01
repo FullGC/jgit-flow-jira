@@ -30,6 +30,8 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
@@ -67,6 +69,8 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             String featureLabel = getFeatureFinishName(ctx, flow);
 
             // make sure we are on specific feature branch
