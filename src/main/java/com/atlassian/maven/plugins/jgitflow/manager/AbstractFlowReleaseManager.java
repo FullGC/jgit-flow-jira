@@ -34,8 +34,10 @@ import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.DefaultMaven;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.RuntimeInformation;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -65,10 +67,57 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     protected MavenProjectRewriter projectRewriter;
     protected MavenExecutionHelper mavenExecutionHelper;
     protected MavenJGitFlowConfigManager configManager;
+    protected RuntimeInformation runtimeInformation;
 
     private boolean sshAgentConfigured = false;
     private boolean sshConsoleInstalled = false;
+    private boolean headerWritten = false;
     
+    protected void writeReportHeader(ReleaseContext ctx, JGitFlowReporter reporter)
+    {
+        if(!headerWritten)
+        {
+            String mvnVersion = runtimeInformation.getApplicationVersion().toString();
+            Package mvnFlowPkg = getClass().getPackage();
+            String mvnFlowVersion = mvnFlowPkg.getImplementationVersion();
+            
+            String shortName = getClass().getSimpleName();
+    
+            reporter.debugText(shortName,"# Maven JGitFlow Plugin")
+              .debugText(shortName,JGitFlowReporter.P)
+              .debugText(shortName,"  ## Configuration")
+              .debugText(shortName,JGitFlowReporter.EOL)
+              .debugText(shortName,"    Maven Version: " + mvnVersion)
+              .debugText(shortName,JGitFlowReporter.EOL)
+              .debugText(shortName,"    Maven JGitFlow Plugin Version: " + mvnFlowVersion)
+              .debugText(shortName,JGitFlowReporter.EOL)
+              .debugText(shortName,"    args: " + ctx.getArgs())
+              .debugText(shortName,"    base dir: " + ctx.getBaseDir().getAbsolutePath())
+              .debugText(shortName,"    default development version: " + ctx.getDefaultDevelopmentVersion())
+              .debugText(shortName,"    default feature name: " + ctx.getDefaultFeatureName())
+              .debugText(shortName,"    default release version: " + ctx.getDefaultReleaseVersion())
+              .debugText(shortName,"    release branch version suffix: " + ctx.getReleaseBranchVersionSuffix())
+              .debugText(shortName,"    tag message: " + ctx.getTagMessage())
+              .debugText(shortName,"    allow snapshots: " + ctx.isAllowSnapshots())
+              .debugText(shortName,"    auto version submodules: " + ctx.isAutoVersionSubmodules())
+              .debugText(shortName,"    enable feature versions: " + ctx.isEnableFeatureVersions())
+              .debugText(shortName,"    enable ssh agent: " + ctx.isEnableSshAgent())
+              .debugText(shortName,"    feature rebase: " + ctx.isFeatureRebase())
+              .debugText(shortName,"    interactive: " + ctx.isInteractive())
+              .debugText(shortName,"    keep branch: " + ctx.isKeepBranch())
+              .debugText(shortName,"    no build: " + ctx.isNoBuild())
+              .debugText(shortName,"    no deploy: " + ctx.isNoDeploy())
+              .debugText(shortName,"    no tag: " + ctx.isNoTag())
+              .debugText(shortName,"    push: " + ctx.isPush())
+              .debugText(shortName,"    squash: " + ctx.isSquash())
+              .debugText(shortName,"    update dependencies: " + ctx.isUpdateDependencies())
+              .debugText(shortName,"    use release profile: " + ctx.isUseReleaseProfile())
+              .debugText(shortName,JGitFlowReporter.HR);
+            
+            reporter.flush();
+            this.headerWritten = true;
+        }
+    }
     protected void setupSshCredentialProviders(ReleaseContext ctx, JGitFlowReporter reporter)
     {
         if (null != System.console() && !sshConsoleInstalled)

@@ -40,6 +40,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
+            writeReportHeader(ctx,flow.getReporter());
             setupSshCredentialProviders(ctx,flow.getReporter());
             
             config = configManager.getConfiguration(flow.git());
@@ -77,6 +78,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
+            writeReportHeader(ctx,flow.getReporter());
             setupSshCredentialProviders(ctx,flow.getReporter());
             
             config = configManager.getConfiguration(flow.git());
