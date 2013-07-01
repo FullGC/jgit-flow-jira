@@ -33,6 +33,7 @@ public class ReleaseContext
     private InitContext flowInitContext;
     private final File baseDir;
     private boolean enableSshAgent;
+    private boolean allowUntracked;
     
     public ReleaseContext(File baseDir)
     {
@@ -57,6 +58,7 @@ public class ReleaseContext
         this.tagMessage = "tagging release ${version}";
         this.flowInitContext = new InitContext();
         this.enableSshAgent = false;
+        this.allowUntracked = false;
     }
 
     public boolean isAllowSnapshots()
@@ -299,6 +301,17 @@ public class ReleaseContext
     public ReleaseContext setEnableSshAgent(boolean enableSshAgent)
     {
         this.enableSshAgent = enableSshAgent;
+        return this;
+    }
+
+    public boolean isAllowUntracked()
+    {
+        return allowUntracked;
+    }
+
+    public ReleaseContext setAllowUntracked(boolean allow)
+    {
+        this.allowUntracked = allow;
         return this;
     }
 }

@@ -108,7 +108,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             releaseLabel = getReleaseLabel("releaseStartLabel", ctx, developProjects);
     
-            flow.releaseStart(releaseLabel).call();
+            flow.releaseStart(releaseLabel).setAllowUntracked(ctx.isAllowUntracked()).call();
         }
         catch (GitAPIException e)
         {
@@ -237,6 +237,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 .setNoTag(ctx.isNoTag())
                 .setSquash(ctx.isSquash())
                 .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
+                .setAllowUntracked(ctx.isAllowUntracked())
                 .call();
 
             //make sure we're on develop

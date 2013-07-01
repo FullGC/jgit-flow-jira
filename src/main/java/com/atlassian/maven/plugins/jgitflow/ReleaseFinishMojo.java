@@ -93,6 +93,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setUpdateDependencies(updateDependencies)
                 .setAllowSnapshots(allowSnapshots)
                 .setEnableSshAgent(enableSshAgent)
+                .setAllowUntracked(allowUntracked)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

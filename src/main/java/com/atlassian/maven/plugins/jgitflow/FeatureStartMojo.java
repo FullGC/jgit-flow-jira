@@ -37,6 +37,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
                 .setDefaultFeatureName(featureName)
                 .setEnableFeatureVersions(enableFeatureVersions)
                 .setEnableSshAgent(enableSshAgent)
+                .setAllowUntracked(allowUntracked)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

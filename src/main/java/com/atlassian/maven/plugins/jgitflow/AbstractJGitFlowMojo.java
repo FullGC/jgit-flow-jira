@@ -57,6 +57,9 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "false", property = "enableSshAgent")
     protected boolean enableSshAgent = false;
 
+    @Parameter(defaultValue = "false", property = "allowUntracked")
+    protected boolean allowUntracked = false;
+
     Settings getSettings()
     {
         return settings;

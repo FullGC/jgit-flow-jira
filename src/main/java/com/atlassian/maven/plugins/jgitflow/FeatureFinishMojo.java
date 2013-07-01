@@ -50,6 +50,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setFeatureRebase(featureRebase)
                 .setDefaultFeatureName(featureName)
                 .setEnableSshAgent(enableSshAgent)
+                .setAllowUntracked(allowUntracked)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
