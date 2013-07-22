@@ -87,8 +87,10 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
             {
                 File file = (File) projectFiles.pop();
     
+                //TODO: use getProjectBuilderConfiguration to create builder so we get profiles and junk
                 MavenProject project = projectBuilder.build(file, oldSession.getLocalRepository(), new DefaultProfileManager(oldSession.getContainer(),oldSession.getExecutionProperties()));
                 
+                project.setActiveProfiles(rootProject.getActiveProfiles());
                 List<String> moduleNames = project.getModules();
                 
                 for(String moduleName : moduleNames)
@@ -135,7 +137,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
 
     private List<String> getActiveProfileIds(MavenProject project, MavenSession session)
     {
-        List<String> profiles;
+        List<String> profiles = new ArrayList<String>();
         try
         {
             // Try to use M3-methods
@@ -146,17 +148,14 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         }
         catch ( Exception e )
         {
-            if ( project.getActiveProfiles() == null || project.getActiveProfiles().isEmpty() )
+            //do nothing
+        }
+
+        if ( project.getActiveProfiles() != null && !project.getActiveProfiles().isEmpty() )
+        {
+            for ( Object profile : project.getActiveProfiles() )
             {
-                profiles = Collections.emptyList();
-            }
-            else
-            {
-                profiles = new ArrayList<String>( project.getActiveProfiles().size() );
-                for ( Object profile : project.getActiveProfiles() )
-                {
-                    profiles.add( ( (Profile) profile ).getId() );
-                }
+                profiles.add( ( (Profile) profile ).getId() );
             }
         }
         return profiles;
