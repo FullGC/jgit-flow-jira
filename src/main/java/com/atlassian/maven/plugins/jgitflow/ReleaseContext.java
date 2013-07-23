@@ -36,6 +36,7 @@ public class ReleaseContext
     private final File baseDir;
     private boolean enableSshAgent;
     private boolean allowUntracked;
+    private String startCommit;
     
     public ReleaseContext(File baseDir)
     {
@@ -57,6 +58,7 @@ public class ReleaseContext
         this.featureRebase = false;
         this.useReleaseProfile = true;
         this.args = "";
+        this.startCommit = "";
         this.releaseBranchVersionSuffix = "release";
         this.enableFeatureVersions = true;
         this.tagMessage = "tagging release ${version}";
@@ -283,6 +285,17 @@ public class ReleaseContext
     public ReleaseContext setArgs(String args)
     {
         this.args = args;
+        return this;
+    }
+
+    public String getStartCommit()
+    {
+        return startCommit;
+    }
+
+    public ReleaseContext setStartCommit(String commit)
+    {
+        this.startCommit = commit;
         return this;
     }
 

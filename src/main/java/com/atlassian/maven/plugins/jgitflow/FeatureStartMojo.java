@@ -28,6 +28,9 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
 
     @Parameter( defaultValue = "false", property = "pushFeatures" )
     private boolean pushFeatures = false;
+
+    @Parameter( property = "startCommit", defaultValue = "")
+    private String startCommit;
     
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
@@ -42,6 +45,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
                 .setEnableSshAgent(enableSshAgent)
                 .setAllowUntracked(allowUntracked)
                 .setPushFeatures(pushFeatures)
+                .setStartCommit(startCommit)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

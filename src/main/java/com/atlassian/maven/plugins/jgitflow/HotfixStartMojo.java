@@ -43,6 +43,9 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "false", property = "pushHotfixes" )
     private boolean pushHotfixes = false;
 
+    @Parameter( property = "startCommit", defaultValue = "")
+    private String startCommit;
+
     @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
 
@@ -58,6 +61,7 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
            .setEnableSshAgent(enableSshAgent)
            .setAllowUntracked(allowUntracked)
            .setPushHotfixes(pushHotfixes)
+           .setStartCommit(startCommit)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

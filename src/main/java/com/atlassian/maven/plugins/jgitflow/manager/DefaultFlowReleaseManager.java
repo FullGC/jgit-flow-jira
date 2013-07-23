@@ -108,7 +108,11 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             releaseLabel = getReleaseLabel("releaseStartLabel", ctx, developProjects);
     
-            flow.releaseStart(releaseLabel).setAllowUntracked(ctx.isAllowUntracked()).setPush(ctx.isPushReleases()).call();
+            flow.releaseStart(releaseLabel)
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushReleases())
+                .setStartCommit(ctx.getStartCommit())
+                .call();
         }
         catch (GitAPIException e)
         {

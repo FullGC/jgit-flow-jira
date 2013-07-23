@@ -49,6 +49,9 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
 
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
+
+    @Parameter( property = "startCommit", defaultValue = "")
+    private String startCommit;
     
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
@@ -63,6 +66,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
                 .setEnableSshAgent(enableSshAgent)
                 .setAllowUntracked(allowUntracked)
                 .setPushReleases(pushReleases)
+                .setStartCommit(startCommit)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

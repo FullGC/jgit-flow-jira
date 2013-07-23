@@ -125,7 +125,11 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
 
             hotfixLabel = getHotfixLabel("hotfixlabel", ctx, masterProjects, config);
-            flow.hotfixStart(hotfixLabel).setAllowUntracked(ctx.isAllowUntracked()).setPush(ctx.isPushHotfixes()).call();
+            flow.hotfixStart(hotfixLabel)
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushHotfixes())
+                .setStartCommit(ctx.getStartCommit())
+                .call();
         }
         catch (GitAPIException e)
         {
