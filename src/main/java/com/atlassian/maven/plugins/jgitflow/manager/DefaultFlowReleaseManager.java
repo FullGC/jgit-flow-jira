@@ -242,6 +242,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 .setSquash(ctx.isSquash())
                 .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
                 .setAllowUntracked(ctx.isAllowUntracked())
+                .setNoMerge(ctx.isNoReleaseMerge())
                 .call();
 
             //make sure we're on develop

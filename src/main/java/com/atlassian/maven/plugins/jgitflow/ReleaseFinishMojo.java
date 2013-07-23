@@ -55,6 +55,9 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "false", property = "noBuild" )
     private boolean noBuild = false;
 
+    @Parameter( defaultValue = "false", property = "noReleaseMerge" )
+    private boolean noReleaseMerge = false;
+
     @Parameter( defaultValue = "true", property = "useReleaseProfile" )
     private boolean useReleaseProfile = true;
 
@@ -90,6 +93,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setAllowSnapshots(allowSnapshots)
                 .setEnableSshAgent(enableSshAgent)
                 .setAllowUntracked(allowUntracked)
+                .setNoReleaseMerge(noReleaseMerge)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

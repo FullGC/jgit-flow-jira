@@ -35,6 +35,7 @@ public class ReleaseContext
     private InitContext flowInitContext;
     private final File baseDir;
     private boolean enableSshAgent;
+    private boolean noReleaseMerge;
     private boolean allowUntracked;
     private String startCommit;
     
@@ -65,6 +66,7 @@ public class ReleaseContext
         this.flowInitContext = new InitContext();
         this.enableSshAgent = false;
         this.allowUntracked = false;
+        this.noReleaseMerge = false;
     }
 
     public boolean isAllowSnapshots()
@@ -351,6 +353,17 @@ public class ReleaseContext
     public ReleaseContext setAllowUntracked(boolean allow)
     {
         this.allowUntracked = allow;
+        return this;
+    }
+
+    public boolean isNoReleaseMerge()
+    {
+        return noReleaseMerge;
+    }
+
+    public ReleaseContext setNoReleaseMerge(boolean merge)
+    {
+        this.noReleaseMerge = merge;
         return this;
     }
 }
