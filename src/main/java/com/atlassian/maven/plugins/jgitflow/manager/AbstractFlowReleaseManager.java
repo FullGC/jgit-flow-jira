@@ -122,6 +122,11 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     }
     protected void setupSshCredentialProviders(ReleaseContext ctx, JGitFlowReporter reporter)
     {
+        if(!ctx.isRemoteAllowed())
+        {
+            return;
+        }
+        
         if (null != System.console() && !sshConsoleInstalled)
         {
             reporter.debugText(getClass().getSimpleName(),"installing ssh console credentials provider");

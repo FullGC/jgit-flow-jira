@@ -67,6 +67,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
                 .setAllowUntracked(allowUntracked)
                 .setPushReleases(pushReleases)
                 .setStartCommit(startCommit)
+                .setAllowRemote(isRemoteAllowed())
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

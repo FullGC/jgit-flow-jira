@@ -94,6 +94,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setEnableSshAgent(enableSshAgent)
                 .setAllowUntracked(allowUntracked)
                 .setNoReleaseMerge(noReleaseMerge)
+                .setAllowRemote(isRemoteAllowed())
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

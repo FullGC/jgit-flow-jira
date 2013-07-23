@@ -37,6 +37,7 @@ public class ReleaseContext
     private boolean enableSshAgent;
     private boolean noReleaseMerge;
     private boolean allowUntracked;
+    private boolean allowRemote;
     private String startCommit;
     
     public ReleaseContext(File baseDir)
@@ -67,6 +68,7 @@ public class ReleaseContext
         this.enableSshAgent = false;
         this.allowUntracked = false;
         this.noReleaseMerge = false;
+        this.allowRemote = true;
     }
 
     public boolean isAllowSnapshots()
@@ -364,6 +366,17 @@ public class ReleaseContext
     public ReleaseContext setNoReleaseMerge(boolean merge)
     {
         this.noReleaseMerge = merge;
+        return this;
+    }
+
+    public boolean isRemoteAllowed()
+    {
+        return allowRemote;
+    }
+
+    public ReleaseContext setAllowRemote(boolean allow)
+    {
+        this.allowRemote = allow;
         return this;
     }
 }

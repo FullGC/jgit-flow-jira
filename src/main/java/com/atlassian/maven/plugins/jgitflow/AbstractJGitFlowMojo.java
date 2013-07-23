@@ -60,6 +60,12 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "false", property = "allowUntracked")
     protected boolean allowUntracked = false;
 
+    @Parameter(property = "offline", defaultValue = "${settings.offline}")
+    protected boolean offline;
+
+    @Parameter(property = "localOnly", defaultValue = "false")
+    protected boolean localOnly = false;
+
     Settings getSettings()
     {
         return settings;
@@ -98,5 +104,10 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     public void setFlowInitContext(FlowInitContext flowInitContext)
     {
         this.flowInitContext = flowInitContext;
+    }
+    
+    public boolean isRemoteAllowed()
+    {
+        return (!offline && !localOnly);
     }
 }

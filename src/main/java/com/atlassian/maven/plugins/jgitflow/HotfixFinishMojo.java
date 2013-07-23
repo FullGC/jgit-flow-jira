@@ -82,6 +82,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setUpdateDependencies(updateDependencies)
            .setEnableSshAgent(enableSshAgent)
            .setAllowUntracked(allowUntracked)
+           .setAllowRemote(isRemoteAllowed())
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

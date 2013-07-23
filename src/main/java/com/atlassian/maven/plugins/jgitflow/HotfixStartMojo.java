@@ -62,6 +62,7 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
            .setAllowUntracked(allowUntracked)
            .setPushHotfixes(pushHotfixes)
            .setStartCommit(startCommit)
+           .setAllowRemote(isRemoteAllowed())
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
