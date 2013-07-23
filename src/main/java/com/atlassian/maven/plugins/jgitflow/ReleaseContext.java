@@ -15,7 +15,9 @@ public class ReleaseContext
     private boolean interactive;
     private boolean autoVersionSubmodules;
     private boolean updateDependencies;
-    private boolean push;
+    private boolean pushFeatures;
+    private boolean pushReleases;
+    private boolean pushHotfixes;
     private boolean keepBranch;
     private boolean squash;
     private boolean noTag;
@@ -44,7 +46,9 @@ public class ReleaseContext
         this.interactive = true;
         this.autoVersionSubmodules = false;
         this.updateDependencies = true;
-        this.push = true;
+        this.pushFeatures = false;
+        this.pushReleases = false;
+        this.pushHotfixes = false;
         this.keepBranch = false;
         this.squash = false;
         this.noTag = false;
@@ -143,14 +147,36 @@ public class ReleaseContext
         return baseDir;
     }
 
-    public boolean isPush()
+    public boolean isPushFeatures()
     {
-        return push;
+        return pushFeatures;
     }
 
-    public ReleaseContext setPush(boolean push)
+    public ReleaseContext setPushFeatures(boolean push)
     {
-        this.push = push;
+        this.pushFeatures = push;
+        return this;
+    }
+
+    public boolean isPushReleases()
+    {
+        return pushReleases;
+    }
+
+    public ReleaseContext setPushReleases(boolean push)
+    {
+        this.pushReleases = push;
+        return this;
+    }
+
+    public boolean isPushHotfixes()
+    {
+        return pushHotfixes;
+    }
+
+    public ReleaseContext setPushHotfixes(boolean push)
+    {
+        this.pushHotfixes = push;
         return this;
     }
 

@@ -37,12 +37,8 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter( property = "developmentVersion" )
     private String developmentVersion;
 
-    /**
-     * Will or not push changes to the upstream repository.
-     * <code>true</code> by default
-     */
-    @Parameter( defaultValue = "true", property = "pushChanges" )
-    private boolean pushChanges = true;
+    @Parameter( defaultValue = "false", property = "pushReleases" )
+    private boolean pushReleases = false;
 
     @Parameter( defaultValue = "false", property = "noDeploy" )
     private boolean noDeploy = false;
@@ -82,7 +78,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setAutoVersionSubmodules(autoVersionSubmodules)
                 .setDefaultDevelopmentVersion(developmentVersion)
                 .setReleaseBranchVersionSuffix(releaseBranchVersionSuffix)
-                .setPush(pushChanges)
+                .setPushReleases(pushReleases)
                 .setKeepBranch(keepBranch)
                 .setSquash(squash)
                 .setNoTag(noTag)

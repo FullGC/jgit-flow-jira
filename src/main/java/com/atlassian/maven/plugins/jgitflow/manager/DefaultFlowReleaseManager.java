@@ -101,14 +101,14 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 }
             }
     
-            if(ctx.isPush() || !ctx.isNoTag())
+            if(ctx.isPushReleases() || !ctx.isNoTag())
             {
                 projectHelper.ensureOrigin(developProjects, flow);
             }
 
             releaseLabel = getReleaseLabel("releaseStartLabel", ctx, developProjects);
     
-            flow.releaseStart(releaseLabel).setAllowUntracked(ctx.isAllowUntracked()).call();
+            flow.releaseStart(releaseLabel).setAllowUntracked(ctx.isAllowUntracked()).setPush(ctx.isPushReleases()).call();
         }
         catch (GitAPIException e)
         {
@@ -225,14 +225,14 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             Map<String, String> originalVersions = projectHelper.getOriginalVersions("release", releaseProjects);
 
-            if(ctx.isPush() || !ctx.isNoTag())
+            if(ctx.isPushReleases() || !ctx.isNoTag())
             {
                 projectHelper.ensureOrigin(releaseProjects, flow);
             }
 
             getLogger().info("running jgitflow release finish...");
             flow.releaseFinish(releaseLabel)
-                .setPush(ctx.isPush())
+                .setPush(ctx.isPushReleases())
                 .setKeepBranch(ctx.isKeepBranch())
                 .setNoTag(ctx.isNoTag())
                 .setSquash(ctx.isSquash())
@@ -252,7 +252,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             projectHelper.commitAllChanges(flow.git(), "updating poms for " + developLabel + " development");
 
-            if(ctx.isPush())
+            if(ctx.isPushReleases())
             {
                 RefSpec developSpec = new RefSpec(ctx.getFlowInitContext().getDevelop());
                 flow.git().push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(developSpec).call();

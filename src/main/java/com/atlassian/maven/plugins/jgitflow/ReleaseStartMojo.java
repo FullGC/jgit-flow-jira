@@ -44,6 +44,9 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "true", property = "updateDependencies" )
     private boolean updateDependencies;
 
+    @Parameter( defaultValue = "false", property = "pushReleases" )
+    private boolean pushReleases = false;
+
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
     
@@ -59,6 +62,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
                 .setUpdateDependencies(updateDependencies)
                 .setEnableSshAgent(enableSshAgent)
                 .setAllowUntracked(allowUntracked)
+                .setPushReleases(pushReleases)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

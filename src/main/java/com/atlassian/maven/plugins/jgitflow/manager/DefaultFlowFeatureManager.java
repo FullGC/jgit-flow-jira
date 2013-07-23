@@ -38,7 +38,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             featureName = getFeatureStartName(ctx, flow);
 
-            flow.featureStart(featureName).setAllowUntracked(ctx.isAllowUntracked()).call();
+            flow.featureStart(featureName).setAllowUntracked(ctx.isAllowUntracked()).setPush(ctx.isPushFeatures()).call();
             
             if(ctx.isEnableFeatureVersions())
             {
@@ -108,6 +108,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 .setSquash(ctx.isSquash())
                 .setRebase(ctx.isFeatureRebase())
                 .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushFeatures())
                 .call();
 
             //make sure we're on develop

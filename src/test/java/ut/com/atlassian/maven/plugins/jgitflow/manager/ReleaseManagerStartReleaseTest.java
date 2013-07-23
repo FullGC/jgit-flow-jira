@@ -42,7 +42,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setDefaultReleaseVersion("1.0");
-        ctx.setInteractive(false).setNoTag(true).setPush(false);
+        ctx.setInteractive(false).setNoTag(true);
 
         try
         {
@@ -82,7 +82,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         FlowReleaseManager relman = getReleaseManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        ctx.setInteractive(false).setNoTag(true).setPush(false);
+        ctx.setInteractive(false).setNoTag(true);
 
         MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
 
@@ -118,7 +118,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         FlowReleaseManager relman = getReleaseManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        ctx.setInteractive(false).setNoTag(true).setPush(false);
+        ctx.setInteractive(false).setNoTag(true);
 
         MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
 
@@ -176,7 +176,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
 
-        ctx.setInteractive(false).setNoTag(true).setPush(false).setAllowSnapshots(true);
+        ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
         basicReleaseRewriteTest(projectName, ctx);
     }
@@ -204,7 +204,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
 
-        ctx.setInteractive(false).setNoTag(true).setPush(false).setAllowSnapshots(true);
+        ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
         basicReleaseRewriteTest(projectName, ctx);
     }
@@ -232,7 +232,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
 
-        ctx.setInteractive(false).setNoTag(true).setPush(false).setAllowSnapshots(true);
+        ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
         basicReleaseRewriteTest(projectName, ctx);
     }
@@ -260,7 +260,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
 
-        ctx.setInteractive(false).setNoTag(true).setPush(false).setAllowSnapshots(true);
+        ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
         basicReleaseRewriteTest(projectName, ctx);
     }
@@ -369,7 +369,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         FlowReleaseManager relman = getReleaseManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        ctx.setInteractive(false).setNoTag(true).setPush(false);
+        ctx.setInteractive(false).setNoTag(true);
 
         MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
 
@@ -425,7 +425,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         projectHelper.ensureOrigin(projects, flow);
 
-        flow.releaseStart("1.0").setFetch(true).call();
+        flow.releaseStart("1.0").call();
 
         assertEquals(flow.getReleaseBranchPrefix() + "1.0", git.getRepository().getBranch());
 

@@ -34,6 +34,9 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
 
     @Parameter( defaultValue = "true", property = "enableFeatureVersions" )
     private boolean enableFeatureVersions = true;
+
+    @Parameter( defaultValue = "false", property = "pushFeatures" )
+    private boolean pushFeatures = false;
     
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
@@ -51,6 +54,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setDefaultFeatureName(featureName)
                 .setEnableSshAgent(enableSshAgent)
                 .setAllowUntracked(allowUntracked)
+                .setPushFeatures(pushFeatures)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

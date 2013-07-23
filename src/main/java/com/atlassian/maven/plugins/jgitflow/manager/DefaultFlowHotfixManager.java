@@ -118,14 +118,14 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
                 }
             }
 
-            if (ctx.isPush() || !ctx.isNoTag())
+            if (ctx.isPushHotfixes() || !ctx.isNoTag())
             {
                 projectHelper.ensureOrigin(masterProjects, flow);
             }
 
 
             hotfixLabel = getHotfixLabel("hotfixlabel", ctx, masterProjects, config);
-            flow.hotfixStart(hotfixLabel).setAllowUntracked(ctx.isAllowUntracked()).call();
+            flow.hotfixStart(hotfixLabel).setAllowUntracked(ctx.isAllowUntracked()).setPush(ctx.isPushHotfixes()).call();
         }
         catch (GitAPIException e)
         {
@@ -260,14 +260,14 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel);
 
-            if (ctx.isPush() || !ctx.isNoTag())
+            if (ctx.isPushHotfixes() || !ctx.isNoTag())
             {
                 projectHelper.ensureOrigin(hotfixProjects, flow);
             }
 
             getLogger().info("running jgitflow hotfix finish...");
             flow.hotfixFinish(hotfixLabel)
-                .setPush(ctx.isPush())
+                .setPush(ctx.isPushHotfixes())
                 .setKeepBranch(ctx.isKeepBranch())
                 .setNoTag(ctx.isNoTag())
                 .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))

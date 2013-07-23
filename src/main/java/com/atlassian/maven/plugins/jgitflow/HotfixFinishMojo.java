@@ -37,12 +37,8 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Parameter( property = "developmentVersion" )
     private String developmentVersion;
 
-    /**
-     * Will or not push changes to the upstream repository.
-     * <code>true</code> by default
-     */
-    @Parameter( defaultValue = "true", property = "pushChanges" )
-    private boolean pushChanges = true;
+    @Parameter( defaultValue = "false", property = "pushHotfixes" )
+    private boolean pushHotfixes = false;
 
     @Parameter( defaultValue = "false", property = "noDeploy" )
     private boolean noDeploy = false;
@@ -76,7 +72,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setAutoVersionSubmodules(autoVersionSubmodules)
            .setAllowSnapshots(allowSnapshots)
            .setDefaultDevelopmentVersion(developmentVersion)
-           .setPush(pushChanges)
+           .setPushHotfixes(pushHotfixes)
            .setKeepBranch(keepBranch)
            .setSquash(squash)
            .setNoTag(noTag)
