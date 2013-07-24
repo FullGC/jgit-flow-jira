@@ -482,7 +482,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                             foundGitScm = true;
                             StoredConfig config = flow.git().getRepository().getConfig();
                             String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME,"url");
-                            if(Strings.isNullOrEmpty(originUrl) || !cleanScmUrl.equals(originUrl))
+                            if(Strings.isNullOrEmpty(originUrl))
                             {
                                 getLogger().info("adding origin from scm...");
                                 config.setString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"url",cleanScmUrl);
