@@ -57,8 +57,8 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         }
     }
 
-    @Test
-    public void existingSameReleaseIsCheckedOut() throws Exception
+    @Test(expected = JGitFlowReleaseException.class)
+    public void existingSameReleaseIsThrown() throws Exception
     {
         String projectSubdir = "basic-pom";
         List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir);
