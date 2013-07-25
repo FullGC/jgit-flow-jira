@@ -137,38 +137,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         }
         catch (HotfixBranchExistsException e)
         {
-            try
-            {
-                List<Ref> refs = GitHelper.listBranchesWithPrefix(flow.git(), flow.getHotfixBranchPrefix());
-                boolean foundOurRelease = false;
-                for (Ref ref : refs)
-                {
-                    if (ref.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + hotfixLabel))
-                    {
-                        foundOurRelease = true;
-                        break;
-                    }
-                }
-
-                if (foundOurRelease)
-                {
-                    //since the release branch already exists, just check it out
-                    flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel).call();
-                }
-                else
-                {
-                    throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
-                }
-
-            }
-            catch (GitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing hotfix branch: " + e1.getMessage(), e1);
-            }
-            catch (JGitFlowGitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing hotfix branch: " + e1.getMessage(), e1);
-            }
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {

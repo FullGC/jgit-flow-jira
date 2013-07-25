@@ -120,37 +120,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
         catch (ReleaseBranchExistsException e)
         {
-            try
-            {
-                List<Ref> refs = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix());
-                boolean foundOurRelease = false;
-                for(Ref ref : refs)
-                {
-                    if(ref.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + releaseLabel))
-                    {
-                        foundOurRelease = true;
-                        break;
-                    }
-                }
-    
-                if(foundOurRelease)
-                {
-                    //since the release branch already exists, just check it out
-                    flow.git().checkout().setName(flow.getReleaseBranchPrefix() + releaseLabel).call();
-                }
-                else
-                {
-                    throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-                }
-            }
-            catch (GitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing release branch: " + e1.getMessage(), e1);
-            }
-            catch (JGitFlowGitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing release branch: " + e1.getMessage(), e1);
-            }
+            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
