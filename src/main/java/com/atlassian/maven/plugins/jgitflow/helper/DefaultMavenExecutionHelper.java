@@ -53,9 +53,13 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         
         for(String profileId : getActiveProfileIds(project,session))
         {
-            argList.add("-P" + profileId);
+            if(!"defaultProfile".equalsIgnoreCase(profileId))
+            {
+                argList.add("-P" + profileId);
+            }
         }
-        
+
+        argList.add("-X");
         String additionalArgs = Joiner.on(" ").join(argList);
         
         ReleaseResult result = new ReleaseResult();
