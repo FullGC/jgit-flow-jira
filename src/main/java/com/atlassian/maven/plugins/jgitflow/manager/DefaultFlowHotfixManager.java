@@ -39,6 +39,10 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            writeReportHeader(ctx,flow.getReporter());
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             config = configManager.getConfiguration(flow.git());
 
             String hotfixLabel = startHotfix(flow, config, ctx, originalProjects, session);
@@ -73,6 +77,10 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            writeReportHeader(ctx,flow.getReporter());
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             config = configManager.getConfiguration(flow.git());
             finishHotfix(flow, config, ctx, originalProjects, session);
         }
@@ -110,14 +118,18 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
                 }
             }
 
-            if (ctx.isPush() || !ctx.isNoTag())
+            if (ctx.isPushHotfixes() || !ctx.isNoTag())
             {
                 projectHelper.ensureOrigin(masterProjects, flow);
             }
 
 
             hotfixLabel = getHotfixLabel("hotfixlabel", ctx, masterProjects, config);
-            flow.hotfixStart(hotfixLabel).call();
+            flow.hotfixStart(hotfixLabel)
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushHotfixes())
+                .setStartCommit(ctx.getStartCommit())
+                .call();
         }
         catch (GitAPIException e)
         {
@@ -125,38 +137,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         }
         catch (HotfixBranchExistsException e)
         {
-            try
-            {
-                List<Ref> refs = GitHelper.listBranchesWithPrefix(flow.git(), flow.getHotfixBranchPrefix());
-                boolean foundOurRelease = false;
-                for (Ref ref : refs)
-                {
-                    if (ref.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + hotfixLabel))
-                    {
-                        foundOurRelease = true;
-                        break;
-                    }
-                }
-
-                if (foundOurRelease)
-                {
-                    //since the release branch already exists, just check it out
-                    flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel).call();
-                }
-                else
-                {
-                    throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
-                }
-
-            }
-            catch (GitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing hotfix branch: " + e1.getMessage(), e1);
-            }
-            catch (JGitFlowGitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing hotfix branch: " + e1.getMessage(), e1);
-            }
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
@@ -252,17 +233,18 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel);
 
-            if (ctx.isPush() || !ctx.isNoTag())
+            if (ctx.isPushHotfixes() || !ctx.isNoTag())
             {
                 projectHelper.ensureOrigin(hotfixProjects, flow);
             }
 
             getLogger().info("running jgitflow hotfix finish...");
             flow.hotfixFinish(hotfixLabel)
-                .setPush(ctx.isPush())
+                .setPush(ctx.isPushHotfixes())
                 .setKeepBranch(ctx.isKeepBranch())
                 .setNoTag(ctx.isNoTag())
                 .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
+                .setAllowUntracked(ctx.isAllowUntracked())
                 .call();
 
             //make sure we're on develop

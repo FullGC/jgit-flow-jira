@@ -30,12 +30,19 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
+            writeReportHeader(ctx,flow.getReporter());
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
             featureName = getFeatureStartName(ctx, flow);
 
-            flow.featureStart(featureName).call();
+            flow.featureStart(featureName)
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushFeatures())
+                .setStartCommit(ctx.getStartCommit())
+                .call();
             
             if(ctx.isEnableFeatureVersions())
             {
@@ -67,6 +74,9 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
+            writeReportHeader(ctx,flow.getReporter());
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             String featureLabel = getFeatureFinishName(ctx, flow);
 
             // make sure we are on specific feature branch
@@ -101,6 +111,8 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 .setKeepBranch(ctx.isKeepBranch())
                 .setSquash(ctx.isSquash())
                 .setRebase(ctx.isFeatureRebase())
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushFeatures())
                 .call();
 
             //make sure we're on develop

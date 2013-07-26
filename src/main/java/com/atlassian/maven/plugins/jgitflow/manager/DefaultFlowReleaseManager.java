@@ -36,6 +36,9 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         try
         {
             JGitFlow flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            writeReportHeader(ctx,flow.getReporter());
+            setupSshCredentialProviders(ctx,flow.getReporter());
             
             String releaseLabel = startRelease(flow, ctx, reactorProjects, session);
 
@@ -56,6 +59,10 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         try
         {
             flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+
+            writeReportHeader(ctx,flow.getReporter());
+            setupSshCredentialProviders(ctx,flow.getReporter());
+            
             config = configManager.getConfiguration(flow.git());
             finishRelease(flow, config, ctx, originalProjects, session);
         }
@@ -94,14 +101,18 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 }
             }
     
-            if(ctx.isPush() || !ctx.isNoTag())
+            if(ctx.isPushReleases() || !ctx.isNoTag())
             {
                 projectHelper.ensureOrigin(developProjects, flow);
             }
 
             releaseLabel = getReleaseLabel("releaseStartLabel", ctx, developProjects);
     
-            flow.releaseStart(releaseLabel).call();
+            flow.releaseStart(releaseLabel)
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushReleases())
+                .setStartCommit(ctx.getStartCommit())
+                .call();
         }
         catch (GitAPIException e)
         {
@@ -109,37 +120,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
         catch (ReleaseBranchExistsException e)
         {
-            try
-            {
-                List<Ref> refs = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix());
-                boolean foundOurRelease = false;
-                for(Ref ref : refs)
-                {
-                    if(ref.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + releaseLabel))
-                    {
-                        foundOurRelease = true;
-                        break;
-                    }
-                }
-    
-                if(foundOurRelease)
-                {
-                    //since the release branch already exists, just check it out
-                    flow.git().checkout().setName(flow.getReleaseBranchPrefix() + releaseLabel).call();
-                }
-                else
-                {
-                    throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-                }
-            }
-            catch (GitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing release branch: " + e1.getMessage(), e1);
-            }
-            catch (JGitFlowGitAPIException e1)
-            {
-                throw new JGitFlowReleaseException("Error checking out existing release branch: " + e1.getMessage(), e1);
-            }
+            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
@@ -218,18 +199,20 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             Map<String, String> originalVersions = projectHelper.getOriginalVersions("release", releaseProjects);
 
-            if(ctx.isPush() || !ctx.isNoTag())
+            if(ctx.isPushReleases() || !ctx.isNoTag())
             {
                 projectHelper.ensureOrigin(releaseProjects, flow);
             }
 
             getLogger().info("running jgitflow release finish...");
             flow.releaseFinish(releaseLabel)
-                .setPush(ctx.isPush())
+                .setPush(ctx.isPushReleases())
                 .setKeepBranch(ctx.isKeepBranch())
                 .setNoTag(ctx.isNoTag())
                 .setSquash(ctx.isSquash())
                 .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setNoMerge(ctx.isNoReleaseMerge())
                 .call();
 
             //make sure we're on develop
@@ -244,7 +227,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             projectHelper.commitAllChanges(flow.git(), "updating poms for " + developLabel + " development");
 
-            if(ctx.isPush())
+            if(ctx.isPushReleases())
             {
                 RefSpec developSpec = new RefSpec(ctx.getFlowInitContext().getDevelop());
                 flow.git().push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(developSpec).call();

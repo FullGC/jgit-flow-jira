@@ -25,6 +25,12 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
 
     @Parameter( defaultValue = "true", property = "enableFeatureVersions" )
     private boolean enableFeatureVersions = true;
+
+    @Parameter( defaultValue = "false", property = "pushFeatures" )
+    private boolean pushFeatures = false;
+
+    @Parameter( property = "startCommit", defaultValue = "")
+    private String startCommit;
     
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
@@ -32,10 +38,16 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+        System.out.println("OFFLINE? " + offline);
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setDefaultFeatureName(featureName)
                 .setEnableFeatureVersions(enableFeatureVersions)
+                .setEnableSshAgent(enableSshAgent)
+                .setAllowUntracked(allowUntracked)
+                .setPushFeatures(pushFeatures)
+                .setStartCommit(startCommit)
+                .setAllowRemote(isRemoteAllowed())
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

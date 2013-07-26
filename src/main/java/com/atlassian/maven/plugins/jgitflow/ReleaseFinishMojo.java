@@ -37,12 +37,8 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter( property = "developmentVersion" )
     private String developmentVersion;
 
-    /**
-     * Will or not push changes to the upstream repository.
-     * <code>true</code> by default
-     */
-    @Parameter( defaultValue = "true", property = "pushChanges" )
-    private boolean pushChanges = true;
+    @Parameter( defaultValue = "false", property = "pushReleases" )
+    private boolean pushReleases = false;
 
     @Parameter( defaultValue = "false", property = "noDeploy" )
     private boolean noDeploy = false;
@@ -55,6 +51,12 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
 
     @Parameter( defaultValue = "false", property = "noTag" )
     private boolean noTag = false;
+
+    @Parameter( defaultValue = "false", property = "noBuild" )
+    private boolean noBuild = false;
+
+    @Parameter( defaultValue = "false", property = "noReleaseMerge" )
+    private boolean noReleaseMerge = false;
 
     @Parameter( defaultValue = "true", property = "useReleaseProfile" )
     private boolean useReleaseProfile = true;
@@ -79,15 +81,20 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setAutoVersionSubmodules(autoVersionSubmodules)
                 .setDefaultDevelopmentVersion(developmentVersion)
                 .setReleaseBranchVersionSuffix(releaseBranchVersionSuffix)
-                .setPush(pushChanges)
+                .setPushReleases(pushReleases)
                 .setKeepBranch(keepBranch)
                 .setSquash(squash)
                 .setNoTag(noTag)
+                .setNoBuild(noBuild)
                 .setNoDeploy(noDeploy)
                 .setUseReleaseProfile(useReleaseProfile)
                 .setTagMessage(tagMessage)
                 .setUpdateDependencies(updateDependencies)
                 .setAllowSnapshots(allowSnapshots)
+                .setEnableSshAgent(enableSshAgent)
+                .setAllowUntracked(allowUntracked)
+                .setNoReleaseMerge(noReleaseMerge)
+                .setAllowRemote(isRemoteAllowed())
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

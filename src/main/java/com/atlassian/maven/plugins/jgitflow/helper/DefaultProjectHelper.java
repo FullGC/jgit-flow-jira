@@ -31,8 +31,10 @@ import org.apache.maven.shared.release.versions.DefaultVersionInfo;
 import org.apache.maven.shared.release.versions.VersionParseException;
 import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.*;
 import org.jdom2.Document;
@@ -68,18 +70,40 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     @Override
     public String getReleaseVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException
     {
+        Logger log = getLogger();
         String defaultVersion = rootProject.getVersion();
+        
+        if(log.isDebugEnabled())
+        {
+            log.debug("calculating release version for " +rootProject.getGroupId() + ":" + rootProject.getArtifactId());
+            log.debug("defaultVersion is currently: " + defaultVersion);
+        }
         
         if (StringUtils.isNotBlank(ctx.getDefaultReleaseVersion()))
         {
             defaultVersion = ctx.getDefaultReleaseVersion();
+
+            if(log.isDebugEnabled())
+            {
+                log.debug("(ctx change) defaultVersion is currently: " + defaultVersion);
+            }
         }
 
         String suggestedVersion = null;
         String releaseVersion = defaultVersion;
+
+        if(log.isDebugEnabled())
+        {
+            log.debug("releaseVersion is currently: " + releaseVersion);
+        }
         
         while(null == releaseVersion || ArtifactUtils.isSnapshot(releaseVersion))
         {
+            if(log.isDebugEnabled())
+            {
+                log.debug("looping until we find a non-snapshot version...");
+            }
+            
             DefaultVersionInfo info = null;
             try
             {
@@ -105,6 +129,11 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             }
             
             suggestedVersion = info.getReleaseVersionString();
+            
+            if(log.isDebugEnabled())
+            {
+                log.debug("suggestedVersion: " + suggestedVersion);
+            }
 
             if(ctx.isInteractive())
             {
@@ -121,6 +150,11 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             else
             {
                 releaseVersion = suggestedVersion;
+
+                if(log.isDebugEnabled())
+                {
+                    log.debug("setting release version to suggested version: " + suggestedVersion);
+                }
             }
             
         }
@@ -315,17 +349,38 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     @Override
     public Map<String, String> getReleaseVersions(String key,List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException
     {
+        //todo: add getOriginalVersions here to pre-pop
+        Logger log = getLogger();
+        
+        if(log.isDebugEnabled())
+        {
+            log.debug("getting release versions for key: " + key);
+            log.debug("AutoVersionSubmodules: " + ctx.isAutoVersionSubmodules());
+        }
+        
         if(!releaseVersions.containsKey(key))
         {
             Map<String,String> versions = new HashMap<String, String>();
 
             MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
             
+            if(log.isDebugEnabled())
+            {
+                log.debug("root project is snapshot: " + ArtifactUtils.isSnapshot(rootProject.getVersion()));
+            }
+            
             if(ctx.isAutoVersionSubmodules() && ArtifactUtils.isSnapshot(rootProject.getVersion()))
             {
                 String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(),rootProject.getArtifactId());
-                String rootReleaseVersion = getReleaseVersion(ctx,rootProject);
 
+                String rootReleaseVersion = getReleaseVersion(ctx,rootProject);
+                
+                if(log.isDebugEnabled())
+                {
+                    log.debug("getting release version for root project: " + rootProjectId);
+                    log.debug("root release version is: " + rootReleaseVersion);
+                }
+                
                 versions.put(rootProjectId,rootReleaseVersion);
                 
                 for(MavenProject subProject : reactorProjects)
@@ -354,6 +409,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     @Override
     public Map<String, String> getHotfixVersions(String key,List<MavenProject> reactorProjects, ReleaseContext ctx, Map<String,String> lastReleaseVersions) throws JGitFlowReleaseException
     {
+        //todo: add getOriginalVersions here to pre-pop
         if(!hotfixVersions.containsKey(key))
         {
             Map<String,String> versions = new HashMap<String, String>();
@@ -407,6 +463,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     @Override
     public Map<String, String> getDevelopmentVersions(String key,List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException
     {
+        //todo: add getOriginalVersions here to pre-pop
         if(!developmentVersions.containsKey(key))
         {
             Map<String,String> versions = new HashMap<String, String>();
@@ -481,7 +538,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                             foundGitScm = true;
                             StoredConfig config = flow.git().getRepository().getConfig();
                             String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME,"url");
-                            if(Strings.isNullOrEmpty(originUrl) || !cleanScmUrl.equals(originUrl))
+                            if(Strings.isNullOrEmpty(originUrl))
                             {
                                 getLogger().info("adding origin from scm...");
                                 config.setString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"url",cleanScmUrl);
@@ -554,8 +611,12 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     {
         try
         {
-            git.add().addFilepattern(".").call();
-            git.commit().setMessage(message).call();
+            Status status = git.status().call();
+            if(!status.isClean())
+            {
+                git.add().addFilepattern(".").call();
+                git.commit().setMessage(message).call();
+            }
         }
         catch (GitAPIException e)
         {

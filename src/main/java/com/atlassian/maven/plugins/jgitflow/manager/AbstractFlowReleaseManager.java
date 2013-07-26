@@ -1,11 +1,15 @@
 package com.atlassian.maven.plugins.jgitflow.manager;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
@@ -18,15 +22,32 @@ import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
+import com.jcraft.jsch.IdentityRepository;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.agentproxy.AgentProxyException;
+import com.jcraft.jsch.agentproxy.Connector;
+import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
+import com.jcraft.jsch.agentproxy.USocketFactory;
+import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
+import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.DefaultMaven;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.RuntimeInformation;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.console.ConsoleCredentialsProvider;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.util.FS;
 
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
@@ -46,7 +67,188 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     protected MavenProjectRewriter projectRewriter;
     protected MavenExecutionHelper mavenExecutionHelper;
     protected MavenJGitFlowConfigManager configManager;
+    protected RuntimeInformation runtimeInformation;
 
+    private boolean sshAgentConfigured = false;
+    private boolean sshConsoleInstalled = false;
+    private boolean headerWritten = false;
+    
+    protected void writeReportHeader(ReleaseContext ctx, JGitFlowReporter reporter)
+    {
+        if(!headerWritten)
+        {
+            String mvnVersion = runtimeInformation.getApplicationVersion().toString();
+            Package mvnFlowPkg = getClass().getPackage();
+            String mvnFlowVersion = mvnFlowPkg.getImplementationVersion();
+            
+            String shortName = getClass().getSimpleName();
+    
+            reporter.debugText(shortName,"# Maven JGitFlow Plugin")
+              .debugText(shortName,JGitFlowReporter.P)
+              .debugText(shortName,"  ## Configuration")
+              .debugText(shortName,JGitFlowReporter.EOL)
+              .debugText(shortName,"    Maven Version: " + mvnVersion)
+              .debugText(shortName,JGitFlowReporter.EOL)
+              .debugText(shortName,"    Maven JGitFlow Plugin Version: " + mvnFlowVersion)
+              .debugText(shortName,JGitFlowReporter.EOL)
+              .debugText(shortName,"    args: " + ctx.getArgs())
+              .debugText(shortName,"    base dir: " + ctx.getBaseDir().getAbsolutePath())
+              .debugText(shortName,"    default development version: " + ctx.getDefaultDevelopmentVersion())
+              .debugText(shortName,"    default feature name: " + ctx.getDefaultFeatureName())
+              .debugText(shortName,"    default release version: " + ctx.getDefaultReleaseVersion())
+              .debugText(shortName,"    release branch version suffix: " + ctx.getReleaseBranchVersionSuffix())
+              .debugText(shortName,"    tag message: " + ctx.getTagMessage())
+              .debugText(shortName,"    allow snapshots: " + ctx.isAllowSnapshots())
+              .debugText(shortName,"    auto version submodules: " + ctx.isAutoVersionSubmodules())
+              .debugText(shortName,"    enable feature versions: " + ctx.isEnableFeatureVersions())
+              .debugText(shortName,"    enable ssh agent: " + ctx.isEnableSshAgent())
+              .debugText(shortName,"    feature rebase: " + ctx.isFeatureRebase())
+              .debugText(shortName,"    interactive: " + ctx.isInteractive())
+              .debugText(shortName,"    keep branch: " + ctx.isKeepBranch())
+              .debugText(shortName,"    no build: " + ctx.isNoBuild())
+              .debugText(shortName,"    no deploy: " + ctx.isNoDeploy())
+              .debugText(shortName,"    no tag: " + ctx.isNoTag())
+              .debugText(shortName,"    pushFeatures: " + ctx.isPushFeatures())
+              .debugText(shortName,"    pushReleases: " + ctx.isPushReleases())
+              .debugText(shortName,"    pushHotfixes: " + ctx.isPushHotfixes())
+              .debugText(shortName,"    squash: " + ctx.isSquash())
+              .debugText(shortName,"    update dependencies: " + ctx.isUpdateDependencies())
+              .debugText(shortName,"    use release profile: " + ctx.isUseReleaseProfile())
+              .debugText(shortName,JGitFlowReporter.HR);
+            
+            reporter.flush();
+            this.headerWritten = true;
+        }
+    }
+    protected void setupSshCredentialProviders(ReleaseContext ctx, JGitFlowReporter reporter)
+    {
+        if(!ctx.isRemoteAllowed())
+        {
+            return;
+        }
+        
+        if (null != System.console() && !sshConsoleInstalled)
+        {
+            reporter.debugText(getClass().getSimpleName(),"installing ssh console credentials provider");
+            ConsoleCredentialsProvider.install();
+            sshConsoleInstalled = true;
+        }
+
+        if (ctx.isEnableSshAgent() && !sshAgentConfigured)
+        {
+            JschConfigSessionFactory sessionFactory = new JschConfigSessionFactory()
+            {
+                @Override
+                protected void configure(OpenSshConfig.Host hc, Session session)
+                {
+                    session.setConfig("StrictHostKeyChecking", "false");
+                }
+
+                @Override
+                protected JSch createDefaultJSch(FS fs) throws JSchException
+                {
+                    Connector con = null;
+                    JSch jsch = null;
+
+                    try
+                    {
+                        if (SSHAgentConnector.isConnectorAvailable())
+                        {
+                            USocketFactory usf = new JNAUSocketFactory();
+                            con = new SSHAgentConnector(usf);
+
+                        }
+                    }
+                    catch (AgentProxyException e)
+                    {
+                        System.out.println(e.getMessage());
+                    }
+
+                    if (null == con)
+                    {
+                        jsch = super.createDefaultJSch(fs);
+
+                        return jsch;
+                    }
+                    else
+                    {
+                        jsch = new JSch();
+                        jsch.setConfig("PreferredAuthentications", "publickey");
+                        IdentityRepository irepo = new RemoteIdentityRepository(con);
+                        jsch.setIdentityRepository(irepo);
+
+                        //why these in super is private, I don't know
+                        knownHosts(jsch, fs);
+                        identities(jsch, fs);
+                        return jsch;
+                    }
+                }
+
+                //copied from super class
+                private void knownHosts(final JSch sch, FS fs) throws JSchException
+                {
+                    final File home = fs.userHome();
+                    if (home == null)
+                    { return; }
+                    final File known_hosts = new File(new File(home, ".ssh"), "known_hosts");
+                    try
+                    {
+                        final FileInputStream in = new FileInputStream(known_hosts);
+                        try
+                        {
+                            sch.setKnownHosts(in);
+                        }
+                        finally
+                        {
+                            in.close();
+                        }
+                    }
+                    catch (FileNotFoundException none)
+                    {
+                        // Oh well. They don't have a known hosts in home.
+                    }
+                    catch (IOException err)
+                    {
+                        // Oh well. They don't have a known hosts in home.
+                    }
+                }
+
+                private void identities(final JSch sch, FS fs)
+                {
+                    final File home = fs.userHome();
+                    if (home == null)
+                    { return; }
+                    final File sshdir = new File(home, ".ssh");
+                    if (sshdir.isDirectory())
+                    {
+                        loadIdentity(sch, new File(sshdir, "identity"));
+                        loadIdentity(sch, new File(sshdir, "id_rsa"));
+                        loadIdentity(sch, new File(sshdir, "id_dsa"));
+                    }
+                }
+
+                private void loadIdentity(final JSch sch, final File priv)
+                {
+                    if (priv.isFile())
+                    {
+                        try
+                        {
+                            sch.addIdentity(priv.getAbsolutePath());
+                        }
+                        catch (JSchException e)
+                        {
+                            // Instead, pretend the key doesn't exist.
+                        }
+                    }
+                }
+            };
+
+            reporter.debugText(getClass().getSimpleName(),"installing ssh-agent credentials provider");
+            SshSessionFactory.setInstance(sessionFactory);
+
+            sshAgentConfigured = true;
+        }
+    }
     protected String getReleaseLabel(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
         Map<String, String> releaseVersions = projectHelper.getReleaseVersions(key, reactorProjects, ctx);
@@ -79,38 +281,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     protected String getFeatureFinishName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException
     {
         return projectHelper.getFeatureFinishName(ctx, flow);
-    }
-
-    protected void updatePomsWithReleaseVersion(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
-    {
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
-        Map<String, String> releaseVersions = projectHelper.getReleaseVersions(key, reactorProjects, ctx);
-
-        getLogger().info("updating poms for all projects...");
-        if(!getLogger().isDebugEnabled())
-        {
-            getLogger().info("turn on debug logging with -X to see exact changes");
-        }
-        for (MavenProject project : reactorProjects)
-        {
-            ProjectChangeset changes = new ProjectChangeset()
-                    .with(parentReleaseVersionChange(originalVersions, releaseVersions))
-                    .with(projectReleaseVersionChange(releaseVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, releaseVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultTagChange(releaseVersions));
-            try
-            {
-                getLogger().info("updating pom for " + project.getName() + "...");
-
-                projectRewriter.applyChanges(project, changes);
-
-                logChanges(changes);
-            }
-            catch (ProjectRewriteException e)
-            {
-                throw new JGitFlowReleaseException("Error updating poms with release versions", e);
-            }
-        }
     }
 
     protected void updatePomsWithReleaseVersion(String key, final String releaseLabel, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException

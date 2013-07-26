@@ -22,6 +22,10 @@
                     <role>com.atlassian.maven.plugins.jgitflow.manager.MavenJGitFlowConfigManager</role>
                     <field-name>configManager</field-name>
                 </requirement>
+                <requirement>
+                    <role>org.apache.maven.execution.RuntimeInformation</role>
+                    <field-name>runtimeInformation</field-name>
+                </requirement>
             </requirements>
         </component>
         <component>
@@ -45,6 +49,10 @@
                     <role>com.atlassian.maven.plugins.jgitflow.manager.MavenJGitFlowConfigManager</role>
                     <field-name>configManager</field-name>
                 </requirement>
+                <requirement>
+                    <role>org.apache.maven.execution.RuntimeInformation</role>
+                    <field-name>runtimeInformation</field-name>
+                </requirement>
             </requirements>
         </component>
         <component>
@@ -67,6 +75,10 @@
                 <requirement>
                     <role>com.atlassian.maven.plugins.jgitflow.manager.MavenJGitFlowConfigManager</role>
                     <field-name>configManager</field-name>
+                </requirement>
+                <requirement>
+                    <role>org.apache.maven.execution.RuntimeInformation</role>
+                    <field-name>runtimeInformation</field-name>
                 </requirement>
             </requirements>
         </component>

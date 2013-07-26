@@ -15,7 +15,9 @@ public class ReleaseContext
     private boolean interactive;
     private boolean autoVersionSubmodules;
     private boolean updateDependencies;
-    private boolean push;
+    private boolean pushFeatures;
+    private boolean pushReleases;
+    private boolean pushHotfixes;
     private boolean keepBranch;
     private boolean squash;
     private boolean noTag;
@@ -32,6 +34,11 @@ public class ReleaseContext
     private String releaseBranchVersionSuffix;
     private InitContext flowInitContext;
     private final File baseDir;
+    private boolean enableSshAgent;
+    private boolean noReleaseMerge;
+    private boolean allowUntracked;
+    private boolean allowRemote;
+    private String startCommit;
     
     public ReleaseContext(File baseDir)
     {
@@ -42,7 +49,9 @@ public class ReleaseContext
         this.interactive = true;
         this.autoVersionSubmodules = false;
         this.updateDependencies = true;
-        this.push = true;
+        this.pushFeatures = false;
+        this.pushReleases = false;
+        this.pushHotfixes = false;
         this.keepBranch = false;
         this.squash = false;
         this.noTag = false;
@@ -51,10 +60,15 @@ public class ReleaseContext
         this.featureRebase = false;
         this.useReleaseProfile = true;
         this.args = "";
+        this.startCommit = "";
         this.releaseBranchVersionSuffix = "release";
         this.enableFeatureVersions = true;
         this.tagMessage = "tagging release ${version}";
         this.flowInitContext = new InitContext();
+        this.enableSshAgent = false;
+        this.allowUntracked = false;
+        this.noReleaseMerge = false;
+        this.allowRemote = true;
     }
 
     public boolean isAllowSnapshots()
@@ -139,14 +153,36 @@ public class ReleaseContext
         return baseDir;
     }
 
-    public boolean isPush()
+    public boolean isPushFeatures()
     {
-        return push;
+        return pushFeatures;
     }
 
-    public ReleaseContext setPush(boolean push)
+    public ReleaseContext setPushFeatures(boolean push)
     {
-        this.push = push;
+        this.pushFeatures = push;
+        return this;
+    }
+
+    public boolean isPushReleases()
+    {
+        return pushReleases;
+    }
+
+    public ReleaseContext setPushReleases(boolean push)
+    {
+        this.pushReleases = push;
+        return this;
+    }
+
+    public boolean isPushHotfixes()
+    {
+        return pushHotfixes;
+    }
+
+    public ReleaseContext setPushHotfixes(boolean push)
+    {
+        this.pushHotfixes = push;
         return this;
     }
 
@@ -256,6 +292,17 @@ public class ReleaseContext
         return this;
     }
 
+    public String getStartCommit()
+    {
+        return startCommit;
+    }
+
+    public ReleaseContext setStartCommit(String commit)
+    {
+        this.startCommit = commit;
+        return this;
+    }
+
     public ReleaseContext setDefaultFeatureName(String defaultFeatureName)
     {
         this.defaultFeatureName = defaultFeatureName;
@@ -286,6 +333,50 @@ public class ReleaseContext
     public ReleaseContext setEnableFeatureVersions(boolean enable)
     {
         this.enableFeatureVersions = enable;
+        return this;
+    }
+
+    public boolean isEnableSshAgent()
+    {
+        return enableSshAgent;
+    }
+
+    public ReleaseContext setEnableSshAgent(boolean enableSshAgent)
+    {
+        this.enableSshAgent = enableSshAgent;
+        return this;
+    }
+
+    public boolean isAllowUntracked()
+    {
+        return allowUntracked;
+    }
+
+    public ReleaseContext setAllowUntracked(boolean allow)
+    {
+        this.allowUntracked = allow;
+        return this;
+    }
+
+    public boolean isNoReleaseMerge()
+    {
+        return noReleaseMerge;
+    }
+
+    public ReleaseContext setNoReleaseMerge(boolean merge)
+    {
+        this.noReleaseMerge = merge;
+        return this;
+    }
+
+    public boolean isRemoteAllowed()
+    {
+        return allowRemote;
+    }
+
+    public ReleaseContext setAllowRemote(boolean allow)
+    {
+        this.allowRemote = allow;
         return this;
     }
 }
