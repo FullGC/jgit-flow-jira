@@ -53,10 +53,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         
         for(String profileId : getActiveProfileIds(project,session))
         {
-            if(!"defaultProfile".equalsIgnoreCase(profileId))
-            {
-                argList.add("-P" + profileId);
-            }
+            argList.add("-P" + profileId);
         }
 
         argList.add("-X");
@@ -64,6 +61,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         
         ReleaseResult result = new ReleaseResult();
         ReleaseEnvironment env = new DefaultReleaseEnvironment();
+        env.setSettings(session.getSettings());
         MavenExecutor mavenExecutor = mavenExecutors.get(env.getMavenExecutorId());
         
         String goal = "deploy";
