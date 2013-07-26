@@ -283,38 +283,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         return projectHelper.getFeatureFinishName(ctx, flow);
     }
 
-    protected void updatePomsWithReleaseVersion(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
-    {
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
-        Map<String, String> releaseVersions = projectHelper.getReleaseVersions(key, reactorProjects, ctx);
-
-        getLogger().info("updating poms for all projects...");
-        if(!getLogger().isDebugEnabled())
-        {
-            getLogger().info("turn on debug logging with -X to see exact changes");
-        }
-        for (MavenProject project : reactorProjects)
-        {
-            ProjectChangeset changes = new ProjectChangeset()
-                    .with(parentReleaseVersionChange(originalVersions, releaseVersions))
-                    .with(projectReleaseVersionChange(releaseVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, releaseVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultTagChange(releaseVersions));
-            try
-            {
-                getLogger().info("updating pom for " + project.getName() + "...");
-
-                projectRewriter.applyChanges(project, changes);
-
-                logChanges(changes);
-            }
-            catch (ProjectRewriteException e)
-            {
-                throw new JGitFlowReleaseException("Error updating poms with release versions", e);
-            }
-        }
-    }
-
     protected void updatePomsWithReleaseVersion(String key, final String releaseLabel, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
         Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
