@@ -38,7 +38,6 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-        System.out.println("OFFLINE? " + offline);
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setDefaultFeatureName(featureName)

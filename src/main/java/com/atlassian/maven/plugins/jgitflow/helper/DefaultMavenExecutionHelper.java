@@ -56,7 +56,6 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
             argList.add("-P" + profileId);
         }
 
-        argList.add("-X");
         String additionalArgs = Joiner.on(" ").join(argList);
         
         ReleaseResult result = new ReleaseResult();
