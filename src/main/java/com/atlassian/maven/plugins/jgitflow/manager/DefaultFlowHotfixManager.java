@@ -23,8 +23,11 @@ import org.apache.maven.shared.release.ReleaseExecutionException;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.transport.RefSpec;
 
 /**
  * @since version
@@ -47,12 +50,23 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             String hotfixLabel = startHotfix(flow, config, ctx, originalProjects, session);
             updateHotfixPomsWithSnapshot(hotfixLabel, flow, ctx, config, originalProjects, session);
+
+            if(ctx.isPushHotfixes())
+            {
+                final String prefixedBranchName = flow.getReleaseBranchPrefix() + hotfixLabel;
+                RefSpec branchSpec = new RefSpec(prefixedBranchName);
+                flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
+            }
         }
         catch (JGitFlowException e)
         {
             throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (IOException e)
+        {
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+        }
+        catch (GitAPIException e)
         {
             throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
         }

@@ -43,8 +43,19 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             String releaseLabel = startRelease(flow, ctx, reactorProjects, session);
 
             updateReleasePomsWithSnapshot(releaseLabel, flow, ctx, reactorProjects, session);
+
+            if(ctx.isPushReleases())
+            {
+                final String prefixedBranchName = flow.getReleaseBranchPrefix() + releaseLabel;
+                RefSpec branchSpec = new RefSpec(prefixedBranchName);
+                flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
+            }
         }
         catch (JGitFlowException e)
+        {
+            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+        }
+        catch (GitAPIException e)
         {
             throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
         }
