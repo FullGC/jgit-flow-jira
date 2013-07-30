@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.HotfixBranchExistsException;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
@@ -253,13 +254,33 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             }
 
             getLogger().info("running jgitflow hotfix finish...");
-            flow.hotfixFinish(hotfixLabel)
+            
+            ReleaseMergeResult mergeResult = flow.hotfixFinish(hotfixLabel)
                 .setPush(ctx.isPushHotfixes())
                 .setKeepBranch(ctx.isKeepBranch())
                 .setNoTag(ctx.isNoTag())
                 .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .call();
+
+            if(!mergeResult.wasSuccessful())
+            {
+                if(mergeResult.masterHasProblems())
+                {
+                    getLogger().error("Error merging into " + flow.getMasterBranchName() + ":");
+                    getLogger().error(mergeResult.getMasterResult().toString());
+                    getLogger().error("see .git/jgitflow.log for more info");
+                }
+
+                if(mergeResult.developHasProblems())
+                {
+                    getLogger().error("Error merging into " + flow.getDevelopBranchName() + ":");
+                    getLogger().error(mergeResult.getDevelopResult().toString());
+                    getLogger().error("see .git/jgitflow.log for more info");
+                }
+
+                throw new JGitFlowReleaseException("Error while merging hotfix!");
+            }
 
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();

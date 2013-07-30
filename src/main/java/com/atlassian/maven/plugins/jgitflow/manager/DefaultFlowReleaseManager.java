@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
@@ -216,7 +217,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             }
 
             getLogger().info("running jgitflow release finish...");
-            flow.releaseFinish(releaseLabel)
+            ReleaseMergeResult mergeResult = flow.releaseFinish(releaseLabel)
                 .setPush(ctx.isPushReleases())
                 .setKeepBranch(ctx.isKeepBranch())
                 .setNoTag(ctx.isNoTag())
@@ -225,6 +226,25 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .setNoMerge(ctx.isNoReleaseMerge())
                 .call();
+            
+            if(!mergeResult.wasSuccessful())
+            {
+                if(mergeResult.masterHasProblems())
+                {
+                    getLogger().error("Error merging into " + flow.getMasterBranchName() + ":");
+                    getLogger().error(mergeResult.getMasterResult().toString());
+                    getLogger().error("see .git/jgitflow.log for more info");
+                }
+                
+                if(mergeResult.developHasProblems())
+                {
+                    getLogger().error("Error merging into " + flow.getDevelopBranchName() + ":");
+                    getLogger().error(mergeResult.getDevelopResult().toString());
+                    getLogger().error("see .git/jgitflow.log for more info");
+                }
+                
+                throw new JGitFlowReleaseException("Error while merging release!");
+            }
 
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
