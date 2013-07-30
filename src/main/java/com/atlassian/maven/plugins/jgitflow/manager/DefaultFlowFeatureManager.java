@@ -68,6 +68,13 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
         }
+        finally
+        {
+            if(null != flow)
+            {
+                flow.getReporter().flush();
+            }
+        }
 
     }
 

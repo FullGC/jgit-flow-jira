@@ -71,6 +71,13 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         {
             throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
         }
+        finally
+        {
+            if(null != flow)
+            {
+                flow.getReporter().flush();
+            }
+        }
 
         //do this separately since we just warn
         try
@@ -106,6 +113,13 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         catch (IOException e)
         {
             throw new JGitFlowReleaseException("Error finishing hotfix: " + e.getMessage(), e);
+        }
+        finally
+        {
+            if(null != flow)
+            {
+                flow.getReporter().flush();
+            }
         }
     }
 
