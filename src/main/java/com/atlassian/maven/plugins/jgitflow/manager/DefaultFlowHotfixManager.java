@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.HotfixBranchExistsException;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
@@ -23,8 +24,11 @@ import org.apache.maven.shared.release.ReleaseExecutionException;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.transport.RefSpec;
 
 /**
  * @since version
@@ -47,12 +51,23 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             String hotfixLabel = startHotfix(flow, config, ctx, originalProjects, session);
             updateHotfixPomsWithSnapshot(hotfixLabel, flow, ctx, config, originalProjects, session);
+
+            if(ctx.isPushHotfixes())
+            {
+                final String prefixedBranchName = flow.getReleaseBranchPrefix() + hotfixLabel;
+                RefSpec branchSpec = new RefSpec(prefixedBranchName);
+                flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
+            }
         }
         catch (JGitFlowException e)
         {
             throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (IOException e)
+        {
+            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+        }
+        catch (GitAPIException e)
         {
             throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
         }
@@ -239,13 +254,33 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             }
 
             getLogger().info("running jgitflow hotfix finish...");
-            flow.hotfixFinish(hotfixLabel)
+            
+            ReleaseMergeResult mergeResult = flow.hotfixFinish(hotfixLabel)
                 .setPush(ctx.isPushHotfixes())
                 .setKeepBranch(ctx.isKeepBranch())
                 .setNoTag(ctx.isNoTag())
                 .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .call();
+
+            if(!mergeResult.wasSuccessful())
+            {
+                if(mergeResult.masterHasProblems())
+                {
+                    getLogger().error("Error merging into " + flow.getMasterBranchName() + ":");
+                    getLogger().error(mergeResult.getMasterResult().toString());
+                    getLogger().error("see .git/jgitflow.log for more info");
+                }
+
+                if(mergeResult.developHasProblems())
+                {
+                    getLogger().error("Error merging into " + flow.getDevelopBranchName() + ":");
+                    getLogger().error(mergeResult.getDevelopResult().toString());
+                    getLogger().error("see .git/jgitflow.log for more info");
+                }
+
+                throw new JGitFlowReleaseException("Error while merging hotfix!");
+            }
 
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();

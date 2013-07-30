@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
@@ -15,6 +16,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.transport.RefSpec;
 
 /**
  * @since version
@@ -46,7 +48,14 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             
             if(ctx.isEnableFeatureVersions())
             {
+                final String prefixedBranchName = flow.getFeatureBranchPrefix() + featureName;
                 updateFeaturePomsWithFeatureVersion(featureName, flow, ctx, reactorProjects, session);
+                
+                if(ctx.isPushFeatures())
+                {
+                    RefSpec branchSpec = new RefSpec(prefixedBranchName);
+                    flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
+                }
             }
 
             projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureName + " branch");
@@ -113,6 +122,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 .setRebase(ctx.isFeatureRebase())
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .setPush(ctx.isPushFeatures())
+                .setNoMerge(ctx.isNoFeatureMerge())
                 .call();
 
             //make sure we're on develop

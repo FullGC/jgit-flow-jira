@@ -9,7 +9,7 @@
     
     <groupId>com.atlassian.maven.plugins</groupId>
     <artifactId>maven-jgitflow-plugin</artifactId>
-    <version>1.0-alpha10</version>
+    <version>1.0-alpha11</version>
     
     <packaging>maven-plugin</packaging>
     
@@ -47,7 +47,7 @@
         <connection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</developerConnection>
         <url>https://bitbucket.org/atlassian/maven-jgitflow-plugin</url>
-        <tag>1.0-alpha10</tag>
+        <tag>1.0-alpha11</tag>
     </scm>
     
     <dependencies>
@@ -276,7 +276,7 @@
     <properties>
         <mavenVersion>2.2.1</mavenVersion>
         <mavenPluginPluginVersion>3.1</mavenPluginPluginVersion>
-        <jgitFlowVersion>0.12</jgitFlowVersion>
+        <jgitFlowVersion>0.13</jgitFlowVersion>
         <scmVersion>1.8</scmVersion>
         <mavenReleaseVersion>2.4</mavenReleaseVersion>
         <jschAgentVersion>0.0.5</jschAgentVersion>

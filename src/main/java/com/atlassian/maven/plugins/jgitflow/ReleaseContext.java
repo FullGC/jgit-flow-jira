@@ -36,6 +36,7 @@ public class ReleaseContext
     private final File baseDir;
     private boolean enableSshAgent;
     private boolean noReleaseMerge;
+    private boolean noFeatureMerge;
     private boolean allowUntracked;
     private boolean allowRemote;
     private String startCommit;
@@ -68,6 +69,7 @@ public class ReleaseContext
         this.enableSshAgent = false;
         this.allowUntracked = false;
         this.noReleaseMerge = false;
+        this.noFeatureMerge = false;
         this.allowRemote = true;
     }
 
@@ -363,9 +365,20 @@ public class ReleaseContext
         return noReleaseMerge;
     }
 
+    public boolean isNoFeatureMerge()
+    {
+        return noFeatureMerge;
+    }
+
     public ReleaseContext setNoReleaseMerge(boolean merge)
     {
         this.noReleaseMerge = merge;
+        return this;
+    }
+
+    public ReleaseContext setNoFeatureMerge(boolean merge)
+    {
+        this.noFeatureMerge = merge;
         return this;
     }
 
