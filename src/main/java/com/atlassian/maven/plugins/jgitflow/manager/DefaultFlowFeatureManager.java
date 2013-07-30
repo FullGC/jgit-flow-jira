@@ -145,6 +145,13 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
         }
+        finally
+        {
+            if(null != flow)
+            {
+                flow.getReporter().flush();
+            }
+        }
     }
 
     private void updateFeaturePomsWithFeatureVersion(String featureName, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
