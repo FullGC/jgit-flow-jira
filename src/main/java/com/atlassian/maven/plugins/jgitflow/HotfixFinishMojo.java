@@ -52,6 +52,9 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "false", property = "noTag" )
     private boolean noTag = false;
 
+    @Parameter( defaultValue = "false", property = "noHotfixBuild" )
+    private boolean noHotfixBuild = false;
+
     @Parameter( defaultValue = "true", property = "useReleaseProfile" )
     private boolean useReleaseProfile = true;
 
@@ -83,6 +86,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setEnableSshAgent(enableSshAgent)
            .setAllowUntracked(allowUntracked)
            .setAllowRemote(isRemoteAllowed())
+           .setNoBuild(noHotfixBuild)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
