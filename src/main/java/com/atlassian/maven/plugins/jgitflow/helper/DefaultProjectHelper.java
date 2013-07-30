@@ -804,12 +804,15 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             try
             {
                  currentBranch = flow.git().getRepository().getBranch();
+                getLogger().debug("Current Branch is: " + currentBranch);
             }
             catch (IOException e) 
             {
                 throw new JGitFlowReleaseException(e); 
             }
-            
+
+            getLogger().debug("Feature Prefix is: " + flow.getFeatureBranchPrefix());
+            getLogger().debug("Branch starts with feature prefix?: " + currentBranch.startsWith(flow.getFeatureBranchPrefix()));
             if(currentBranch.startsWith(flow.getFeatureBranchPrefix()))
             {
                 featureName = currentBranch.replaceFirst(flow.getFeatureBranchPrefix(), "");
