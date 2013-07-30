@@ -37,6 +37,9 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
 
     @Parameter( defaultValue = "false", property = "pushFeatures" )
     private boolean pushFeatures = false;
+
+    @Parameter( defaultValue = "false", property = "noFeatureMerge" )
+    private boolean noFeatureMerge = false;
     
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
@@ -56,6 +59,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setAllowUntracked(allowUntracked)
                 .setPushFeatures(pushFeatures)
                 .setAllowRemote(isRemoteAllowed())
+                .setNoFeatureMerge(noFeatureMerge)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

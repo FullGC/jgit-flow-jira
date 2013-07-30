@@ -122,6 +122,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 .setRebase(ctx.isFeatureRebase())
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .setPush(ctx.isPushFeatures())
+                .setNoMerge(ctx.isNoFeatureMerge())
                 .call();
 
             //make sure we're on develop
