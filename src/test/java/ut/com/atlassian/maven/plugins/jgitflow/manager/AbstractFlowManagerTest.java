@@ -133,7 +133,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         File projectRoot = ctx.getBaseDir();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
-
+        flow.git().checkout().setName(flow.getDevelopBranchName()).call();
         assertOnDevelop(flow);
 
         initialCommitAll(flow);

@@ -53,6 +53,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         ctx.setNoBuild(true);
         
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
+        flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
         assertOnDevelop(flow);
 
