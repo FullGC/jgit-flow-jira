@@ -40,6 +40,11 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             featureName = getFeatureStartName(ctx, flow);
 
+            if(ctx.isPushFeatures())
+            {
+                projectHelper.ensureOrigin(reactorProjects, flow);
+            }
+            
             flow.featureStart(featureName)
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .setPush(ctx.isPushFeatures())
