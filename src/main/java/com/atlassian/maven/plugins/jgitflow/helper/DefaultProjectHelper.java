@@ -635,17 +635,20 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             if(!status.isClean())
             {
                 AddCommand add = git.add();
-
+                
+                MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
+                File rootBaseDir = rootProject.getBasedir();
                 for(MavenProject project : reactorProjects)
                 {
-                    String pomPath = relativePath(project.getBasedir(),project.getFile());
-                    
+                    String pomPath = relativePath(rootBaseDir,project.getFile());
+
                     if(getLogger().isDebugEnabled())
                     {
                         getLogger().debug("adding file pattern for poms commit: " + pomPath);
                     }
                     add.addFilepattern(pomPath);
                 }
+                add.call();
                 git.commit().setMessage(message).call();
             }
         }
@@ -657,12 +660,18 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
     private String relativePath(File basedir, File file)
     {
-        String pomPath = Strings.commonSuffix(basedir.getAbsolutePath(),file.getAbsolutePath());
-        if(pomPath.startsWith(File.separator))
-        {
-            pomPath = pomPath.substring(1);
-        }
+        String pomPath = file.getAbsolutePath();
         
+        if(file.getAbsolutePath().startsWith(basedir.getAbsolutePath()))
+        {
+            pomPath = file.getAbsolutePath().substring(basedir.getAbsolutePath().length());
+
+            if(pomPath.startsWith(File.separator))
+            {
+                pomPath = pomPath.substring(1);
+            }
+        }
+                
         return pomPath;
     }
 

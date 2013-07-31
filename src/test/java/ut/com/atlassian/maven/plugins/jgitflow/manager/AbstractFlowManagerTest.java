@@ -146,6 +146,8 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
         compareSnapPomFiles(projects);
+        
+        assertTrue(flow.git().status().call().isClean());
     }
     
     protected void initialCommitAll(JGitFlow flow) throws Exception
