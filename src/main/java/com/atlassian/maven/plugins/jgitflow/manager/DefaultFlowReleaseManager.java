@@ -84,6 +84,12 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             setupSshCredentialProviders(ctx,flow.getReporter());
             
             config = configManager.getConfiguration(flow.git());
+
+            if(ctx.isPushReleases() || !ctx.isNoTag())
+            {
+                projectHelper.ensureOrigin(originalProjects, flow);
+            }
+            
             finishRelease(flow, config, ctx, originalProjects, session);
         }
         catch (JGitFlowException e)
@@ -185,12 +191,21 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             releaseLabel = releaseBranch.getName().substring(releaseBranch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
             
             //make sure we're on the release branch
+            if(getLogger().isDebugEnabled())
+            {
+                getLogger().debug("checking out release branch: " + flow.getReleaseBranchPrefix() + releaseLabel);
+            }
+            
             flow.git().checkout().setName(flow.getReleaseBranchPrefix() + releaseLabel).call();
 
             //get the reactor projects for release
             MavenSession releaseSession = getSessionForBranch(flow, flow.getReleaseBranchPrefix() + releaseLabel, originalProjects, session);
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
 
+            if(getLogger().isDebugEnabled())
+            {
+                getLogger().debug("updating release poms with release...");
+            }
             updateReleasePomsWithRelease(releaseLabel,flow,ctx,originalProjects,session);
             projectHelper.commitAllPoms(flow.git(), originalProjects, "updating poms for " + releaseLabel + " release");
 
@@ -214,6 +229,10 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             if(!ctx.isNoBuild())
             {
+                if(getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("building project...");
+                }
                 try
                 {
                     mavenExecutionHelper.execute(rootProject, ctx, releaseSession);
@@ -225,11 +244,6 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             }
 
             Map<String, String> originalVersions = projectHelper.getOriginalVersions("release", releaseProjects);
-
-            if(ctx.isPushReleases() || !ctx.isNoTag())
-            {
-                projectHelper.ensureOrigin(releaseProjects, flow);
-            }
 
             getLogger().info("running jgitflow release finish...");
             ReleaseMergeResult mergeResult = flow.releaseFinish(releaseLabel)
