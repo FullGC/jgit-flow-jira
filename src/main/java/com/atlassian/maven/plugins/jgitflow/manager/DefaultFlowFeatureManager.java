@@ -53,6 +53,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 
                 if(ctx.isPushFeatures())
                 {
+                    projectHelper.ensureOrigin(reactorProjects, flow);
                     RefSpec branchSpec = new RefSpec(prefixedBranchName);
                     flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
                 }
@@ -110,6 +111,11 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 rootProject = ReleaseUtil.getRootProject(featureProjects);
             }
 
+            if(ctx.isPushFeatures())
+            {
+                projectHelper.ensureOrigin(reactorProjects, flow);    
+            }
+            
             if(!ctx.isNoBuild())
             {
                 try
