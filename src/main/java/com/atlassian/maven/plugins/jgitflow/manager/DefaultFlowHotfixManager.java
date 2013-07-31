@@ -212,7 +212,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
 
             updateHotfixPomsWithRelease(hotfixLabel,flow,ctx,config,originalProjects,session);
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), originalProjects, "updating poms for " + hotfixLabel + " hotfix");
 
             //reload the reactor projects for hotfix
             hotfixSession = getSessionForBranch(flow, flow.getHotfixBranchPrefix() + hotfixLabel, originalProjects, session);
@@ -304,7 +304,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             developProjects = developSession.getSortedProjects();
             updatePomsWithPreviousVersions("develop", ctx, developProjects, config);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for development");
+            projectHelper.commitAllPoms(flow.git(), developProjects, "updating poms for development");
 
             config.setLastReleaseVersions(originalVersions);
             configManager.saveConfiguration(config, flow.git());
@@ -340,7 +340,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixVersion("hotfixlabel", ctx, hotfixProjects, config);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), hotfixProjects, "updating poms for " + hotfixLabel + " hotfix");
         }
         catch (GitAPIException e)
         {
@@ -365,7 +365,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixVersion("hotfixlabel", hotfixLabel, ctx, hotfixProjects, config);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), hotfixProjects, "updating poms for " + hotfixLabel + " hotfix");
         }
         catch (GitAPIException e)
         {
@@ -390,7 +390,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixSnapshotVersion("hotfixlabel", hotfixLabel, ctx, hotfixProjects, config);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), hotfixProjects, "updating poms for " + hotfixLabel + " hotfix");
         }
         catch (GitAPIException e)
         {

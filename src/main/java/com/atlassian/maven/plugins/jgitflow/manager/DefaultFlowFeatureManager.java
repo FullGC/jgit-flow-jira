@@ -59,7 +59,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 }
             }
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureName + " branch");
+            projectHelper.commitAllPoms(flow.git(), reactorProjects, "updating poms for " + featureName + " branch");
         }
         catch (GitAPIException e)
         {
@@ -179,7 +179,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             
             updatePomsWithFeatureVersion("featureStartLabel", featureVersion, ctx, featureProjects);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureVersion + " version");
+            projectHelper.commitAllPoms(flow.git(), featureProjects, "updating poms for " + featureVersion + " version");
         }
         catch (GitAPIException e)
         {
@@ -207,7 +207,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             updatePomsWithNonFeatureVersion("featureFinishLabel", featureVersion, ctx, featureProjects);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureVersion + " version");
+            projectHelper.commitAllPoms(flow.git(), featureProjects, "updating poms for " + featureVersion + " version");
         }
         catch (GitAPIException e)
         {

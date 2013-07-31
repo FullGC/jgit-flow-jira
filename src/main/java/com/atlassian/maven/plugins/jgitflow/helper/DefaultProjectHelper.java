@@ -33,6 +33,7 @@ import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -620,9 +621,49 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("error committing pom changes: " + e.getMessage(), e);
+            throw new JGitFlowReleaseException("error committing changes: " + e.getMessage(), e);
         }
 
+    }
+    
+    @Override
+    public void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws JGitFlowReleaseException
+    {
+        try
+        {
+            Status status = git.status().call();
+            if(!status.isClean())
+            {
+                AddCommand add = git.add();
+
+                for(MavenProject project : reactorProjects)
+                {
+                    String pomPath = relativePath(project.getBasedir(),project.getFile());
+                    
+                    if(getLogger().isDebugEnabled())
+                    {
+                        getLogger().debug("adding file pattern for poms commit: " + pomPath);
+                    }
+                    add.addFilepattern(pomPath);
+                }
+                git.commit().setMessage(message).call();
+            }
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("error committing pom changes: " + e.getMessage(), e);
+        }
+    }
+
+    private String relativePath(File basedir, File file)
+    {
+        String pomPath = Strings.commonSuffix(basedir.getAbsolutePath(),file.getAbsolutePath());
+        if(pomPath.startsWith(File.separator))
+        {
+            pomPath = pomPath.substring(1);
+        }
+        
+        return pomPath;
     }
 
     @Override
