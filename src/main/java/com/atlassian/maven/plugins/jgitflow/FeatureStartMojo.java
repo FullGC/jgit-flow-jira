@@ -55,7 +55,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
         }
         catch (JGitFlowReleaseException e)
         {
-            throw new MojoExecutionException("Error starting release: " + e.getMessage(),e);
+            throw new MojoExecutionException("Error starting feature: " + e.getMessage(),e);
         }
     }
 }

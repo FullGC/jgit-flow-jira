@@ -53,12 +53,13 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 
                 if(ctx.isPushFeatures())
                 {
+                    projectHelper.ensureOrigin(reactorProjects, flow);
                     RefSpec branchSpec = new RefSpec(prefixedBranchName);
                     flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
                 }
             }
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureName + " branch");
+            projectHelper.commitAllPoms(flow.git(), reactorProjects, "updating poms for " + featureName + " branch");
         }
         catch (GitAPIException e)
         {
@@ -67,6 +68,13 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         catch (JGitFlowException e)
         {
             throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+        finally
+        {
+            if(null != flow)
+            {
+                flow.getReporter().flush();
+            }
         }
 
     }
@@ -103,6 +111,11 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 rootProject = ReleaseUtil.getRootProject(featureProjects);
             }
 
+            if(ctx.isPushFeatures())
+            {
+                projectHelper.ensureOrigin(reactorProjects, flow);    
+            }
+            
             if(!ctx.isNoBuild())
             {
                 try
@@ -145,6 +158,13 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
         }
+        finally
+        {
+            if(null != flow)
+            {
+                flow.getReporter().flush();
+            }
+        }
     }
 
     private void updateFeaturePomsWithFeatureVersion(String featureName, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
@@ -159,7 +179,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             
             updatePomsWithFeatureVersion("featureStartLabel", featureVersion, ctx, featureProjects);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureVersion + " version");
+            projectHelper.commitAllPoms(flow.git(), featureProjects, "updating poms for " + featureVersion + " version");
         }
         catch (GitAPIException e)
         {
@@ -187,7 +207,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             updatePomsWithNonFeatureVersion("featureFinishLabel", featureVersion, ctx, featureProjects);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + featureVersion + " version");
+            projectHelper.commitAllPoms(flow.git(), featureProjects, "updating poms for " + featureVersion + " version");
         }
         catch (GitAPIException e)
         {

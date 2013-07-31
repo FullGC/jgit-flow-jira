@@ -20,7 +20,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
      * Default name of the feature. This option is primarily useful when starting the goal in non-interactive mode.
      *
      */
-    @Parameter( property = "featureName" )
+    @Parameter( property = "featureName", defaultValue = "")
     private String featureName;
     
     @Parameter( defaultValue = "false", property = "keepBranch" )
@@ -72,7 +72,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
         }
         catch (JGitFlowReleaseException e)
         {
-            throw new MojoExecutionException("Error starting release: " + e.getMessage(),e);
+            throw new MojoExecutionException("Error finishing feature: " + e.getMessage(),e);
         }
     }
 }

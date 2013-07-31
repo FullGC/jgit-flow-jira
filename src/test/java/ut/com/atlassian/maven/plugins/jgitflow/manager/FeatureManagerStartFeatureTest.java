@@ -34,6 +34,7 @@ public class FeatureManagerStartFeatureTest extends AbstractFlowManagerTest
         File projectRoot = projects.get(0).getBasedir();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
+        flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
         assertOnDevelop(flow);
 

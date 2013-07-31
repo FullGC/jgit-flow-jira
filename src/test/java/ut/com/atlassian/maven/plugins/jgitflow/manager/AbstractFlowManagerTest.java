@@ -133,7 +133,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         File projectRoot = ctx.getBaseDir();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
-
+        flow.git().checkout().setName(flow.getDevelopBranchName()).call();
         assertOnDevelop(flow);
 
         initialCommitAll(flow);
@@ -146,6 +146,8 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
         compareSnapPomFiles(projects);
+        
+        assertTrue(flow.git().status().call().isClean());
     }
     
     protected void initialCommitAll(JGitFlow flow) throws Exception

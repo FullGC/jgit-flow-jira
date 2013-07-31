@@ -34,9 +34,10 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
     @Override
     public void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
+        JGitFlow flow = null;
         try
         {
-            JGitFlow flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
             writeReportHeader(ctx,flow.getReporter());
             setupSshCredentialProviders(ctx,flow.getReporter());
@@ -59,6 +60,13 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         catch (GitAPIException e)
         {
             throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+        }
+        finally
+        {
+            if(null != flow)
+            {
+                flow.getReporter().flush();
+            }
         }
     }
 
@@ -85,6 +93,13 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         catch (IOException e)
         {
             throw new JGitFlowReleaseException("Error finishing release: " + e.getMessage(), e);
+        }
+        finally
+        {
+            if(null != flow)
+            {
+                flow.getReporter().flush();
+            }
         }
     }
 
@@ -177,7 +192,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
 
             updateReleasePomsWithRelease(releaseLabel,flow,ctx,originalProjects,session);
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + releaseLabel + " release");
+            projectHelper.commitAllPoms(flow.git(), originalProjects, "updating poms for " + releaseLabel + " release");
 
             //reload the reactor projects for release
             releaseSession = getSessionForBranch(flow, flow.getReleaseBranchPrefix() + releaseLabel, originalProjects, session);
@@ -256,7 +271,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             String developLabel = getDevelopmentLabel("develop", ctx, developProjects);
             updatePomsWithDevelopmentVersion("develop", ctx, developProjects);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + developLabel + " development");
+            projectHelper.commitAllPoms(flow.git(), developProjects, "updating poms for " + developLabel + " development");
 
             if(ctx.isPushReleases())
             {
@@ -298,7 +313,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
             updatePomsWithReleaseSnapshotVersion("releaseStartLabel", releaseLabel, ctx, releaseProjects);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + releaseLabel + " release");
+            projectHelper.commitAllPoms(flow.git(), releaseProjects, "updating poms for " + releaseLabel + " release");
         }
         catch (GitAPIException e)
         {
@@ -323,7 +338,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
             updatePomsWithReleaseVersion("releaseFinishLabel", releaseLabel, ctx, releaseProjects);
 
-            projectHelper.commitAllChanges(flow.git(), "updating poms for " + releaseLabel + " release");
+            projectHelper.commitAllPoms(flow.git(), releaseProjects,"updating poms for " + releaseLabel + " release");
         }
         catch (GitAPIException e)
         {

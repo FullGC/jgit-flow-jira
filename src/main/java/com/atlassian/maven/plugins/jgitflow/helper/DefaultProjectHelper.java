@@ -33,6 +33,7 @@ import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -620,9 +621,58 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("error committing pom changes: " + e.getMessage(), e);
+            throw new JGitFlowReleaseException("error committing changes: " + e.getMessage(), e);
         }
 
+    }
+    
+    @Override
+    public void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws JGitFlowReleaseException
+    {
+        try
+        {
+            Status status = git.status().call();
+            if(!status.isClean())
+            {
+                AddCommand add = git.add();
+                
+                MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
+                File rootBaseDir = rootProject.getBasedir();
+                for(MavenProject project : reactorProjects)
+                {
+                    String pomPath = relativePath(rootBaseDir,project.getFile());
+
+                    if(getLogger().isDebugEnabled())
+                    {
+                        getLogger().debug("adding file pattern for poms commit: " + pomPath);
+                    }
+                    add.addFilepattern(pomPath);
+                }
+                add.call();
+                git.commit().setMessage(message).call();
+            }
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("error committing pom changes: " + e.getMessage(), e);
+        }
+    }
+
+    private String relativePath(File basedir, File file)
+    {
+        String pomPath = file.getAbsolutePath();
+        
+        if(file.getAbsolutePath().startsWith(basedir.getAbsolutePath()))
+        {
+            pomPath = file.getAbsolutePath().substring(basedir.getAbsolutePath().length());
+
+            if(pomPath.startsWith(File.separator))
+            {
+                pomPath = pomPath.substring(1);
+            }
+        }
+                
+        return pomPath;
     }
 
     @Override
@@ -804,12 +854,15 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             try
             {
                  currentBranch = flow.git().getRepository().getBranch();
+                getLogger().debug("Current Branch is: " + currentBranch);
             }
             catch (IOException e) 
             {
                 throw new JGitFlowReleaseException(e); 
             }
-            
+
+            getLogger().debug("Feature Prefix is: " + flow.getFeatureBranchPrefix());
+            getLogger().debug("Branch starts with feature prefix?: " + currentBranch.startsWith(flow.getFeatureBranchPrefix()));
             if(currentBranch.startsWith(flow.getFeatureBranchPrefix()))
             {
                 featureName = currentBranch.replaceFirst(flow.getFeatureBranchPrefix(), "");

@@ -40,6 +40,8 @@ public interface ProjectHelper
     void ensureOrigin(List<MavenProject> reactorProjects, JGitFlow flow) throws JGitFlowReleaseException;
 
     void commitAllChanges(Git git, String message) throws JGitFlowReleaseException;
+
+    void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws JGitFlowReleaseException;
     
     List<String> checkForNonReactorSnapshots(String key, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
