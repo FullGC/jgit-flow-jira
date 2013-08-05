@@ -63,6 +63,7 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
            .setPushHotfixes(pushHotfixes)
            .setStartCommit(startCommit)
            .setAllowRemote(isRemoteAllowed())
+           .setDefaultOriginUrl(defaultOriginUrl)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

@@ -27,7 +27,6 @@
       <connection>scm:git:ssh://git@bitbucket.org/tmp/basic-pom.git</connection>
       <developerConnection>scm:git:ssh://git@bitbucket.org/tmp/basic-pom.git</developerConnection>
       <url>https://bitbucket.org/tmp/basic-pom</url>
-      <tag>1.0</tag>
   </scm>
 
   <modules>

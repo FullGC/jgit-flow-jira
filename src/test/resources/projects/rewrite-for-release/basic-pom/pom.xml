@@ -26,12 +26,6 @@
     <maven>2.0.4</maven>
   </prerequisites>
 
-  <scm>
-      <connection>scm:git:ssh://git@bitbucket.org/tmp/basic-pom.git</connection>
-      <developerConnection>scm:git:ssh://git@bitbucket.org/tmp/basic-pom.git</developerConnection>
-      <url>https://bitbucket.org/tmp/basic-pom</url>
-  </scm>
-
   <!--
   a multi-line
   comment

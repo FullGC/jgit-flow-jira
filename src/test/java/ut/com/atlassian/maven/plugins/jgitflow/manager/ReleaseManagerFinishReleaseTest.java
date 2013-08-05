@@ -30,28 +30,28 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         Git remoteGit = null;
 
         String projectSubdir = "basic-pom";
-        List<MavenProject> remoteProjects = createReactorProjects("remote-git-project",null);
-        
+        List<MavenProject> remoteProjects = createReactorProjects("remote-git-project", null);
+
         File remoteDir = remoteProjects.get(0).getBasedir();
-        
+
         //make sure we're clean
-        File remoteGitDir = new File(remoteDir,".git");
-        if(remoteGitDir.exists())
+        File remoteGitDir = new File(remoteDir, ".git");
+        if (remoteGitDir.exists())
         {
             FileUtils.cleanDirectory(remoteGitDir);
         }
-        
+
         remoteGit = RepoUtil.createRepositoryWithMasterAndDevelop(remoteDir);
 
-        List<MavenProject> projects = createReactorProjects("release-projects",projectName);
+        List<MavenProject> projects = createReactorProjects("release-projects", projectName);
         File projectRoot = projects.get(0).getBasedir();
 
-        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
-        
+        MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
+
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false);
         ctx.setNoBuild(true);
-        
+
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
@@ -60,13 +60,14 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         initialCommitAll(flow);
         FlowReleaseManager relman = getReleaseManager();
 
-        relman.start(ctx,projects,session);
+        relman.start(ctx, projects, session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
-        
+
         //reload the projects
         projects = createReactorProjectsNoClean("release-projects", projectName);
 
-        relman.finish(ctx,projects, session);
+        relman.finish(ctx, projects, session);
     }
+
 }

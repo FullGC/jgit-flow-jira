@@ -95,6 +95,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setAllowUntracked(allowUntracked)
                 .setNoReleaseMerge(noReleaseMerge)
                 .setAllowRemote(isRemoteAllowed())
+                .setDefaultOriginUrl(defaultOriginUrl)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

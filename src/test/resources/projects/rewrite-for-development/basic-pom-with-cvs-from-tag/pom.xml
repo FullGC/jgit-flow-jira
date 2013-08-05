@@ -30,6 +30,6 @@
     <connection>scm:cvs:pserver:anoncvs@localhost:/tmp/scm-repo:module</connection>
     <developerConnection>scm:cvs:ext:${username}@localhost:/tmp/scm-repo:module</developerConnection>
     <url>http://localhost/viewcvs.cgi/module</url>
-    <tag>releaseBranchPrefix-label</tag>
+    
   </scm>
 </project>

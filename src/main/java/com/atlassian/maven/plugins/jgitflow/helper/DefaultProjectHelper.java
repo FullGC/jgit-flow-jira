@@ -2,7 +2,6 @@ package com.atlassian.maven.plugins.jgitflow.helper;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -16,15 +15,16 @@ import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.model.*;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginManagement;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.InvalidDependencyVersionException;
-import org.apache.maven.scm.provider.ScmUrlUtils;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.apache.maven.shared.release.version.HotfixVersionInfo;
 import org.apache.maven.shared.release.versions.DefaultVersionInfo;
@@ -38,12 +38,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.*;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 
-import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 /**
@@ -55,10 +50,10 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
     private PrettyPrompter prompter;
     private ArtifactFactory artifactFactory;
-    private final Map<String,Map<String,String>> originalVersions;
-    private final Map<String,Map<String,String>> releaseVersions;
-    private final Map<String,Map<String,String>> developmentVersions;
-    private final Map<String,Map<String,String>> hotfixVersions;
+    private final Map<String, Map<String, String>> originalVersions;
+    private final Map<String, Map<String, String>> releaseVersions;
+    private final Map<String, Map<String, String>> developmentVersions;
+    private final Map<String, Map<String, String>> hotfixVersions;
 
     public DefaultProjectHelper()
     {
@@ -73,18 +68,18 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     {
         Logger log = getLogger();
         String defaultVersion = rootProject.getVersion();
-        
-        if(log.isDebugEnabled())
+
+        if (log.isDebugEnabled())
         {
-            log.debug("calculating release version for " +rootProject.getGroupId() + ":" + rootProject.getArtifactId());
+            log.debug("calculating release version for " + rootProject.getGroupId() + ":" + rootProject.getArtifactId());
             log.debug("defaultVersion is currently: " + defaultVersion);
         }
-        
+
         if (StringUtils.isNotBlank(ctx.getDefaultReleaseVersion()))
         {
             defaultVersion = ctx.getDefaultReleaseVersion();
 
-            if(log.isDebugEnabled())
+            if (log.isDebugEnabled())
             {
                 log.debug("(ctx change) defaultVersion is currently: " + defaultVersion);
             }
@@ -93,22 +88,22 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         String suggestedVersion = null;
         String releaseVersion = defaultVersion;
 
-        if(log.isDebugEnabled())
+        if (log.isDebugEnabled())
         {
             log.debug("releaseVersion is currently: " + releaseVersion);
         }
-        
-        while(null == releaseVersion || ArtifactUtils.isSnapshot(releaseVersion))
+
+        while (null == releaseVersion || ArtifactUtils.isSnapshot(releaseVersion))
         {
-            if(log.isDebugEnabled())
+            if (log.isDebugEnabled())
             {
                 log.debug("looping until we find a non-snapshot version...");
             }
-            
+
             DefaultVersionInfo info = null;
             try
             {
-               info = new DefaultVersionInfo(rootProject.getVersion());
+                info = new DefaultVersionInfo(rootProject.getVersion());
             }
             catch (VersionParseException e)
             {
@@ -125,41 +120,41 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 }
                 else
                 {
-                    throw new JGitFlowReleaseException("error parsing release version: " + e.getMessage(),e);
+                    throw new JGitFlowReleaseException("error parsing release version: " + e.getMessage(), e);
                 }
             }
-            
+
             suggestedVersion = info.getReleaseVersionString();
-            
-            if(log.isDebugEnabled())
+
+            if (log.isDebugEnabled())
             {
                 log.debug("suggestedVersion: " + suggestedVersion);
             }
 
-            if(ctx.isInteractive())
+            if (ctx.isInteractive())
             {
-                String message = MessageFormat.format("What is the release version for \"{0}\"? ({1})",rootProject.getName(), ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
+                String message = MessageFormat.format("What is the release version for \"{0}\"? ({1})", rootProject.getName(), ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
                 try
                 {
-                    releaseVersion = prompter.promptNotBlank(message,suggestedVersion);
+                    releaseVersion = prompter.promptNotBlank(message, suggestedVersion);
                 }
                 catch (PrompterException e)
                 {
-                    throw new JGitFlowReleaseException("Error reading version from command line " + e.getMessage(),e);
+                    throw new JGitFlowReleaseException("Error reading version from command line " + e.getMessage(), e);
                 }
             }
             else
             {
                 releaseVersion = suggestedVersion;
 
-                if(log.isDebugEnabled())
+                if (log.isDebugEnabled())
                 {
                     log.debug("setting release version to suggested version: " + suggestedVersion);
                 }
             }
-            
+
         }
-        
+
         return releaseVersion;
     }
 
@@ -168,8 +163,8 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     {
         String projectVersion = rootProject.getVersion();
         String defaultVersion = projectVersion;
-        
-        
+
+
         HotfixVersionInfo hotfixInfo = null;
         if (StringUtils.isNotBlank(lastRelease) && !ArtifactUtils.isSnapshot(lastRelease))
         {
@@ -177,18 +172,18 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             {
                 DefaultVersionInfo projectInfo = new DefaultVersionInfo(projectVersion);
                 DefaultVersionInfo lastReleaseInfo = new DefaultVersionInfo(lastRelease);
-                
+
                 String higherVersion = projectVersion;
-                
-                if(projectInfo.isSnapshot())
+
+                if (projectInfo.isSnapshot())
                 {
                     higherVersion = lastRelease;
                 }
-                else if(projectInfo.compareTo(lastReleaseInfo) < 1)
+                else if (projectInfo.compareTo(lastReleaseInfo) < 1)
                 {
                     higherVersion = lastRelease;
                 }
-                
+
                 hotfixInfo = new HotfixVersionInfo(higherVersion);
                 defaultVersion = hotfixInfo.getHotfixVersionString();
             }
@@ -213,7 +208,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         String suggestedVersion = defaultVersion;
         String hotfixVersion = null;
 
-        while(null == suggestedVersion || ArtifactUtils.isSnapshot(suggestedVersion))
+        while (null == suggestedVersion || ArtifactUtils.isSnapshot(suggestedVersion))
         {
             HotfixVersionInfo info = null;
             try
@@ -235,25 +230,25 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 }
                 else
                 {
-                    throw new JGitFlowReleaseException("error parsing release version: " + e.getMessage(),e);
+                    throw new JGitFlowReleaseException("error parsing release version: " + e.getMessage(), e);
                 }
             }
 
             suggestedVersion = info.getDecrementedHotfixVersionString();
         }
 
-        while(null == hotfixVersion || ArtifactUtils.isSnapshot(hotfixVersion))
+        while (null == hotfixVersion || ArtifactUtils.isSnapshot(hotfixVersion))
         {
-            if(ctx.isInteractive())
+            if (ctx.isInteractive())
             {
-                String message = MessageFormat.format("What is the hotfix version for \"{0}\"? ({1})",rootProject.getName(), ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
+                String message = MessageFormat.format("What is the hotfix version for \"{0}\"? ({1})", rootProject.getName(), ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
                 try
                 {
-                    hotfixVersion = prompter.promptNotBlank(message,suggestedVersion);
+                    hotfixVersion = prompter.promptNotBlank(message, suggestedVersion);
                 }
                 catch (PrompterException e)
                 {
-                    throw new JGitFlowReleaseException("Error reading version from command line " + e.getMessage(),e);
+                    throw new JGitFlowReleaseException("Error reading version from command line " + e.getMessage(), e);
                 }
             }
             else
@@ -265,7 +260,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
         return hotfixVersion;
     }
-    
+
     @Override
     public String getDevelopmentVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException
     {
@@ -279,7 +274,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         String suggestedVersion = null;
         String developmentVersion = defaultVersion;
 
-        while(null == developmentVersion || !ArtifactUtils.isSnapshot(developmentVersion))
+        while (null == developmentVersion || !ArtifactUtils.isSnapshot(developmentVersion))
         {
             DefaultVersionInfo info = null;
             try
@@ -301,22 +296,22 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 }
                 else
                 {
-                    throw new JGitFlowReleaseException("error parsing development version: " + e.getMessage(),e);
+                    throw new JGitFlowReleaseException("error parsing development version: " + e.getMessage(), e);
                 }
             }
 
             suggestedVersion = info.getNextVersion().getSnapshotVersionString();
 
-            if(ctx.isInteractive())
+            if (ctx.isInteractive())
             {
-                String message = MessageFormat.format("What is the development version for \"{0}\"? ({1})",rootProject.getName(), ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
+                String message = MessageFormat.format("What is the development version for \"{0}\"? ({1})", rootProject.getName(), ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
                 try
                 {
-                    developmentVersion = prompter.promptNotBlank(message,suggestedVersion);
+                    developmentVersion = prompter.promptNotBlank(message, suggestedVersion);
                 }
                 catch (PrompterException e)
                 {
-                    throw new JGitFlowReleaseException("Error reading version from command line " + e.getMessage(),e);
+                    throw new JGitFlowReleaseException("Error reading version from command line " + e.getMessage(), e);
                 }
             }
             else
@@ -330,282 +325,241 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     }
 
     @Override
-    public Map<String, String> getOriginalVersions(String key,List<MavenProject> reactorProjects)
+    public Map<String, String> getOriginalVersions(String key, List<MavenProject> reactorProjects)
     {
-        if(!originalVersions.containsKey(key))
+        if (!originalVersions.containsKey(key))
         {
-            Map<String,String> versions = new HashMap<String, String>();
-            
-            for(MavenProject project : reactorProjects)
+            Map<String, String> versions = new HashMap<String, String>();
+
+            for (MavenProject project : reactorProjects)
             {
-                versions.put(ArtifactUtils.versionlessKey(project.getGroupId(),project.getArtifactId()),project.getVersion());
+                versions.put(ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId()), project.getVersion());
             }
 
-            originalVersions.put(key,versions);
+            originalVersions.put(key, versions);
         }
-        
+
         return ImmutableMap.copyOf(originalVersions.get(key));
     }
 
     @Override
-    public Map<String, String> getReleaseVersions(String key,List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException
+    public Map<String, String> getReleaseVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException
     {
         //todo: add getOriginalVersions here to pre-pop
         Logger log = getLogger();
-        
-        if(log.isDebugEnabled())
+
+        if (log.isDebugEnabled())
         {
             log.debug("getting release versions for key: " + key);
             log.debug("AutoVersionSubmodules: " + ctx.isAutoVersionSubmodules());
         }
-        
-        if(!releaseVersions.containsKey(key))
+
+        if (!releaseVersions.containsKey(key))
         {
-            Map<String,String> versions = new HashMap<String, String>();
+            Map<String, String> versions = new HashMap<String, String>();
 
             MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-            
-            if(log.isDebugEnabled())
+
+            if (log.isDebugEnabled())
             {
                 log.debug("root project is snapshot: " + ArtifactUtils.isSnapshot(rootProject.getVersion()));
             }
-            
-            if(ctx.isAutoVersionSubmodules() && ArtifactUtils.isSnapshot(rootProject.getVersion()))
-            {
-                String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(),rootProject.getArtifactId());
 
-                String rootReleaseVersion = getReleaseVersion(ctx,rootProject);
-                
-                if(log.isDebugEnabled())
+            if (ctx.isAutoVersionSubmodules() && ArtifactUtils.isSnapshot(rootProject.getVersion()))
+            {
+                String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
+
+                String rootReleaseVersion = getReleaseVersion(ctx, rootProject);
+
+                if (log.isDebugEnabled())
                 {
                     log.debug("getting release version for root project: " + rootProjectId);
                     log.debug("root release version is: " + rootReleaseVersion);
                 }
-                
-                versions.put(rootProjectId,rootReleaseVersion);
-                
-                for(MavenProject subProject : reactorProjects)
+
+                versions.put(rootProjectId, rootReleaseVersion);
+
+                for (MavenProject subProject : reactorProjects)
                 {
-                    String subProjectId = ArtifactUtils.versionlessKey(subProject.getGroupId(),subProject.getArtifactId());
-                    versions.put(subProjectId,rootReleaseVersion);
+                    String subProjectId = ArtifactUtils.versionlessKey(subProject.getGroupId(), subProject.getArtifactId());
+                    versions.put(subProjectId, rootReleaseVersion);
                 }
             }
             else
             {
                 for (MavenProject project : reactorProjects)
                 {
-                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(),project.getArtifactId());
-                    String releaseVersion = getReleaseVersion(ctx,project);
-                    versions.put(projectId,releaseVersion);
+                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId());
+                    String releaseVersion = getReleaseVersion(ctx, project);
+                    versions.put(projectId, releaseVersion);
                 }
             }
-            
-            releaseVersions.put(key,versions);
+
+            releaseVersions.put(key, versions);
         }
-        
+
         return ImmutableMap.copyOf(releaseVersions.get(key));
-        
+
     }
 
     @Override
-    public Map<String, String> getHotfixVersions(String key,List<MavenProject> reactorProjects, ReleaseContext ctx, Map<String,String> lastReleaseVersions) throws JGitFlowReleaseException
+    public Map<String, String> getHotfixVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx, Map<String, String> lastReleaseVersions) throws JGitFlowReleaseException
     {
         //todo: add getOriginalVersions here to pre-pop
-        if(!hotfixVersions.containsKey(key))
+        if (!hotfixVersions.containsKey(key))
         {
-            Map<String,String> versions = new HashMap<String, String>();
+            Map<String, String> versions = new HashMap<String, String>();
 
             MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-            
-            if(ctx.isAutoVersionSubmodules())
+
+            if (ctx.isAutoVersionSubmodules())
             {
-                String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(),rootProject.getArtifactId());
+                String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
 
                 String lastRootRelease = "";
 
-                if(null != lastReleaseVersions)
+                if (null != lastReleaseVersions)
                 {
                     lastRootRelease = lastReleaseVersions.get(rootProjectId);
                 }
-                
-                String rootHotfixVersion = getHotfixVersion(ctx,rootProject,lastRootRelease);
 
-                versions.put(rootProjectId,rootHotfixVersion);
+                String rootHotfixVersion = getHotfixVersion(ctx, rootProject, lastRootRelease);
 
-                for(MavenProject subProject : reactorProjects)
+                versions.put(rootProjectId, rootHotfixVersion);
+
+                for (MavenProject subProject : reactorProjects)
                 {
-                    String subProjectId = ArtifactUtils.versionlessKey(subProject.getGroupId(),subProject.getArtifactId());
-                    versions.put(subProjectId,rootHotfixVersion);
+                    String subProjectId = ArtifactUtils.versionlessKey(subProject.getGroupId(), subProject.getArtifactId());
+                    versions.put(subProjectId, rootHotfixVersion);
                 }
             }
             else
             {
                 for (MavenProject project : reactorProjects)
                 {
-                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(),project.getArtifactId());
+                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId());
                     String lastRelease = "";
 
-                    if(null != lastReleaseVersions)
+                    if (null != lastReleaseVersions)
                     {
                         lastRelease = lastReleaseVersions.get(projectId);
                     }
 
                     String hotfixVersion = getHotfixVersion(ctx, project, lastRelease);
-                    versions.put(projectId,hotfixVersion);
+                    versions.put(projectId, hotfixVersion);
                 }
             }
-            
-            hotfixVersions.put(key,versions);
+
+            hotfixVersions.put(key, versions);
         }
 
         return ImmutableMap.copyOf(hotfixVersions.get(key));
     }
 
     @Override
-    public Map<String, String> getDevelopmentVersions(String key,List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException
+    public Map<String, String> getDevelopmentVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException
     {
         //todo: add getOriginalVersions here to pre-pop
-        if(!developmentVersions.containsKey(key))
+        if (!developmentVersions.containsKey(key))
         {
-            Map<String,String> versions = new HashMap<String, String>();
+            Map<String, String> versions = new HashMap<String, String>();
 
             MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-            if(ctx.isAutoVersionSubmodules())
+            if (ctx.isAutoVersionSubmodules())
             {
-                String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(),rootProject.getArtifactId());
-                String rootDevelopmentVersion = getDevelopmentVersion(ctx,rootProject);
+                String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
+                String rootDevelopmentVersion = getDevelopmentVersion(ctx, rootProject);
 
-                versions.put(rootProjectId,rootDevelopmentVersion);
+                versions.put(rootProjectId, rootDevelopmentVersion);
 
-                for(MavenProject subProject : reactorProjects)
+                for (MavenProject subProject : reactorProjects)
                 {
-                    String subProjectId = ArtifactUtils.versionlessKey(subProject.getGroupId(),subProject.getArtifactId());
-                    versions.put(subProjectId,rootDevelopmentVersion);
+                    String subProjectId = ArtifactUtils.versionlessKey(subProject.getGroupId(), subProject.getArtifactId());
+                    versions.put(subProjectId, rootDevelopmentVersion);
                 }
             }
             else
             {
                 for (MavenProject project : reactorProjects)
                 {
-                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(),project.getArtifactId());
+                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId());
                     String developmentVersion = getDevelopmentVersion(ctx, project);
-                    versions.put(projectId,developmentVersion);
+                    versions.put(projectId, developmentVersion);
                 }
             }
-            
-            developmentVersions.put(key,versions);
+
+            developmentVersions.put(key, versions);
         }
 
         return ImmutableMap.copyOf(developmentVersions.get(key));
     }
 
     @Override
-    public void ensureOrigin(List<MavenProject> reactorProjects, JGitFlow flow) throws JGitFlowReleaseException
+    public void ensureOrigin(String defaultRemote, JGitFlow flow) throws JGitFlowReleaseException
     {
         getLogger().info("ensuring origin exists...");
-        boolean foundGitScm = false;
-        for (MavenProject project : reactorProjects)
+        try
         {
-            Scm scm = project.getScm();
-            if(null != scm)
+            StoredConfig config = flow.git().getRepository().getConfig();
+            String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url");
+            if (Strings.isNullOrEmpty(originUrl) && !Strings.isNullOrEmpty(defaultRemote))
             {
-                File pomFile = project.getFile();
+                getLogger().info("adding origin from default...");
+                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", defaultRemote);
+                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
+                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "remote", Constants.DEFAULT_REMOTE_NAME);
+                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "merge", Constants.R_HEADS + flow.getMasterBranchName());
+                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "remote", Constants.DEFAULT_REMOTE_NAME);
+                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "merge", Constants.R_HEADS + flow.getDevelopBranchName());
+                config.save();
 
-                if(null == pomFile || !pomFile.exists() || !pomFile.canRead())
-                {
-                    String pomPath = (null == pomFile) ? "null" : pomFile.getAbsolutePath();
-
-                    throw new JGitFlowReleaseException("pom file must be readable! " + pomPath);
-                }
-
-                String cleanScmUrl = "not defined";
                 try
                 {
-                    String content = ReleaseUtil.readXmlFile(pomFile, ls);
-                    SAXBuilder builder = new SAXBuilder();
-                    Document document = builder.build(new StringReader( content ));
-                    Element root = document.getRootElement();
-
-                    Element scmElement = root.getChild("scm", getNamespaceOrNull(root));
-
-                    if(null != scmElement)
-                    {
-                        String scmUrl = (null != scm.getDeveloperConnection()) ? scm.getDeveloperConnection() : scm.getConnection();
-
-                        cleanScmUrl = scmUrl.substring(8);
-
-                        if(!Strings.isNullOrEmpty(scmUrl) && "git".equals(ScmUrlUtils.getProvider(scmUrl)))
-                        {
-                            foundGitScm = true;
-                            StoredConfig config = flow.git().getRepository().getConfig();
-                            String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME,"url");
-                            if(Strings.isNullOrEmpty(originUrl))
-                            {
-                                getLogger().info("adding origin from scm...");
-                                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"url",cleanScmUrl);
-                                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION,Constants.DEFAULT_REMOTE_NAME,"fetch","+refs/heads/*:refs/remotes/origin/*");
-                                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getMasterBranchName(),"remote",Constants.DEFAULT_REMOTE_NAME);
-                                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getMasterBranchName(),"merge",Constants.R_HEADS + flow.getMasterBranchName());
-                                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getDevelopBranchName(),"remote",Constants.DEFAULT_REMOTE_NAME);
-                                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getDevelopBranchName(),"merge",Constants.R_HEADS + flow.getDevelopBranchName());
-                                config.save();
-
-                                try
-                                {
-                                    config.load();
-                                    flow.git().fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
-                                }
-                                catch (Exception e)
-                                {
-                                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
-                                }
-
-                                getLogger().info("pulling changes from new origin...");
-                                Ref originMaster = GitHelper.getRemoteBranch(flow.git(), flow.getMasterBranchName());
-                                
-                                if(null != originMaster)
-                                {
-                                    Ref localMaster = GitHelper.getLocalBranch(flow.git(),flow.getMasterBranchName());
-                                    RefUpdate update = flow.git().getRepository().updateRef(localMaster.getName());
-                                    update.setNewObjectId(originMaster.getObjectId());
-                                    update.forceUpdate();
-                                }
-
-                                Ref originDevelop = GitHelper.getRemoteBranch(flow.git(),flow.getDevelopBranchName());
-                                
-                                if(null != originDevelop)
-                                {
-                                    Ref localDevelop = GitHelper.getLocalBranch(flow.git(),flow.getDevelopBranchName());
-                                    RefUpdate updateDevelop = flow.git().getRepository().updateRef(localDevelop.getName());
-                                    updateDevelop.setNewObjectId(originDevelop.getObjectId());
-                                    updateDevelop.forceUpdate();
-                                }
-
-                                commitAllChanges(flow.git(),"committing changes from new origin");
-                            }
-                        }
-                    }
+                    config.load();
+                    flow.git().fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
                 }
-                catch (IOException e)
+                catch (Exception e)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
+                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultRemote, e);
                 }
-                catch (JDOMException e)
+
+                /*
+                getLogger().info("updating branch upstreams...");
+                Ref originMaster = GitHelper.getRemoteBranch(flow.git(), flow.getMasterBranchName());
+
+                if (null != originMaster)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
+                    Ref localMaster = GitHelper.getLocalBranch(flow.git(), flow.getMasterBranchName());
+                    RefUpdate update = flow.git().getRepository().updateRef(localMaster.getName());
+                    update.setNewObjectId(originMaster.getObjectId());
+                    update.forceUpdate();
                 }
-                catch (JGitFlowIOException e)
+
+                Ref originDevelop = GitHelper.getRemoteBranch(flow.git(), flow.getDevelopBranchName());
+
+                if (null != originDevelop)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + cleanScmUrl, e);
+                    Ref localDevelop = GitHelper.getLocalBranch(flow.git(), flow.getDevelopBranchName());
+                    RefUpdate updateDevelop = flow.git().getRepository().updateRef(localDevelop.getName());
+                    updateDevelop.setNewObjectId(originDevelop.getObjectId());
+                    updateDevelop.forceUpdate();
                 }
+
+                commitAllChanges(flow.git(), "committing changes from new origin");
+                */
             }
-        }
 
-        if(!foundGitScm)
-        {
-            throw new JGitFlowReleaseException("No GIT Scm url found in reactor projects!");
         }
+        catch (IOException e)
+        {
+            throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultRemote, e);
+        }
+//        catch (JGitFlowIOException e)
+//        {
+//            throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultRemote, e);
+//        }
     }
+
 
     @Override
     public void commitAllChanges(Git git, String message) throws JGitFlowReleaseException
@@ -613,7 +567,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         try
         {
             Status status = git.status().call();
-            if(!status.isClean())
+            if (!status.isClean())
             {
                 git.add().addFilepattern(".").call();
                 git.commit().setMessage(message).call();
@@ -625,24 +579,24 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         }
 
     }
-    
+
     @Override
     public void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws JGitFlowReleaseException
     {
         try
         {
             Status status = git.status().call();
-            if(!status.isClean())
+            if (!status.isClean())
             {
                 AddCommand add = git.add();
-                
+
                 MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
                 File rootBaseDir = rootProject.getBasedir();
-                for(MavenProject project : reactorProjects)
+                for (MavenProject project : reactorProjects)
                 {
-                    String pomPath = relativePath(rootBaseDir,project.getFile());
+                    String pomPath = relativePath(rootBaseDir, project.getFile());
 
-                    if(getLogger().isDebugEnabled())
+                    if (getLogger().isDebugEnabled())
                     {
                         getLogger().debug("adding file pattern for poms commit: " + pomPath);
                     }
@@ -661,17 +615,17 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     private String relativePath(File basedir, File file)
     {
         String pomPath = file.getAbsolutePath();
-        
-        if(file.getAbsolutePath().startsWith(basedir.getAbsolutePath()))
+
+        if (file.getAbsolutePath().startsWith(basedir.getAbsolutePath()))
         {
             pomPath = file.getAbsolutePath().substring(basedir.getAbsolutePath().length());
 
-            if(pomPath.startsWith(File.separator))
+            if (pomPath.startsWith(File.separator))
             {
                 pomPath = pomPath.substring(1);
             }
         }
-                
+
         return pomPath;
     }
 
@@ -679,75 +633,75 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     public List<String> checkForNonReactorSnapshots(String key, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
         List<String> snapshots = newArrayList();
-        
+
         getLogger().info("Checking dependencies and plugins for snapshots ...");
         Map<String, String> originalReactorVersions = getOriginalVersions(key, reactorProjects);
-        
-        for(MavenProject project : reactorProjects)
+
+        for (MavenProject project : reactorProjects)
         {
             snapshots.addAll(checkProjectForNonReactorSnapshots(project, originalReactorVersions));
         }
-        
+
         return snapshots;
     }
 
     private List<String> checkProjectForNonReactorSnapshots(MavenProject project, Map<String, String> originalReactorVersions) throws JGitFlowReleaseException
     {
         List<String> snapshots = newArrayList();
-        
+
         Map<String, Artifact> artifactMap = ArtifactUtils.artifactMapByVersionlessId(project.getArtifacts());
-        if ( project.getParentArtifact() != null )
+        if (project.getParentArtifact() != null)
         {
             String parentSnap = checkArtifact(getArtifactFromMap(project.getParentArtifact(), artifactMap), originalReactorVersions, AT_PARENT);
-            if(!Strings.isNullOrEmpty(parentSnap))
+            if (!Strings.isNullOrEmpty(parentSnap))
             {
                 snapshots.add(parentSnap);
             }
         }
-        
+
         //Dependencies
         try
         {
-            Set<Artifact> dependencyArtifacts = project.createArtifacts(artifactFactory, null, null );
+            Set<Artifact> dependencyArtifacts = project.createArtifacts(artifactFactory, null, null);
             snapshots.addAll(checkArtifacts(dependencyArtifacts, originalReactorVersions, AT_DEPENDENCY));
         }
         catch (InvalidDependencyVersionException e)
         {
             throw new JGitFlowReleaseException("Failed to create dependency artifacts", e);
         }
-        
+
         //Dependency Management
         DependencyManagement dmgnt = project.getDependencyManagement();
-        if(null != dmgnt)
+        if (null != dmgnt)
         {
             List<Dependency> mgntDependencies = dmgnt.getDependencies();
-            if(null != mgntDependencies)
+            if (null != mgntDependencies)
             {
-                for(Dependency dep : mgntDependencies)
+                for (Dependency dep : mgntDependencies)
                 {
                     String depSnap = checkArtifact(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), originalReactorVersions, AT_DEPENDENCY_MGNT);
-                    if(!Strings.isNullOrEmpty(depSnap))
+                    if (!Strings.isNullOrEmpty(depSnap))
                     {
                         snapshots.add(depSnap);
                     }
                 }
             }
         }
-        
+
         //Plugins
         Set<Artifact> pluginArtifacts = project.getPluginArtifacts();
-        snapshots.addAll(checkArtifacts(pluginArtifacts,originalReactorVersions,AT_PLUGIN));
+        snapshots.addAll(checkArtifacts(pluginArtifacts, originalReactorVersions, AT_PLUGIN));
 
-        //Plugin Management
+//Plugin Management
         PluginManagement pmgnt = project.getPluginManagement();
-        if(null != pmgnt)
+        if (null != pmgnt)
         {
             List<Plugin> mgntPlugins = pmgnt.getPlugins();
-            
-            for(Plugin plugin : mgntPlugins)
+
+            for (Plugin plugin : mgntPlugins)
             {
                 String pluginSnap = checkArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), originalReactorVersions, AT_PLUGIN_MGNT);
-                if(!Strings.isNullOrEmpty(pluginSnap))
+                if (!Strings.isNullOrEmpty(pluginSnap))
                 {
                     snapshots.add(pluginSnap);
                 }
@@ -756,43 +710,43 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
         //Reports
         Set<Artifact> reportArtifacts = project.getReportArtifacts();
-        snapshots.addAll(checkArtifacts(reportArtifacts,originalReactorVersions,AT_REPORT));
+        snapshots.addAll(checkArtifacts(reportArtifacts, originalReactorVersions, AT_REPORT));
 
-        //Extensions
+//Extensions
         Set<Artifact> extensionArtifacts = project.getExtensionArtifacts();
-        snapshots.addAll(checkArtifacts(extensionArtifacts,originalReactorVersions,AT_EXTENSIONS));
-        
+        snapshots.addAll(checkArtifacts(extensionArtifacts, originalReactorVersions, AT_EXTENSIONS));
+
         return snapshots;
     }
 
     private List<String> checkArtifacts(Set<Artifact> artifacts, Map<String, String> originalReactorVersions, String type)
     {
         List<String> snapshots = newArrayList();
-        
-        for(Artifact artifact : artifacts)
+
+        for (Artifact artifact : artifacts)
         {
             String snap = checkArtifact(artifact, originalReactorVersions, type);
 
-            if(!Strings.isNullOrEmpty(snap))
+            if (!Strings.isNullOrEmpty(snap))
             {
                 snapshots.add(snap);
             }
         }
-        
+
         return snapshots;
     }
-    
+
     private String checkArtifact(Artifact artifact, Map<String, String> originalReactorVersions, String type)
     {
         String versionlessArtifactKey = ArtifactUtils.versionlessKey(artifact.getGroupId(), artifact.getArtifactId());
 
         boolean isSnapshot = (artifact.isSnapshot() && !artifact.getBaseVersion().equals(originalReactorVersions.get(versionlessArtifactKey)));
-        
-        if(isSnapshot)
+
+        if (isSnapshot)
         {
             return type + " - " + versionlessArtifactKey;
         }
-        
+
         return null;
     }
 
@@ -802,7 +756,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
         boolean isSnapshot = (ArtifactUtils.isSnapshot(version) && !version.equals(originalReactorVersions.get(versionlessArtifactKey)));
 
-        if(isSnapshot)
+        if (isSnapshot)
         {
             return type + " - " + versionlessArtifactKey;
         }
@@ -810,7 +764,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         return null;
     }
 
-    private Artifact getArtifactFromMap(Artifact originalArtifact, Map<String,Artifact> artifactMap)
+    private Artifact getArtifactFromMap(Artifact originalArtifact, Map<String, Artifact> artifactMap)
     {
         String versionlessId = ArtifactUtils.versionlessKey(originalArtifact);
         Artifact checkArtifact = artifactMap.get(versionlessId);
@@ -826,91 +780,91 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     public String getFeatureStartName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException
     {
         String featureName = StringUtils.defaultString(ctx.getDefaultFeatureName());
-        
-        if(ctx.isInteractive())
+
+        if (ctx.isInteractive())
         {
             featureName = promptForFeatureName(flow.getFeatureBranchPrefix(), featureName);
         }
         else
         {
-            if(StringUtils.isBlank(featureName))
+            if (StringUtils.isBlank(featureName))
             {
                 throw new JGitFlowReleaseException("Missing featureName mojo option.");
             }
         }
-        
+
         return featureName;
     }
-    
+
     @Override
     public String getFeatureFinishName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException
     {
         String featureName = StringUtils.defaultString(ctx.getDefaultFeatureName());
-        
-        if(StringUtils.isBlank(featureName))
+
+        if (StringUtils.isBlank(featureName))
         {
             String currentBranch = null;
-            
+
             try
             {
-                 currentBranch = flow.git().getRepository().getBranch();
+                currentBranch = flow.git().getRepository().getBranch();
                 getLogger().debug("Current Branch is: " + currentBranch);
             }
-            catch (IOException e) 
+            catch (IOException e)
             {
-                throw new JGitFlowReleaseException(e); 
+                throw new JGitFlowReleaseException(e);
             }
 
             getLogger().debug("Feature Prefix is: " + flow.getFeatureBranchPrefix());
             getLogger().debug("Branch starts with feature prefix?: " + currentBranch.startsWith(flow.getFeatureBranchPrefix()));
-            if(currentBranch.startsWith(flow.getFeatureBranchPrefix()))
+            if (currentBranch.startsWith(flow.getFeatureBranchPrefix()))
             {
                 featureName = currentBranch.replaceFirst(flow.getFeatureBranchPrefix(), "");
             }
         }
-        
-        if(ctx.isInteractive())
+
+        if (ctx.isInteractive())
         {
             List<String> possibleValues = new ArrayList<String>();
-            if(null == featureName)
+            if (null == featureName)
             {
                 featureName = "";
             }
-            
+
             try
             {
                 String rheadPrefix = Constants.R_HEADS + flow.getFeatureBranchPrefix();
-                List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(),flow.getFeatureBranchPrefix());
-                
-                for(Ref branch : branches)
+                List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getFeatureBranchPrefix());
+
+                for (Ref branch : branches)
                 {
                     String simpleName = branch.getName().substring(branch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
                     possibleValues.add(simpleName);
                 }
 
-                featureName = promptForExistingFeatureName(flow.getFeatureBranchPrefix(),featureName,possibleValues);
+                featureName = promptForExistingFeatureName(flow.getFeatureBranchPrefix(), featureName, possibleValues);
             }
             catch (JGitFlowGitAPIException e)
             {
                 throw new JGitFlowReleaseException("Unable to determine feature names", e);
             }
-        } 
+        }
         else
         {
-            if(StringUtils.isBlank(featureName))
+            if (StringUtils.isBlank(featureName))
             {
                 throw new JGitFlowReleaseException("Missing featureName mojo option.");
             }
         }
-        
+
         return featureName;
     }
-    
+
     private String promptForFeatureName(String prefix, String defaultFeatureName) throws JGitFlowReleaseException
     {
         String message = "What is the feature branch name? " + prefix;
         String name = "";
-        
+
         try
         {
             name = prompter.promptNotBlank(message, defaultFeatureName);
@@ -919,7 +873,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         {
             throw new JGitFlowReleaseException("Error reading feature name from command line " + e.getMessage(), e);
         }
-        
+
         return name;
     }
 

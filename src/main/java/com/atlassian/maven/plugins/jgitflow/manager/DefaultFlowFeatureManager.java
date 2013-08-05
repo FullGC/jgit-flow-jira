@@ -42,7 +42,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             if(ctx.isPushFeatures())
             {
-                projectHelper.ensureOrigin(reactorProjects, flow);
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
             }
             
             flow.featureStart(featureName)
@@ -58,7 +58,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 
                 if(ctx.isPushFeatures())
                 {
-                    projectHelper.ensureOrigin(reactorProjects, flow);
+                    projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
                     RefSpec branchSpec = new RefSpec(prefixedBranchName);
                     flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
                 }
@@ -118,7 +118,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             if(ctx.isPushFeatures())
             {
-                projectHelper.ensureOrigin(reactorProjects, flow);    
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);    
             }
             
             if(!ctx.isNoBuild())

@@ -68,6 +68,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
                 .setPushReleases(pushReleases)
                 .setStartCommit(startCommit)
                 .setAllowRemote(isRemoteAllowed())
+                .setDefaultOriginUrl(defaultOriginUrl)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

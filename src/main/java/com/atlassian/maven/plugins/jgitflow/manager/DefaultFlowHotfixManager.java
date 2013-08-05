@@ -149,7 +149,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             if (ctx.isPushHotfixes() || !ctx.isNoTag())
             {
-                projectHelper.ensureOrigin(masterProjects, flow);
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
             }
 
 
@@ -264,7 +264,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             if (ctx.isPushHotfixes() || !ctx.isNoTag())
             {
-                projectHelper.ensureOrigin(hotfixProjects, flow);
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
             }
 
             getLogger().info("running jgitflow hotfix finish...");
