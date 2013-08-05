@@ -504,8 +504,16 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url");
             if (Strings.isNullOrEmpty(originUrl) && !Strings.isNullOrEmpty(defaultRemote))
             {
+                String newOriginUrl = defaultRemote;
+                
+                if(defaultRemote.startsWith("file://"))
+                {
+                    File originFile = new File(defaultRemote.substring(7));
+                    newOriginUrl = "file://" + originFile.getCanonicalPath();
+                }
+                
                 getLogger().info("adding origin from default...");
-                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", defaultRemote);
+                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", newOriginUrl);
                 config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "remote", Constants.DEFAULT_REMOTE_NAME);
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "merge", Constants.R_HEADS + flow.getMasterBranchName());
@@ -520,7 +528,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 }
                 catch (Exception e)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultRemote, e);
+                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + newOriginUrl, e);
                 }
 
                 /*

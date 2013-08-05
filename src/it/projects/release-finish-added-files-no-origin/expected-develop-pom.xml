@@ -41,7 +41,7 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <noDeploy>true</noDeploy>
                     <noReleaseBuild>true</noReleaseBuild>
-                    <defaultOriginUrl>file:///home/doklovic/data/IdeaProjects/maven-jgitflow-plugin/target/it/remotes/release-finish-added-files-no-origin</defaultOriginUrl>
+                    <defaultOriginUrl>file://../../remotes/release-finish-added-files-no-origin</defaultOriginUrl>
                 </configuration>
             </plugin>
         </plugins>
