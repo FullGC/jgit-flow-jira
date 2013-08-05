@@ -52,8 +52,6 @@ import org.eclipse.jgit.util.FS;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectReleaseVersionChange.projectReleaseVersionChange;
-import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultHeadTagChange.scmDefaultHeadTagChange;
-import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultTagChange.scmDefaultTagChange;
 
 /**
  * @since version
@@ -315,8 +313,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, releaseVersions))
                     .with(projectReleaseVersionChange(releaseVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, releaseVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultTagChange(releaseVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, releaseVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -363,8 +360,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, releaseSnapshotVersions))
                     .with(projectReleaseVersionChange(releaseSnapshotVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, releaseSnapshotVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultHeadTagChange(releaseSnapshotVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, releaseSnapshotVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -410,8 +406,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, featureSuffixedVersions))
                     .with(projectReleaseVersionChange(featureSuffixedVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, featureSuffixedVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultHeadTagChange(featureSuffixedVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, featureSuffixedVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -459,8 +454,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, featureVersions))
                     .with(projectReleaseVersionChange(featureVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, featureVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultTagChange(featureVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, featureVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -491,8 +485,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, releaseVersions))
                     .with(projectReleaseVersionChange(releaseVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, releaseVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultTagChange(releaseVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, releaseVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -531,8 +524,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, preHotfixVersions))
                     .with(projectReleaseVersionChange(preHotfixVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, preHotfixVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultTagChange(preHotfixVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, preHotfixVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -563,8 +555,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, hotfixVersions))
                     .with(projectReleaseVersionChange(hotfixVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, hotfixVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultTagChange(hotfixVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, hotfixVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -610,8 +601,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, hotfixVersions))
                     .with(projectReleaseVersionChange(hotfixVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, hotfixVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultTagChange(hotfixVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, hotfixVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -657,8 +647,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, hotfixSnapshotVersions))
                     .with(projectReleaseVersionChange(hotfixSnapshotVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, hotfixSnapshotVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultHeadTagChange(hotfixSnapshotVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, hotfixSnapshotVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");
@@ -690,8 +679,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, developmentVersions))
                     .with(projectReleaseVersionChange(developmentVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, developmentVersions, ctx.isUpdateDependencies()))
-                    .with(scmDefaultHeadTagChange(developmentVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, developmentVersions, ctx.isUpdateDependencies()));
             try
             {
                 getLogger().info("updating pom for " + project.getName() + "...");

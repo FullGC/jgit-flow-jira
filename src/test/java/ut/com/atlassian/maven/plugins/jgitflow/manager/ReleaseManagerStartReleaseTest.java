@@ -138,12 +138,6 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     }
 
     @Test
-    public void releaseWithInheritedScm() throws Exception
-    {
-        basicReleaseRewriteTest("basic-pom-inherited-scm");
-    }
-
-    @Test
     public void releaseWithNamespace() throws Exception
     {
         basicReleaseRewriteTest("basic-pom-namespace");
@@ -340,12 +334,6 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     }
 
     @Test
-    public void releaseWithOverriddenScm() throws Exception
-    {
-        basicReleaseRewriteTest("pom-with-overridden-scm");
-    }
-
-    @Test
     public void releaseWithParent() throws Exception
     {
         basicReleaseRewriteTest("pom-with-parent");
@@ -426,7 +414,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
-        projectHelper.ensureOrigin(projects, flow);
+        projectHelper.ensureOrigin("file://" + remoteGit.getRepository().getWorkTree().getPath(), flow);
 
         flow.releaseStart("1.0").call();
 

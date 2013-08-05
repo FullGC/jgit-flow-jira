@@ -22,7 +22,6 @@ import org.apache.maven.project.MavenProject;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectReleaseVersionChange.projectReleaseVersionChange;
-import static com.atlassian.maven.plugins.jgitflow.rewrite.ScmDefaultHeadTagChange.scmDefaultHeadTagChange;
 
 @Mojo(name = "build-number", aggregator = true)
 public class BuildNumberMojo extends AbstractJGitFlowMojo
@@ -70,8 +69,7 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
             ProjectChangeset changes = new ProjectChangeset()
                     .with(parentReleaseVersionChange(originalVersions, featureSuffixedVersions))
                     .with(projectReleaseVersionChange(featureSuffixedVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, featureSuffixedVersions, updateDependencies))
-                    .with(scmDefaultHeadTagChange(featureSuffixedVersions));
+                    .with(artifactReleaseVersionChange(originalVersions, featureSuffixedVersions, updateDependencies));
             try
             {
                 projectRewriter.applyChanges(project, changes);

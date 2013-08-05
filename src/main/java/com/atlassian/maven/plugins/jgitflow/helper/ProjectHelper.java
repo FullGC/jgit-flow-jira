@@ -37,7 +37,7 @@ public interface ProjectHelper
 
     Map<String,String> getDevelopmentVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
 
-    void ensureOrigin(List<MavenProject> reactorProjects, JGitFlow flow) throws JGitFlowReleaseException;
+    void ensureOrigin(String defaultRemote, JGitFlow flow) throws JGitFlowReleaseException;
 
     void commitAllChanges(Git git, String message) throws JGitFlowReleaseException;
 

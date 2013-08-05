@@ -66,6 +66,9 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(property = "localOnly", defaultValue = "false")
     protected boolean localOnly = false;
 
+    @Parameter( property = "defaultOriginUrl", defaultValue = "")
+    protected String defaultOriginUrl;
+
     Settings getSettings()
     {
         return settings;

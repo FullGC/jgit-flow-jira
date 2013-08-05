@@ -33,6 +33,5 @@
       <connection>scm:git:ssh://git@bitbucket.org/tmp/basic-pom.git</connection>
       <developerConnection>scm:git:ssh://git@bitbucket.org/tmp/basic-pom.git</developerConnection>
       <url>https://bitbucket.org/tmp/basic-pom</url>
-      <tag>HEAD</tag>
   </scm>
 </project>

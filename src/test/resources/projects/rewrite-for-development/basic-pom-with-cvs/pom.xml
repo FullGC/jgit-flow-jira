@@ -30,7 +30,7 @@
     <connection>${scm.base}:pserver:anoncvs@localhost:/tmp/scm-repo:module</connection>
     <developerConnection>${scm.base}:ext:${username}@localhost:/tmp/scm-repo:module</developerConnection>
     <url>${baseUrl}/module</url>
-    <tag>releaseBranchPrefix-label</tag>
+    
   </scm>
   <properties>
     <scm.base>scm:cvs</scm.base>

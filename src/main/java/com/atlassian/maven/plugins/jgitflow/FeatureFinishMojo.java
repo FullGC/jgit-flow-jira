@@ -64,6 +64,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setAllowRemote(isRemoteAllowed())
                 .setNoFeatureMerge(noFeatureMerge)
                 .setNoBuild(noFeatureBuild)
+                .setDefaultOriginUrl(defaultOriginUrl)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

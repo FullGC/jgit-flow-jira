@@ -1,7 +1,14 @@
 package ut.com.atlassian.maven.plugins.jgitflow.testutils;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 
+import com.google.common.io.Files;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -21,6 +28,7 @@ public class RepoUtil
     public static Git createRepositoryWithMaster(File dir) throws GitAPIException
     {
         Git git =  Git.init().setDirectory(dir).call();
+        git.add().addFilepattern(".").call();
         git.commit().setMessage("initial commit").call();
 
         return git;
@@ -29,6 +37,7 @@ public class RepoUtil
     public static Git createRepositoryWithMasterAndDevelop(File dir) throws GitAPIException
     {
         Git git =  Git.init().setDirectory(dir).call();
+        git.add().addFilepattern(".").call();
         git.commit().setMessage("initial commit").call();
         git.branchCreate().setName("develop").call();
         git.commit().setMessage("added develop branch").call();

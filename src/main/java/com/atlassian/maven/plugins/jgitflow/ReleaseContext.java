@@ -40,6 +40,7 @@ public class ReleaseContext
     private boolean allowUntracked;
     private boolean allowRemote;
     private String startCommit;
+    private String defaultOriginUrl;
     
     public ReleaseContext(File baseDir)
     {
@@ -71,6 +72,7 @@ public class ReleaseContext
         this.noReleaseMerge = false;
         this.noFeatureMerge = false;
         this.allowRemote = true;
+        this.defaultOriginUrl = "";
     }
 
     public boolean isAllowSnapshots()
@@ -390,6 +392,18 @@ public class ReleaseContext
     public ReleaseContext setAllowRemote(boolean allow)
     {
         this.allowRemote = allow;
+        return this;
+    }
+
+    public String getDefaultOriginUrl()
+    {
+        return defaultOriginUrl;
+        
+    }
+
+    public ReleaseContext setDefaultOriginUrl(String defaultOriginUrl)
+    {
+        this.defaultOriginUrl = defaultOriginUrl;
         return this;
     }
 }

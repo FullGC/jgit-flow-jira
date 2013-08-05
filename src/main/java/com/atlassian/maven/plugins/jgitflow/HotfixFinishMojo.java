@@ -87,6 +87,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setAllowUntracked(allowUntracked)
            .setAllowRemote(isRemoteAllowed())
            .setNoBuild(noHotfixBuild)
+           .setDefaultOriginUrl(defaultOriginUrl)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

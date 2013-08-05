@@ -9,7 +9,7 @@
     
     <groupId>com.atlassian.maven.plugins</groupId>
     <artifactId>maven-jgitflow-plugin</artifactId>
-    <version>1.0-alpha13</version>
+    <version>1.0-alpha14</version>
     
     <packaging>maven-plugin</packaging>
     
@@ -47,7 +47,7 @@
         <connection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</developerConnection>
         <url>https://bitbucket.org/atlassian/maven-jgitflow-plugin</url>
-        <tag>1.0-alpha13</tag>
+        <tag>HEAD</tag>
     </scm>
     
     <dependencies>
@@ -107,11 +107,19 @@
             <artifactId>maven-settings</artifactId>
             <version>${mavenVersion}</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.maven.release</groupId>
             <artifactId>maven-release-manager</artifactId>
             <version>${mavenReleaseVersion}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.maven.scm</groupId>
+                    <artifactId>maven-scm-providers-standard</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
         <!--
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -127,30 +135,17 @@
             <scope>provided</scope>
         </dependency>
         
-        <!-- scm -->
-        <dependency>
-            <groupId>org.apache.maven.scm</groupId>
-            <artifactId>maven-scm-providers-standard</artifactId>
-            <version>${scmVersion}</version>
-            <type>pom</type>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.scm</groupId>
-            <artifactId>maven-scm-manager-plexus</artifactId>
-            <version>${scmVersion}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.scm</groupId>
-            <artifactId>maven-scm-api</artifactId>
-            <version>${scmVersion}</version>
-        </dependency>
-        
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -178,6 +173,22 @@
     </dependencies>
     
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>VERSION</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>VERSION</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <!--
             <plugin>
@@ -240,6 +251,7 @@
                     </archive>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 
@@ -264,6 +276,43 @@
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>it-tests</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-invoker-plugin</artifactId>
+                        <version>1.8</version>
+                        <configuration>
+                            <localRepositoryPath>${project.build.directory}/it/local-repository</localRepositoryPath>
+                            <showErrors>true</showErrors>
+                            <settingsFile>src/it/settings.xml</settingsFile>
+                            <projectsDirectory>src/it/projects</projectsDirectory>
+                            <pomIncludes>
+                                <pomInclude>*/pom.xml</pomInclude>
+                            </pomIncludes>
+                            <cloneProjectsTo>${project.build.directory}/it/projects</cloneProjectsTo>
+                            <cloneClean>true</cloneClean>
+                            <reportsDirectory>${project.build.directory}/it/reports</reportsDirectory>
+                            <addTestClassPath>true</addTestClassPath>
+                            <debug>true</debug>
+                            <streamLogs>true</streamLogs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>run-integration-tests</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>install</goal>
+                                    <goal>run</goal>
                                 </goals>
                             </execution>
                         </executions>
