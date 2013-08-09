@@ -11,6 +11,7 @@ import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.util.NamingUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
@@ -181,6 +182,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             List<MavenProject> featureProjects = featureSession.getSortedProjects();
             
             String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureName);
+            featureVersion = StringUtils.replace(featureVersion,"-","_");
             
             updatePomsWithFeatureVersion("featureStartLabel", featureVersion, ctx, featureProjects);
 
@@ -209,6 +211,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             List<MavenProject> featureProjects = featureSession.getSortedProjects();
 
             String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureLabel);
+            featureVersion = StringUtils.replace(featureVersion,"-","_");
 
             updatePomsWithNonFeatureVersion("featureFinishLabel", featureVersion, ctx, featureProjects);
 
