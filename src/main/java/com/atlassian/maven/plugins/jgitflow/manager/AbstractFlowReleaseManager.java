@@ -34,14 +34,12 @@ import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.DefaultMaven;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.RuntimeInformation;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.console.ConsoleCredentialsProvider;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
@@ -765,5 +763,11 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         n = (n == Long.MIN_VALUE) ? 0 : Math.abs(n);
 
         return base + Long.toString(n);
+    }
+
+    @Override
+    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber) throws JGitFlowReleaseException
+    {
+        //do nothing. override if you need to
     }
 }

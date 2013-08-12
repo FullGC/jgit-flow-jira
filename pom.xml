@@ -9,7 +9,7 @@
     
     <groupId>com.atlassian.maven.plugins</groupId>
     <artifactId>maven-jgitflow-plugin</artifactId>
-    <version>1.0-alpha14</version>
+    <version>1.0-alpha15</version>
     
     <packaging>maven-plugin</packaging>
     
@@ -325,7 +325,7 @@
     <properties>
         <mavenVersion>2.2.1</mavenVersion>
         <mavenPluginPluginVersion>3.1</mavenPluginPluginVersion>
-        <jgitFlowVersion>0.16</jgitFlowVersion>
+        <jgitFlowVersion>0.17</jgitFlowVersion>
         <scmVersion>1.8</scmVersion>
         <mavenReleaseVersion>2.4</mavenReleaseVersion>
         <jschAgentVersion>0.0.5</jschAgentVersion>

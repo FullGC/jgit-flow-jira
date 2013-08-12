@@ -42,7 +42,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         MavenJGitFlowConfiguration config = null;
         try
         {
-            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
             writeReportHeader(ctx,flow.getReporter());
             setupSshCredentialProviders(ctx,flow.getReporter());
@@ -98,7 +98,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
         try
         {
-            flow = JGitFlow.getOrInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
             writeReportHeader(ctx,flow.getReporter());
             setupSshCredentialProviders(ctx,flow.getReporter());

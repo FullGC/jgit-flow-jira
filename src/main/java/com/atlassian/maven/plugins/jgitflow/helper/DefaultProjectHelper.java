@@ -47,7 +47,9 @@ import static com.google.common.collect.Lists.newArrayList;
 public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectHelper
 {
     private static final String ls = System.getProperty("line.separator");
-
+    private static String OS = System.getProperty("os.name").toLowerCase();
+    private static boolean isWindows = (OS.indexOf("win") >= 0);
+    
     private PrettyPrompter prompter;
     private ArtifactFactory artifactFactory;
     private final Map<String, Map<String, String>> originalVersions;
@@ -608,6 +610,12 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                     {
                         getLogger().debug("adding file pattern for poms commit: " + pomPath);
                     }
+                    
+                    if(isWindows)
+                    {
+                        pomPath = StringUtils.replace(pomPath,"\\","/");    
+                    }
+                    
                     add.addFilepattern(pomPath);
                 }
                 add.call();
@@ -901,4 +909,5 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
         return name;
     }
+
 }

@@ -96,7 +96,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
                 
                 for(String moduleName : moduleNames)
                 {
-                    projectFiles.push(new File(file.getParentFile(), moduleName + "/pom.xml"));
+                    projectFiles.push(new File(file.getParentFile(), moduleName + File.separator + "pom.xml"));
                 }
     
                 reactorProjects.add(project);
