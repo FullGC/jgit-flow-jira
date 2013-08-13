@@ -9,7 +9,7 @@
     
     <groupId>com.atlassian.maven.plugins</groupId>
     <artifactId>maven-jgitflow-plugin</artifactId>
-    <version>1.0-alpha16</version>
+    <version>1.0-alpha17-SNAPSHOT</version>
     
     <packaging>maven-plugin</packaging>
     
@@ -92,6 +92,16 @@
             <artifactId>maven-core</artifactId>
             <version>${mavenVersion}</version>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.maven</groupId>-->
+            <!--<artifactId>maven-compat</artifactId>-->
+            <!--<version>${mavenVersion}</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.apache.maven</groupId>-->
+            <!--<artifactId>maven-project</artifactId>-->
+            <!--<version>${mavenVersion}</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-model</artifactId>
@@ -119,15 +129,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!--
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-compat</artifactId>
-            <version>${mavenVersion}</version>
-            <scope>provided</scope>
-        </dependency>
-        -->
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
@@ -324,6 +325,7 @@
     
     <properties>
         <mavenVersion>2.2.1</mavenVersion>
+        <!--<mavenVersion>3.0.5</mavenVersion>-->
         <mavenPluginPluginVersion>3.1</mavenPluginPluginVersion>
         <jgitFlowVersion>0.17</jgitFlowVersion>
         <scmVersion>1.8</scmVersion>

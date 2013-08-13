@@ -9,6 +9,7 @@ import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 
 import com.google.common.base.Joiner;
 
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.model.Profile;
@@ -87,9 +88,29 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
             while(!projectFiles.isEmpty())
             {
                 File file = (File) projectFiles.pop();
-    
-                //TODO: use getProjectBuilderConfiguration to create builder so we get profiles and junk
-                MavenProject project = projectBuilder.build(file, oldSession.getLocalRepository(), new DefaultProfileManager(oldSession.getContainer(),oldSession.getUserProperties()));
+
+                MavenProject project = null;
+                //try maven3 first
+                try
+                {
+                    Method getRequestMethod = oldSession.getClass().getMethod("getRequest");
+                    Object mavenExecutionRequest = getRequestMethod.invoke(oldSession);
+                    Method getProjectBuildingRequest = mavenExecutionRequest.getClass().getMethod("getProjectBuildingRequest");
+                    Object pbr = getProjectBuildingRequest.invoke(mavenExecutionRequest);
+                    Object pb = oldSession.getContainer().lookup("org.apache.maven.project.ProjectBuilder");
+
+                    Class requestClass = Class.forName("org.apache.maven.project.ProjectBuildingRequest");
+                    
+                    Method buildMethod = pb.getClass().getMethod("build",File.class,requestClass);
+                    Object result = buildMethod.invoke(pb,file,pbr);
+                    Method getProjectMethod = result.getClass().getMethod("getProject");
+                    getProjectMethod.setAccessible(true);
+                    project = (MavenProject) getProjectMethod.invoke(result);
+                }
+                catch (Exception e)
+                {
+                    project = projectBuilder.build(file,oldSession.getProjectBuilderConfiguration());
+                }
                 
                 project.setActiveProfiles(rootProject.getActiveProfiles());
                 List<String> moduleNames = project.getModules();
@@ -161,4 +182,5 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         }
         return profiles;
     }
+    
 }
