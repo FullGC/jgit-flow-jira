@@ -89,7 +89,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
                 File file = (File) projectFiles.pop();
     
                 //TODO: use getProjectBuilderConfiguration to create builder so we get profiles and junk
-                MavenProject project = projectBuilder.build(file, oldSession.getLocalRepository(), new DefaultProfileManager(oldSession.getContainer(),oldSession.getExecutionProperties()));
+                MavenProject project = projectBuilder.build(file, oldSession.getLocalRepository(), new DefaultProfileManager(oldSession.getContainer(),oldSession.getUserProperties()));
                 
                 project.setActiveProfiles(rootProject.getActiveProfiles());
                 List<String> moduleNames = project.getModules();
