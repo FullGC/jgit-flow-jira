@@ -220,11 +220,18 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             updatePomsWithFeatureVersionNoSnapshot("featureDeployLabel", featureVersion, ctx, featureProjects);
 
+            rootProject = ReleaseUtil.getRootProject(featureProjects);
+            featureSession = mavenExecutionHelper.reloadReactor(rootProject,session);
+            
+            rootProject = ReleaseUtil.getRootProject(featureSession.getSortedProjects());
+            
+
             if (!ctx.isNoBuild())
             {
                 try
                 {
-                    mavenExecutionHelper.execute(rootProject, ctx, currentSession);
+                    mavenExecutionHelper.execute(rootProject, ctx, featureSession, "install");
+                    mavenExecutionHelper.execute(rootProject, ctx, featureSession, "deploy");
                 }
                 catch (MavenExecutorException e)
                 {
