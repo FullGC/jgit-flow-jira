@@ -14,5 +14,6 @@ import org.apache.maven.shared.release.exec.MavenExecutorException;
 public interface MavenExecutionHelper
 {
     void execute(MavenProject rootProject, ReleaseContext ctx, MavenSession session) throws MavenExecutorException;
+    void execute(MavenProject rootProject, ReleaseContext ctx, MavenSession session, String goals) throws MavenExecutorException;
     MavenSession reloadReactor(MavenProject rootProject, MavenSession oldSession) throws ReactorReloadException;
 }

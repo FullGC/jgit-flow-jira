@@ -38,32 +38,6 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     @Override
     public void execute(MavenProject project, ReleaseContext ctx, MavenSession session) throws MavenExecutorException
     {
-        List<String> argList = new ArrayList<String>();
-        
-        Properties userProps = session.getUserProperties();
-        
-        for(String key : userProps.stringPropertyNames())
-        {
-            argList.add("-D" + key + "=" + userProps.getProperty(key));
-        }
-        
-        if(ctx.isUseReleaseProfile())
-        {
-            argList.add("-DperformRelease=true");
-        }
-        
-        for(String profileId : getActiveProfileIds(project,session))
-        {
-            argList.add("-P" + profileId);
-        }
-
-        String additionalArgs = Joiner.on(" ").join(argList);
-        
-        ReleaseResult result = new ReleaseResult();
-        ReleaseEnvironment env = new DefaultReleaseEnvironment();
-        env.setSettings(session.getSettings());
-        MavenExecutor mavenExecutor = mavenExecutors.get(env.getMavenExecutorId());
-        
         String goal = "deploy";
         
         if(ctx.isNoDeploy())
@@ -71,7 +45,39 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
             goal = "install";
         }
         
-        mavenExecutor.executeGoals(ctx.getBaseDir(),goal,env,ctx.isInteractive(),additionalArgs,result);
+        execute(project,ctx,session,goal);
+    }
+
+    @Override
+    public void execute(MavenProject project, ReleaseContext ctx, MavenSession session, String goals) throws MavenExecutorException
+    {
+        List<String> argList = new ArrayList<String>();
+
+        Properties userProps = session.getUserProperties();
+
+        for(String key : userProps.stringPropertyNames())
+        {
+            argList.add("-D" + key + "=" + userProps.getProperty(key));
+        }
+
+        if(ctx.isUseReleaseProfile())
+        {
+            argList.add("-DperformRelease=true");
+        }
+
+        for(String profileId : getActiveProfileIds(project,session))
+        {
+            argList.add("-P" + profileId);
+        }
+
+        String additionalArgs = Joiner.on(" ").join(argList);
+
+        ReleaseResult result = new ReleaseResult();
+        ReleaseEnvironment env = new DefaultReleaseEnvironment();
+        env.setSettings(session.getSettings());
+        MavenExecutor mavenExecutor = mavenExecutors.get(env.getMavenExecutorId());
+
+        mavenExecutor.executeGoals(ctx.getBaseDir(),goals,env,ctx.isInteractive(),additionalArgs,result);
 
     }
 
