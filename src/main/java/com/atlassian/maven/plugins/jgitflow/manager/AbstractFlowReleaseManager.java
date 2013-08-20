@@ -766,7 +766,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     }
 
     @Override
-    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber) throws JGitFlowReleaseException
+    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws JGitFlowReleaseException
     {
         //do nothing. override if you need to
     }

@@ -184,7 +184,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     }
 
     @Override
-    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber) throws JGitFlowReleaseException
+    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws JGitFlowReleaseException
     {
         JGitFlow flow = null;
 
@@ -228,10 +228,15 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             if (!ctx.isNoBuild())
             {
+                String mvnGoals = "clean install deploy";
+                if(StringUtils.isNotBlank(goals))
+                {
+                    mvnGoals = goals;
+                }
+                
                 try
                 {
-                    mavenExecutionHelper.execute(rootProject, ctx, featureSession, "install");
-                    mavenExecutionHelper.execute(rootProject, ctx, featureSession, "deploy");
+                    mavenExecutionHelper.execute(rootProject, ctx, featureSession, mvnGoals);
                 }
                 catch (MavenExecutorException e)
                 {
