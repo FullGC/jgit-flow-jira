@@ -19,6 +19,7 @@ import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.rewrite.MavenProjectRewriter;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
+import com.atlassian.maven.plugins.jgitflow.util.ConsoleCredentialsProvider;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
@@ -41,7 +42,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.console.ConsoleCredentialsProvider;
+import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -58,7 +59,7 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 {
     protected static final String ls = System.getProperty("line.separator");
     private static final SecureRandom random = new SecureRandom();
-    
+
     protected ProjectHelper projectHelper;
     protected MavenProjectRewriter projectRewriter;
     protected MavenExecutionHelper mavenExecutionHelper;
@@ -116,133 +117,21 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             this.headerWritten = true;
         }
     }
-    protected void setupSshCredentialProviders(ReleaseContext ctx, JGitFlowReporter reporter)
+    protected void setupCredentialProviders(ReleaseContext ctx, JGitFlowReporter reporter)
     {
         if(!ctx.isRemoteAllowed())
         {
             return;
         }
-        
-        if (null != System.console() && !sshConsoleInstalled)
+
+        if (!sshConsoleInstalled)
         {
-            reporter.debugText(getClass().getSimpleName(),"installing ssh console credentials provider");
-            ConsoleCredentialsProvider.install();
-            sshConsoleInstalled = true;
+            sshConsoleInstalled = projectHelper.setupUserPasswordCredentialsProvider(ctx, reporter);
         }
 
-        if (ctx.isEnableSshAgent() && !sshAgentConfigured)
+        if (!sshAgentConfigured)
         {
-            JschConfigSessionFactory sessionFactory = new JschConfigSessionFactory()
-            {
-                @Override
-                protected void configure(OpenSshConfig.Host hc, Session session)
-                {
-                    session.setConfig("StrictHostKeyChecking", "false");
-                }
-
-                @Override
-                protected JSch createDefaultJSch(FS fs) throws JSchException
-                {
-                    Connector con = null;
-                    JSch jsch = null;
-
-                    try
-                    {
-                        if (SSHAgentConnector.isConnectorAvailable())
-                        {
-                            USocketFactory usf = new JNAUSocketFactory();
-                            con = new SSHAgentConnector(usf);
-
-                        }
-                    }
-                    catch (AgentProxyException e)
-                    {
-                        System.out.println(e.getMessage());
-                    }
-
-                    if (null == con)
-                    {
-                        jsch = super.createDefaultJSch(fs);
-
-                        return jsch;
-                    }
-                    else
-                    {
-                        jsch = new JSch();
-                        jsch.setConfig("PreferredAuthentications", "publickey");
-                        IdentityRepository irepo = new RemoteIdentityRepository(con);
-                        jsch.setIdentityRepository(irepo);
-
-                        //why these in super is private, I don't know
-                        knownHosts(jsch, fs);
-                        identities(jsch, fs);
-                        return jsch;
-                    }
-                }
-
-                //copied from super class
-                private void knownHosts(final JSch sch, FS fs) throws JSchException
-                {
-                    final File home = fs.userHome();
-                    if (home == null)
-                    { return; }
-                    final File known_hosts = new File(new File(home, ".ssh"), "known_hosts");
-                    try
-                    {
-                        final FileInputStream in = new FileInputStream(known_hosts);
-                        try
-                        {
-                            sch.setKnownHosts(in);
-                        }
-                        finally
-                        {
-                            in.close();
-                        }
-                    }
-                    catch (FileNotFoundException none)
-                    {
-                        // Oh well. They don't have a known hosts in home.
-                    }
-                    catch (IOException err)
-                    {
-                        // Oh well. They don't have a known hosts in home.
-                    }
-                }
-
-                private void identities(final JSch sch, FS fs)
-                {
-                    final File home = fs.userHome();
-                    if (home == null)
-                    { return; }
-                    final File sshdir = new File(home, ".ssh");
-                    if (sshdir.isDirectory())
-                    {
-                        loadIdentity(sch, new File(sshdir, "identity"));
-                        loadIdentity(sch, new File(sshdir, "id_rsa"));
-                        loadIdentity(sch, new File(sshdir, "id_dsa"));
-                    }
-                }
-
-                private void loadIdentity(final JSch sch, final File priv)
-                {
-                    if (priv.isFile())
-                    {
-                        try
-                        {
-                            sch.addIdentity(priv.getAbsolutePath());
-                        }
-                        catch (JSchException e)
-                        {
-                            // Instead, pretend the key doesn't exist.
-                        }
-                    }
-                }
-            };
-
-            reporter.debugText(getClass().getSimpleName(),"installing ssh-agent credentials provider");
-            SshSessionFactory.setInstance(sessionFactory);
-
-            sshAgentConfigured = true;
+            sshAgentConfigured = projectHelper.setupSshCredentialsProvider(ctx, reporter);
         }
     }
     protected String getReleaseLabel(String key, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 
@@ -48,4 +49,8 @@ public interface ProjectHelper
     String getFeatureStartName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException;
     
     String getFeatureFinishName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException;
+
+    boolean setupUserPasswordCredentialsProvider(ReleaseContext ctx, JGitFlowReporter reporter);
+
+    boolean setupSshCredentialsProvider(ReleaseContext ctx, JGitFlowReporter reporter);
 }
