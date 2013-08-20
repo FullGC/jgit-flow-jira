@@ -14,6 +14,8 @@ import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 import com.atlassian.maven.plugins.jgitflow.util.NamingUtil;
 
 import com.google.common.base.Function;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
@@ -236,7 +238,10 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 
                 try
                 {
-                    mavenExecutionHelper.execute(rootProject, ctx, featureSession, mvnGoals);
+                    for(String goal : Splitter.on(" ").trimResults().omitEmptyStrings().split(mvnGoals))
+                    {
+                        mavenExecutionHelper.execute(rootProject, ctx, featureSession, goal);
+                    }
                 }
                 catch (MavenExecutorException e)
                 {
