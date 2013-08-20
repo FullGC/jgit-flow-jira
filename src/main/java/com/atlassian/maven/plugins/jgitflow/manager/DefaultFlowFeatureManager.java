@@ -44,7 +44,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
             writeReportHeader(ctx, flow.getReporter());
-            setupSshCredentialProviders(ctx, flow.getReporter());
+            setupCredentialProviders(ctx, flow.getReporter());
 
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
@@ -108,7 +108,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
             writeReportHeader(ctx, flow.getReporter());
-            setupSshCredentialProviders(ctx, flow.getReporter());
+            setupCredentialProviders(ctx, flow.getReporter());
 
             String featureLabel = getFeatureFinishName(ctx, flow);
 
@@ -184,7 +184,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     }
 
     @Override
-    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber) throws JGitFlowReleaseException
+    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws JGitFlowReleaseException
     {
         JGitFlow flow = null;
 
@@ -228,10 +228,15 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             if (!ctx.isNoBuild())
             {
+                String mvnGoals = "clean install deploy";
+                if(StringUtils.isNotBlank(goals))
+                {
+                    mvnGoals = goals;
+                }
+                
                 try
                 {
-                    mavenExecutionHelper.execute(rootProject, ctx, featureSession, "install");
-                    mavenExecutionHelper.execute(rootProject, ctx, featureSession, "deploy");
+                    mavenExecutionHelper.execute(rootProject, ctx, featureSession, mvnGoals);
                 }
                 catch (MavenExecutorException e)
                 {

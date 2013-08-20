@@ -23,6 +23,9 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
     @Parameter( property = "featureName", defaultValue = "")
     private String featureName;
 
+    @Parameter( property = "goals", defaultValue = "")
+    private String goals;
+
     @Parameter(property = "buildNumber")
     private String buildNumber;
 
@@ -40,7 +43,7 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
 
         try
         {
-            releaseManager.deploy(ctx, getReactorProjects(), session, buildNumber);
+            releaseManager.deploy(ctx, getReactorProjects(), session, buildNumber, goals);
         }
         catch (JGitFlowReleaseException e)
         {
