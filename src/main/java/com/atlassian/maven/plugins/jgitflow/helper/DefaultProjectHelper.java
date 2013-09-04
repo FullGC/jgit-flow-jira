@@ -616,15 +616,17 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         try
         {
             Status status = git.status().call();
+            Repository repository = git.getRepository();
+            File repoDir = repository.getDirectory().getParentFile();
             if (!status.isClean())
             {
                 AddCommand add = git.add();
 
                 MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-                File rootBaseDir = rootProject.getBasedir();
+//                File rootBaseDir = rootProject.getBasedir();
                 for (MavenProject project : reactorProjects)
                 {
-                    String pomPath = relativePath(rootBaseDir, project.getFile());
+                    String pomPath = relativePath(repoDir, project.getFile());
 
                     if (getLogger().isDebugEnabled())
                     {
