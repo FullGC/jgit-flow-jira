@@ -15,7 +15,6 @@ import com.atlassian.maven.plugins.jgitflow.util.NamingUtil;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
@@ -40,7 +39,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     public void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
         JGitFlow flow = null;
-        String featureName = null;
         try
         {
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
@@ -48,21 +46,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             writeReportHeader(ctx, flow.getReporter());
             setupCredentialProviders(ctx, flow.getReporter());
 
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-
-            featureName = getFeatureStartName(ctx, flow);
-
-            if (ctx.isPushFeatures())
-            {
-                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
-            }
-
-            flow.featureStart(featureName)
-                .setAllowUntracked(ctx.isAllowUntracked())
-                .setPush(ctx.isPushFeatures())
-                .setStartCommit(ctx.getStartCommit())
-                .call();
+            String featureName = startFeature(flow, ctx);
 
             if (ctx.isEnableFeatureVersions())
             {
@@ -276,6 +260,40 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 flow.getReporter().flush();
             }
         }
+    }
+    
+    private String startFeature(JGitFlow flow, ReleaseContext ctx) throws JGitFlowReleaseException
+    {
+        String featureName = "";
+
+        try
+        {
+            //make sure we're on develop
+            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+
+            featureName = getFeatureStartName(ctx, flow);
+
+            if(ctx.isPushReleases())
+            {
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+            }
+
+            flow.featureStart(featureName)
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushFeatures())
+                .setStartCommit(ctx.getStartCommit())
+                .call();
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+        catch (JGitFlowException e)
+        {
+            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+
+        return featureName;
     }
 
     private void updateFeaturePomsWithFeatureVersion(String featureName, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
