@@ -50,15 +50,14 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             if (ctx.isEnableFeatureVersions())
             {
-                final String prefixedBranchName = flow.getFeatureBranchPrefix() + featureName;
                 updateFeaturePomsWithFeatureVersion(featureName, flow, ctx, reactorProjects, session);
+            }
 
-                if (ctx.isPushFeatures())
-                {
-                    projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
-                    RefSpec branchSpec = new RefSpec(prefixedBranchName);
-                    flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
-                }
+            if (ctx.isPushFeatures())
+            {
+                final String prefixedBranchName = flow.getFeatureBranchPrefix() + featureName;
+                RefSpec branchSpec = new RefSpec(prefixedBranchName);
+                flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
             }
 
             projectHelper.commitAllPoms(flow.git(), reactorProjects, "updating poms for " + featureName + " branch");
