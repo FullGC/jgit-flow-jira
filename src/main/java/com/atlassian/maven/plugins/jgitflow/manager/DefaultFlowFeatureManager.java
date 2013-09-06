@@ -59,8 +59,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 RefSpec branchSpec = new RefSpec(prefixedBranchName);
                 flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
             }
-
-            projectHelper.commitAllPoms(flow.git(), reactorProjects, "updating poms for " + featureName + " branch");
         }
         catch (GitAPIException e)
         {
