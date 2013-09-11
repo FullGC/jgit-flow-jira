@@ -64,7 +64,7 @@ public class ReleaseContext
         this.args = "";
         this.startCommit = "";
         this.releaseBranchVersionSuffix = "release";
-        this.enableFeatureVersions = true;
+        this.enableFeatureVersions = false;
         this.tagMessage = "tagging release ${version}";
         this.flowInitContext = new InitContext();
         this.enableSshAgent = false;
