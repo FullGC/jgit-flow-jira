@@ -616,15 +616,17 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         try
         {
             Status status = git.status().call();
+            Repository repository = git.getRepository();
+            File repoDir = repository.getDirectory().getParentFile();
             if (!status.isClean())
             {
                 AddCommand add = git.add();
 
                 MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-                File rootBaseDir = rootProject.getBasedir();
+//                File rootBaseDir = rootProject.getBasedir();
                 for (MavenProject project : reactorProjects)
                 {
-                    String pomPath = relativePath(rootBaseDir, project.getFile());
+                    String pomPath = relativePath(repoDir, project.getFile());
 
                     if (getLogger().isDebugEnabled())
                     {
@@ -651,12 +653,14 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     private String relativePath(File basedir, File file)
     {
         String pomPath = file.getAbsolutePath();
+        String basePath = basedir.getAbsolutePath();
 
-        if (file.getAbsolutePath().startsWith(basedir.getAbsolutePath()))
+        //Need to ingore case because it was comparing C:/repo/pom.xml to c:/repo
+        if (pomPath.regionMatches(true, 0, basePath, 0, basePath.length())) 
         {
             pomPath = file.getAbsolutePath().substring(basedir.getAbsolutePath().length());
 
-            if (pomPath.startsWith(File.separator))
+            if (pomPath.startsWith(File.separator)) 
             {
                 pomPath = pomPath.substring(1);
             }
