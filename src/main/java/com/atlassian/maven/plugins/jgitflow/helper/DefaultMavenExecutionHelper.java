@@ -123,7 +123,14 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
                 
                 for(String moduleName : moduleNames)
                 {
-                    projectFiles.push(new File(file.getParentFile(), moduleName + File.separator + "pom.xml"));
+                	//if moduleName is a file treat as explicitly defined pom.xml
+                	File baseFile = new File(file.getParentFile(), moduleName);
+                	if(baseFile.isFile()){
+                		projectFiles.push(baseFile);
+                	}else{
+                		projectFiles.push(new File(baseFile, File.separator + "pom.xml"));
+                	}
+                	
                 }
     
                 reactorProjects.add(project);
