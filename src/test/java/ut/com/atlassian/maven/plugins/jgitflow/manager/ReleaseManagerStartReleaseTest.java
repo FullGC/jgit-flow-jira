@@ -326,6 +326,12 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     {
         basicReleaseRewriteTest("multimodule-with-deep-subprojects");
     }
+    
+    @Test
+    public void releaseWithMultimoduleAlternatePom() throws Exception
+    {
+        basicReleaseRewriteTest("multimodule-with-alternate-pom");
+    }
 
     @Test
     public void releaseWithInheritedVersion() throws Exception
