@@ -270,7 +270,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             featureName = getFeatureStartName(ctx, flow);
 
-            if(ctx.isPushReleases())
+            if(ctx.isPushFeatures())
             {
                 projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
             }
