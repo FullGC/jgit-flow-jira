@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.util.GitHelper;
@@ -177,6 +178,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         
         try
         {
+            JGitFlowReporter reporter = flow.getReporter();
             //get the release branch
             List<Ref> releaseBranches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix());
 
@@ -190,16 +192,52 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             Ref releaseBranch = releaseBranches.get(0);
             releaseLabel = releaseBranch.getName().substring(releaseBranch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
             
+            String prefixedBranchName = flow.getReleaseBranchPrefix() + releaseLabel;
+            
             //make sure we're on the release branch
             if(getLogger().isDebugEnabled())
             {
-                getLogger().debug("checking out release branch: " + flow.getReleaseBranchPrefix() + releaseLabel);
+                getLogger().debug("checking out release branch: " + prefixedBranchName);
             }
             
-            flow.git().checkout().setName(flow.getReleaseBranchPrefix() + releaseLabel).call();
+            flow.git().checkout().setName(prefixedBranchName).call();
+
+            //make sure we're not behind remote
+            if(GitHelper.remoteBranchExists(flow.git(), prefixedBranchName, reporter))
+            {
+                if(GitHelper.localBranchBehindRemote(flow.git(),prefixedBranchName,reporter))
+                {
+                    reporter.errorText("release-finish","local branch '" + prefixedBranchName + "' is behind the remote branch");
+                    reporter.endMethod();
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + prefixedBranchName + "' is behind the remote branch");
+                }
+            }
+
+            if(GitHelper.remoteBranchExists(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
+            {
+                if(GitHelper.localBranchBehindRemote(flow.git(),flow.getDevelopBranchName(),flow.getReporter()))
+                {
+                    reporter.errorText("release-finish","local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                    reporter.endMethod();
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                }
+            }
+
+            if(GitHelper.remoteBranchExists(flow.git(), flow.getMasterBranchName(), flow.getReporter()))
+            {
+                if(GitHelper.localBranchBehindRemote(flow.git(),flow.getMasterBranchName(),flow.getReporter()))
+                {
+                    reporter.errorText("release-finish","local branch '" + flow.getMasterBranchName() + "' is behind the remote branch");
+                    reporter.endMethod();
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + flow.getMasterBranchName() + "' is behind the remote branch");
+                }
+            }
 
             //get the reactor projects for release
-            MavenSession releaseSession = getSessionForBranch(flow, flow.getReleaseBranchPrefix() + releaseLabel, originalProjects, session);
+            MavenSession releaseSession = getSessionForBranch(flow, prefixedBranchName, originalProjects, session);
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
 
             if(getLogger().isDebugEnabled())
@@ -210,7 +248,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             projectHelper.commitAllPoms(flow.git(), originalProjects, "updating poms for " + releaseLabel + " release");
 
             //reload the reactor projects for release
-            releaseSession = getSessionForBranch(flow, flow.getReleaseBranchPrefix() + releaseLabel, originalProjects, session);
+            releaseSession = getSessionForBranch(flow, prefixedBranchName, originalProjects, session);
             releaseProjects = releaseSession.getSortedProjects();
             
             checkPomForRelease(releaseProjects);
