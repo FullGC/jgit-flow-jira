@@ -68,6 +68,9 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
 
     @Parameter( property = "defaultOriginUrl", defaultValue = "")
     protected String defaultOriginUrl;
+    
+    @Parameter(property = "scmCommentPrefix", defaultValue = "")
+    protected String scmCommentPrefix;
 
     Settings getSettings()
     {

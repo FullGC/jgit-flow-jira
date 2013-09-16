@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
@@ -17,6 +18,8 @@ import org.junit.Test;
 
 import ut.com.atlassian.maven.plugins.jgitflow.testutils.RepoUtil;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * @since version
  */
@@ -25,6 +28,8 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
     @Test
     public void releaseBasicPomWithoutOrigin() throws Exception
     {
+        String commentPrefix = "woot!";
+        
         String projectName = "basic-pom";
         Git git = null;
         Git remoteGit = null;
@@ -50,7 +55,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false);
-        ctx.setNoBuild(true);
+        ctx.setNoBuild(true).setScmCommentPrefix(commentPrefix);
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
@@ -68,6 +73,10 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         projects = createReactorProjectsNoClean("release-projects", projectName);
 
         relman.finish(ctx, projects, session);
+        
+        assertTrue(GitHelper.getLatestCommit(flow.git(),flow.git().getRepository().getBranch()).getFullMessage().startsWith(commentPrefix));
+        
+        
     }
 
 }

@@ -96,6 +96,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setNoReleaseMerge(noReleaseMerge)
                 .setAllowRemote(isRemoteAllowed())
                 .setDefaultOriginUrl(defaultOriginUrl)
+                .setScmCommentPrefix(scmCommentPrefix)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

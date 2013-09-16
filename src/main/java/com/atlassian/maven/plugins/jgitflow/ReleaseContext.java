@@ -41,6 +41,7 @@ public class ReleaseContext
     private boolean allowRemote;
     private String startCommit;
     private String defaultOriginUrl;
+    private String scmCommentPrefix;
     
     public ReleaseContext(File baseDir)
     {
@@ -73,6 +74,7 @@ public class ReleaseContext
         this.noFeatureMerge = false;
         this.allowRemote = true;
         this.defaultOriginUrl = "";
+        this.scmCommentPrefix = "";
     }
 
     public boolean isAllowSnapshots()
@@ -404,6 +406,17 @@ public class ReleaseContext
     public ReleaseContext setDefaultOriginUrl(String defaultOriginUrl)
     {
         this.defaultOriginUrl = defaultOriginUrl;
+        return this;
+    }
+
+    public String getScmCommentPrefix()
+    {
+        return scmCommentPrefix;
+    }
+
+    public ReleaseContext setScmCommentPrefix(String scmCommentPrefix)
+    {
+        this.scmCommentPrefix = scmCommentPrefix;
         return this;
     }
 }

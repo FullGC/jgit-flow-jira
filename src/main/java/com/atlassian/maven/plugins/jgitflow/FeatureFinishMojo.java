@@ -65,6 +65,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setNoFeatureMerge(noFeatureMerge)
                 .setNoBuild(noFeatureBuild)
                 .setDefaultOriginUrl(defaultOriginUrl)
+                .setScmCommentPrefix(scmCommentPrefix)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

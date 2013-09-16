@@ -88,6 +88,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setAllowRemote(isRemoteAllowed())
            .setNoBuild(noHotfixBuild)
            .setDefaultOriginUrl(defaultOriginUrl)
+           .setScmCommentPrefix(scmCommentPrefix)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
