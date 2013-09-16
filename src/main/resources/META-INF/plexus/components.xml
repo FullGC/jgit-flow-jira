@@ -26,11 +26,6 @@
                     <role>org.apache.maven.execution.RuntimeInformation</role>
                     <field-name>runtimeInformation</field-name>
                 </requirement>
-
-                <requirement>
-                    <role>org.apache.maven.plugin.logging.Log</role>
-                    <field-name>log</field-name>
-                </requirement>
             </requirements>
         </component>
         <component>
