@@ -54,7 +54,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             if(ctx.isPushHotfixes())
             {
-                final String prefixedBranchName = flow.getReleaseBranchPrefix() + hotfixLabel;
+                final String prefixedBranchName = flow.getHotfixBranchPrefix() + hotfixLabel;
                 RefSpec branchSpec = new RefSpec(prefixedBranchName);
                 flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
             }
