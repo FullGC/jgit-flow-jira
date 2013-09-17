@@ -32,8 +32,8 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "false", property = "featureRebase" )
     private boolean featureRebase = false;
 
-    @Parameter( defaultValue = "true", property = "enableFeatureVersions" )
-    private boolean enableFeatureVersions = true;
+    @Parameter( defaultValue = "false", property = "enableFeatureVersions" )
+    private boolean enableFeatureVersions = false;
 
     @Parameter( defaultValue = "false", property = "pushFeatures" )
     private boolean pushFeatures = false;
@@ -65,6 +65,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setNoFeatureMerge(noFeatureMerge)
                 .setNoBuild(noFeatureBuild)
                 .setDefaultOriginUrl(defaultOriginUrl)
+                .setScmCommentPrefix(scmCommentPrefix)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

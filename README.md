@@ -1,6 +1,6 @@
 # Maven JGit-Flow Plugin
 
-**Current Version: 1.0-alpha14**
+**Current Version: 1.0-alpha21**
 
 The Maven JGit-Flow Plugin is based on and a replacement for the maven-release-plugin to enable git-flow release workflows.
 

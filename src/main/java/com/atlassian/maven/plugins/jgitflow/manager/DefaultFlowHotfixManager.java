@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
+import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
 import com.atlassian.jgitflow.core.exception.HotfixBranchExistsException;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
@@ -54,7 +56,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             if(ctx.isPushHotfixes())
             {
-                final String prefixedBranchName = flow.getReleaseBranchPrefix() + hotfixLabel;
+                final String prefixedBranchName = flow.getHotfixBranchPrefix() + hotfixLabel;
                 RefSpec branchSpec = new RefSpec(prefixedBranchName);
                 flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
             }
@@ -158,6 +160,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .setPush(ctx.isPushHotfixes())
                 .setStartCommit(ctx.getStartCommit())
+                .setScmMessagePrefix(ctx.getScmCommentPrefix())
                 .call();
         }
         catch (GitAPIException e)
@@ -190,6 +193,8 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
         try
         {
+            JGitFlowReporter reporter = flow.getReporter();
+            
             //get the hotfix branch
             List<Ref> hotfixBranches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getHotfixBranchPrefix());
 
@@ -203,19 +208,54 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             Ref hotfixBranch = hotfixBranches.get(0);
             hotfixLabel = hotfixBranch.getName().substring(hotfixBranch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
 
+            String prefixedBranchName = flow.getHotfixBranchPrefix() + hotfixLabel;
 
             //make sure we're on the hotfix branch
-            flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel).call();
+            flow.git().checkout().setName(prefixedBranchName).call();
+
+            //make sure we're not behind remote
+            if(GitHelper.remoteBranchExists(flow.git(), prefixedBranchName, reporter))
+            {
+                if(GitHelper.localBranchBehindRemote(flow.git(),prefixedBranchName,reporter))
+                {
+                    reporter.errorText("hotfix-finish","local branch '" + prefixedBranchName + "' is behind the remote branch");
+                    reporter.endMethod();
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + prefixedBranchName + "' is behind the remote branch");
+                }
+            }
+
+            if(GitHelper.remoteBranchExists(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
+            {
+                if(GitHelper.localBranchBehindRemote(flow.git(),flow.getDevelopBranchName(),flow.getReporter()))
+                {
+                    reporter.errorText("hotfix-finish","local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                    reporter.endMethod();
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                }
+            }
+
+            if(GitHelper.remoteBranchExists(flow.git(), flow.getMasterBranchName(), flow.getReporter()))
+            {
+                if(GitHelper.localBranchBehindRemote(flow.git(),flow.getMasterBranchName(),flow.getReporter()))
+                {
+                    reporter.errorText("hotfix-finish","local branch '" + flow.getMasterBranchName() + "' is behind the remote branch");
+                    reporter.endMethod();
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + flow.getMasterBranchName() + "' is behind the remote branch");
+                }
+            }
 
             //get the reactor projects for hotfix
-            MavenSession hotfixSession = getSessionForBranch(flow, flow.getHotfixBranchPrefix() + hotfixLabel, originalProjects, session);
+            MavenSession hotfixSession = getSessionForBranch(flow, prefixedBranchName, originalProjects, session);
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
 
             updateHotfixPomsWithRelease(hotfixLabel,flow,ctx,config,originalProjects,session);
-            projectHelper.commitAllPoms(flow.git(), originalProjects, "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), originalProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix");
 
             //reload the reactor projects for hotfix
-            hotfixSession = getSessionForBranch(flow, flow.getHotfixBranchPrefix() + hotfixLabel, originalProjects, session);
+            hotfixSession = getSessionForBranch(flow, prefixedBranchName, originalProjects, session);
             hotfixProjects = hotfixSession.getSortedProjects();
             
             checkPomForRelease(hotfixProjects);
@@ -258,9 +298,9 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
             updatePomsWithVersionCopy(ctx, developProjects, hotfixProjects);
             flow.git().add().addFilepattern(".").call();
-            flow.git().commit().setMessage("updating develop with hotfix versions to avoid merge conflicts").call();
+            flow.git().commit().setMessage(ctx.getScmCommentPrefix() + "updating develop with hotfix versions to avoid merge conflicts").call();
 
-            flow.git().checkout().setName(flow.getHotfixBranchPrefix() + hotfixLabel);
+            flow.git().checkout().setName(prefixedBranchName);
 
             if (ctx.isPushHotfixes() || !ctx.isNoTag())
             {
@@ -275,6 +315,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
                 .setNoTag(ctx.isNoTag())
                 .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
                 .setAllowUntracked(ctx.isAllowUntracked())
+                .setScmMessagePrefix(ctx.getScmCommentPrefix())
                 .call();
 
             if(!mergeResult.wasSuccessful())
@@ -304,7 +345,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             developProjects = developSession.getSortedProjects();
             updatePomsWithPreviousVersions("develop", ctx, developProjects, config);
 
-            projectHelper.commitAllPoms(flow.git(), developProjects, "updating poms for development");
+            projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for development");
 
             config.setLastReleaseVersions(originalVersions);
             configManager.saveConfiguration(config, flow.git());
@@ -340,7 +381,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixVersion("hotfixlabel", ctx, hotfixProjects, config);
 
-            projectHelper.commitAllPoms(flow.git(), hotfixProjects, "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix");
         }
         catch (GitAPIException e)
         {
@@ -365,7 +406,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixVersion("hotfixlabel", hotfixLabel, ctx, hotfixProjects, config);
 
-            projectHelper.commitAllPoms(flow.git(), hotfixProjects, "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix");
         }
         catch (GitAPIException e)
         {
@@ -390,7 +431,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixSnapshotVersion("hotfixlabel", hotfixLabel, ctx, hotfixProjects, config);
 
-            projectHelper.commitAllPoms(flow.git(), hotfixProjects, "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix");
         }
         catch (GitAPIException e)
         {

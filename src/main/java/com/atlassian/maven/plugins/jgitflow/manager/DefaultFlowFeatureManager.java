@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
+import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
+import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
@@ -15,7 +18,6 @@ import com.atlassian.maven.plugins.jgitflow.util.NamingUtil;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
@@ -40,7 +42,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     public void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
         JGitFlow flow = null;
-        String featureName = null;
         try
         {
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
@@ -48,36 +49,19 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             writeReportHeader(ctx, flow.getReporter());
             setupCredentialProviders(ctx, flow.getReporter());
 
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-
-            featureName = getFeatureStartName(ctx, flow);
-
-            if (ctx.isPushFeatures())
-            {
-                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
-            }
-
-            flow.featureStart(featureName)
-                .setAllowUntracked(ctx.isAllowUntracked())
-                .setPush(ctx.isPushFeatures())
-                .setStartCommit(ctx.getStartCommit())
-                .call();
+            String featureName = startFeature(flow, ctx);
 
             if (ctx.isEnableFeatureVersions())
             {
-                final String prefixedBranchName = flow.getFeatureBranchPrefix() + featureName;
                 updateFeaturePomsWithFeatureVersion(featureName, flow, ctx, reactorProjects, session);
-
-                if (ctx.isPushFeatures())
-                {
-                    projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
-                    RefSpec branchSpec = new RefSpec(prefixedBranchName);
-                    flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
-                }
             }
 
-            projectHelper.commitAllPoms(flow.git(), reactorProjects, "updating poms for " + featureName + " branch");
+            if (ctx.isPushFeatures())
+            {
+                final String prefixedBranchName = flow.getFeatureBranchPrefix() + featureName;
+                RefSpec branchSpec = new RefSpec(prefixedBranchName);
+                flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
+            }
         }
         catch (GitAPIException e)
         {
@@ -109,26 +93,53 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
 
-            writeReportHeader(ctx, flow.getReporter());
-            setupCredentialProviders(ctx, flow.getReporter());
+            JGitFlowReporter reporter = flow.getReporter();
+            
+            writeReportHeader(ctx, reporter);
+            setupCredentialProviders(ctx, reporter);
 
             String featureLabel = getFeatureFinishName(ctx, flow);
+            
+            String prefixedBranchName = flow.getFeatureBranchPrefix() + featureLabel;
 
             // make sure we are on specific feature branch
-            flow.git().checkout().setName(flow.getFeatureBranchPrefix() + featureLabel).call();
+            flow.git().checkout().setName(prefixedBranchName).call();
+            
+            //make sure we're not behind remote
+            if(GitHelper.remoteBranchExists(flow.git(), prefixedBranchName, reporter))
+            {
+                if(GitHelper.localBranchBehindRemote(flow.git(),prefixedBranchName,reporter))
+                {
+                    reporter.errorText("feature-finish","local branch '" + prefixedBranchName + "' is behind the remote branch");
+                    reporter.endMethod();
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + prefixedBranchName + "' is behind the remote branch");
+                }
+            }
+
+            if(GitHelper.remoteBranchExists(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
+            {
+                if(GitHelper.localBranchBehindRemote(flow.git(),flow.getDevelopBranchName(),flow.getReporter()))
+                {
+                    reporter.errorText("feature-finish","local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                    reporter.endMethod();
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                }
+            }
 
             if (ctx.isEnableFeatureVersions())
             {
                 updateFeaturePomsWithNonFeatureVersion(featureLabel, flow, ctx, reactorProjects, session);
 
                 //reload the reactor projects
-                MavenSession featureSession = getSessionForBranch(flow, flow.getFeatureBranchPrefix() + featureLabel, reactorProjects, session);
+                MavenSession featureSession = getSessionForBranch(flow, prefixedBranchName, reactorProjects, session);
                 List<MavenProject> featureProjects = featureSession.getSortedProjects();
 
                 currentSession = featureSession;
                 rootProject = ReleaseUtil.getRootProject(featureProjects);
             }
-
+            
             if (ctx.isPushFeatures())
             {
                 projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
@@ -154,6 +165,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .setPush(ctx.isPushFeatures())
                 .setNoMerge(ctx.isNoFeatureMerge())
+                .setScmMessagePrefix(ctx.getScmCommentPrefix())
                 .call();
 
             //make sure we're on develop
@@ -277,6 +289,41 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             }
         }
     }
+    
+    private String startFeature(JGitFlow flow, ReleaseContext ctx) throws JGitFlowReleaseException
+    {
+        String featureName = "";
+
+        try
+        {
+            //make sure we're on develop
+            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+
+            featureName = getFeatureStartName(ctx, flow);
+
+            if(ctx.isPushFeatures())
+            {
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+            }
+
+            flow.featureStart(featureName)
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushFeatures())
+                .setStartCommit(ctx.getStartCommit())
+                .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                .call();
+        }
+        catch (GitAPIException e)
+        {
+            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+        catch (JGitFlowException e)
+        {
+            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+        }
+
+        return featureName;
+    }
 
     private void updateFeaturePomsWithFeatureVersion(String featureName, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
@@ -291,7 +338,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             updatePomsWithFeatureVersion("featureStartLabel", featureVersion, ctx, featureProjects);
 
-            projectHelper.commitAllPoms(flow.git(), featureProjects, "updating poms for " + featureVersion + " version");
+            projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version");
         }
         catch (GitAPIException e)
         {
@@ -320,7 +367,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             updatePomsWithNonFeatureVersion("featureFinishLabel", featureVersion, ctx, featureProjects);
 
-            projectHelper.commitAllPoms(flow.git(), featureProjects, "updating poms for " + featureVersion + " version");
+            projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version");
         }
         catch (GitAPIException e)
         {

@@ -116,7 +116,7 @@ public class PrettyPrompter implements Prompter
 
         try
         {
-            return inputHandler.readLine();
+            return StringUtils.trim(inputHandler.readLine());
         } catch (IOException e)
         {
             throw new PrompterException("Failed to read user response", e);
@@ -143,7 +143,7 @@ public class PrettyPrompter implements Prompter
                 line = defaultReply;
             }
 
-            return line;
+            return StringUtils.trim(line);
         } catch (IOException e)
         {
             throw new PrompterException("Failed to read user response", e);
@@ -206,7 +206,7 @@ public class PrettyPrompter implements Prompter
         }
         while (line == null || !possibleValues.contains(line));
 
-        return line;
+        return StringUtils.trim(line);
     }
 
     public String promptNumberedList(String message, List<String> possibleValues) throws PrompterException

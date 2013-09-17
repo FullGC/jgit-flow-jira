@@ -38,11 +38,11 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     @Override
     public void execute(MavenProject project, ReleaseContext ctx, MavenSession session) throws MavenExecutorException
     {
-        String goal = "deploy";
+        String goal = "clean deploy";
         
         if(ctx.isNoDeploy())
         {
-            goal = "install";
+            goal = "clean install";
         }
         
         execute(project,ctx,session,goal);
@@ -123,7 +123,14 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
                 
                 for(String moduleName : moduleNames)
                 {
-                    projectFiles.push(new File(file.getParentFile(), moduleName + File.separator + "pom.xml"));
+                	//if moduleName is a file treat as explicitly defined pom.xml
+                	File baseFile = new File(file.getParentFile(), moduleName);
+                	if(baseFile.isFile()){
+                		projectFiles.push(baseFile);
+                	}else{
+                		projectFiles.push(new File(baseFile, File.separator + "pom.xml"));
+                	}
+                	
                 }
     
                 reactorProjects.add(project);

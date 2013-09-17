@@ -278,9 +278,13 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
             for ( Iterator i = project.getModules().iterator(); i.hasNext(); )
             {
-                String module = (String) i.next();
-
-                projectFiles.push( new File( file.getParentFile(), module + "/pom.xml" ) );
+            	 String module = (String) i.next();
+                 File moduleFile = new File( file.getParentFile(), module);
+                 if(moduleFile.isFile()){
+                 	projectFiles.push( moduleFile );
+                 }else{
+                 	projectFiles.push( new File( moduleFile, "/pom.xml" ) );
+                 }
             }
 
             reactorProjects.add( project );
@@ -382,16 +386,14 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     protected void comparePomFiles(MavenProject project) throws IOException
     {
         File actualFile = project.getFile();
-        File expectedFile = new File(actualFile.getParentFile(), "expected-pom.xml" );
-
+        File expectedFile = new File(actualFile.getParentFile(), "expected-"+actualFile.getName() );
         comparePomFiles(expectedFile, actualFile);
     }
 
     protected void compareSnapPomFiles(MavenProject project) throws IOException
     {
         File actualFile = project.getFile();
-        File expectedFile = new File(actualFile.getParentFile(), "expected-snap-pom.xml" );
-
+        File expectedFile = new File(actualFile.getParentFile(), "expected-snap-"+actualFile.getName() );
         comparePomFiles(expectedFile, actualFile);
     }
 

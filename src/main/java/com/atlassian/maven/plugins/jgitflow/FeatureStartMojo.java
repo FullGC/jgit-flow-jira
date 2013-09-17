@@ -23,8 +23,8 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
     @Parameter( property = "featureName" )
     private String featureName;
 
-    @Parameter( defaultValue = "true", property = "enableFeatureVersions" )
-    private boolean enableFeatureVersions = true;
+    @Parameter( defaultValue = "false", property = "enableFeatureVersions" )
+    private boolean enableFeatureVersions = false;
 
     @Parameter( defaultValue = "false", property = "pushFeatures" )
     private boolean pushFeatures = false;
@@ -48,6 +48,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
                 .setStartCommit(startCommit)
                 .setAllowRemote(isRemoteAllowed())
                 .setDefaultOriginUrl(defaultOriginUrl)
+                .setScmCommentPrefix(scmCommentPrefix)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

@@ -26,11 +26,6 @@
                     <role>org.apache.maven.execution.RuntimeInformation</role>
                     <field-name>runtimeInformation</field-name>
                 </requirement>
-
-                <requirement>
-                    <role>org.apache.maven.plugin.logging.Log</role>
-                    <field-name>log</field-name>
-                </requirement>
             </requirements>
         </component>
         <component>
@@ -121,6 +116,11 @@
             </requirements>
         </component>
         <component>
+            <role>org.codehaus.plexus.components.interactivity.InputHandler</role>
+            <role-hint>console</role-hint>
+            <implementation>com.atlassian.maven.plugins.jgitflow.ConsoleInputHandler</implementation>
+        </component>
+        <component>
             <role>org.codehaus.plexus.components.interactivity.Prompter</role>
             <role-hint>pretty</role-hint>
             <implementation>com.atlassian.maven.plugins.jgitflow.PrettyPrompter</implementation>
@@ -131,6 +131,7 @@
                 </requirement>
                 <requirement>
                     <role>org.codehaus.plexus.components.interactivity.InputHandler</role>
+                    <role-hint>console</role-hint>
                     <field-name>inputHandler</field-name>
                 </requirement>
             </requirements>
