@@ -38,11 +38,11 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     @Override
     public void execute(MavenProject project, ReleaseContext ctx, MavenSession session) throws MavenExecutorException
     {
-        String goal = "deploy";
+        String goal = "clean deploy";
         
         if(ctx.isNoDeploy())
         {
-            goal = "install";
+            goal = "clean install";
         }
         
         execute(project,ctx,session,goal);
