@@ -16,17 +16,15 @@ public class ConsoleInputHandler extends AbstractInputHandler implements Initial
 {
     private final Console console = System.console();
 
-    public ConsoleInputHandler()
-    {
-        if(null == console)
-        {
-            throw new NoClassDefFoundError(ConsoleText.get().noSystemConsoleAvailable);
-        }
-    }
 
     @Override
     public void dispose()
     {
+        if(null == console)
+        {
+            return;
+        }
+        
         try
         {
             console.reader().close();
@@ -46,12 +44,22 @@ public class ConsoleInputHandler extends AbstractInputHandler implements Initial
     @Override
     public String readLine() throws IOException
     {
+        if(null == console)
+        {
+            return "";
+        }
+        
         return console.readLine();
     }
 
     @Override
     public String readPassword() throws IOException
     {
+        if(null == console)
+        {
+            return "";
+        }
+        
         return new String(console.readPassword());
     }
 }
