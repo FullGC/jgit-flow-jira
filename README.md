@@ -11,3 +11,5 @@ For more information and usage guide, [see the wiki](https://bitbucket.org/atlas
 For discussion about the plugin, [see the google group](https://groups.google.com/forum/#!forum/maven-jgitflow-users)
 
 To log an issue or feature request, [use the issue tracker](https://bitbucket.org/atlassian/maven-jgitflow-plugin/issues)
+
+Got something to say?  [@sysbliss](https://twitter.com/sysbliss) #MavenJGitFlow
