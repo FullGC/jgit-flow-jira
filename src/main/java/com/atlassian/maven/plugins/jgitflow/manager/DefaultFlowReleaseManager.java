@@ -209,7 +209,6 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 if(GitHelper.localBranchBehindRemote(flow.git(),prefixedBranchName,reporter))
                 {
                     reporter.errorText("release-finish","local branch '" + prefixedBranchName + "' is behind the remote branch");
-                    reporter.endMethod();
                     reporter.flush();
                     throw new BranchOutOfDateException("local branch '" + prefixedBranchName + "' is behind the remote branch");
                 }
@@ -220,7 +219,6 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 if(GitHelper.localBranchBehindRemote(flow.git(),flow.getDevelopBranchName(),flow.getReporter()))
                 {
                     reporter.errorText("release-finish","local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
-                    reporter.endMethod();
                     reporter.flush();
                     throw new BranchOutOfDateException("local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
                 }
@@ -231,7 +229,6 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 if(GitHelper.localBranchBehindRemote(flow.git(),flow.getMasterBranchName(),flow.getReporter()))
                 {
                     reporter.errorText("release-finish","local branch '" + flow.getMasterBranchName() + "' is behind the remote branch");
-                    reporter.endMethod();
                     reporter.flush();
                     throw new BranchOutOfDateException("local branch '" + flow.getMasterBranchName() + "' is behind the remote branch");
                 }

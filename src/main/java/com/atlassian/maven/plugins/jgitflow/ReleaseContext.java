@@ -411,6 +411,11 @@ public class ReleaseContext
 
     public String getScmCommentPrefix()
     {
+        if(null == scmCommentPrefix || scmCommentPrefix.equalsIgnoreCase("null"))
+        {
+            this.scmCommentPrefix = "";
+        }
+        
         return scmCommentPrefix;
     }
 
