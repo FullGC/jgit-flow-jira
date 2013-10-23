@@ -340,7 +340,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             //reload the reactor projects for develop
             developSession = getSessionForBranch(flow, flow.getDevelopBranchName(), originalProjects, session);
             developProjects = developSession.getSortedProjects();
-            updatePomsWithPreviousVersions("develop", ctx, developProjects, config);
+            updatePomsWithPreviousVersions("hotfix", ctx, developProjects, config);
 
             projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for development");
 

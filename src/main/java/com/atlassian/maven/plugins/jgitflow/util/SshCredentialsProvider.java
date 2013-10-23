@@ -26,7 +26,7 @@ public class SshCredentialsProvider extends JschConfigSessionFactory {
     @Override
     protected void configure(OpenSshConfig.Host hc, Session session)
     {
-        session.setConfig("StrictHostKeyChecking", "false");
+        session.setConfig("StrictHostKeyChecking", "no");
     }
 
     @Override
