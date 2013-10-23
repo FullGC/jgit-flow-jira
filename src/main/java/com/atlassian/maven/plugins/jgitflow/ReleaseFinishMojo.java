@@ -61,8 +61,11 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "true", property = "useReleaseProfile" )
     private boolean useReleaseProfile = true;
 
+    @Parameter( defaultValue = "false", property = "pullMaster" )
+    private boolean pullMaster = false;
+
     @Parameter( defaultValue = "true", property = "updateDependencies" )
-    private boolean updateDependencies;
+    private boolean updateDependencies = true;
 
     @Parameter( property = "tagMessage" )
     private String tagMessage;
@@ -97,6 +100,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setAllowRemote(isRemoteAllowed())
                 .setDefaultOriginUrl(defaultOriginUrl)
                 .setScmCommentPrefix(scmCommentPrefix)
+                .setPullMaster(pullMaster)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

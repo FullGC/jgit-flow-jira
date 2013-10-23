@@ -39,6 +39,7 @@ public class ReleaseContext
     private boolean noFeatureMerge;
     private boolean allowUntracked;
     private boolean allowRemote;
+    private boolean pullMaster;
     private String startCommit;
     private String defaultOriginUrl;
     private String scmCommentPrefix;
@@ -75,6 +76,7 @@ public class ReleaseContext
         this.allowRemote = true;
         this.defaultOriginUrl = "";
         this.scmCommentPrefix = "";
+        this.pullMaster = false;
     }
 
     public boolean isAllowSnapshots()
@@ -422,6 +424,17 @@ public class ReleaseContext
     public ReleaseContext setScmCommentPrefix(String scmCommentPrefix)
     {
         this.scmCommentPrefix = scmCommentPrefix;
+        return this;
+    }
+
+    public boolean isPullMater()
+    {
+        return pullMaster;
+    }
+
+    public ReleaseContext setPullMaster(boolean pullMaster)
+    {
+        this.pullMaster = pullMaster;
         return this;
     }
 }
