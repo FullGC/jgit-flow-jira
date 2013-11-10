@@ -206,6 +206,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         try
         {
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
 
             writeReportHeader(ctx, flow.getReporter());
 
