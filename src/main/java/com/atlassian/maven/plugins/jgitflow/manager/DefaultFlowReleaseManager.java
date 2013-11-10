@@ -216,6 +216,16 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             if(GitHelper.remoteBranchExists(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
             {
+                if(ctx.isPullDevelop())
+                {
+                    reporter.debugText("finishRelease", "pulling develop before remote behind check");
+                    reporter.flush();
+
+                    flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+                    flow.git().pull().call();
+                    flow.git().checkout().setName(prefixedBranchName).call();
+                }
+                
                 if(GitHelper.localBranchBehindRemote(flow.git(),flow.getDevelopBranchName(),flow.getReporter()))
                 {
                     reporter.errorText("release-finish","local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
@@ -226,7 +236,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             if(GitHelper.remoteBranchExists(flow.git(), flow.getMasterBranchName(), flow.getReporter()))
             {
-                if(ctx.isPullMater())
+                if(ctx.isPullMaster())
                 {
                     reporter.debugText("finishRelease", "pulling master before remote behind check");
                     reporter.flush();

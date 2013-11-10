@@ -64,6 +64,9 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "false", property = "pullMaster" )
     private boolean pullMaster = false;
 
+    @Parameter( defaultValue = "false", property = "pullDevelop" )
+    private boolean pullDevelop = false;
+    
     @Parameter( defaultValue = "true", property = "updateDependencies" )
     private boolean updateDependencies = true;
 
@@ -101,6 +104,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setDefaultOriginUrl(defaultOriginUrl)
                 .setScmCommentPrefix(scmCommentPrefix)
                 .setPullMaster(pullMaster)
+                .setPullDevelop(pullDevelop)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
