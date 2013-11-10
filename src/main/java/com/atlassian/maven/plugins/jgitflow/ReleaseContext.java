@@ -40,6 +40,7 @@ public class ReleaseContext
     private boolean allowUntracked;
     private boolean allowRemote;
     private boolean pullMaster;
+    private boolean pullDevelop;
     private String startCommit;
     private String defaultOriginUrl;
     private String scmCommentPrefix;
@@ -77,6 +78,7 @@ public class ReleaseContext
         this.defaultOriginUrl = "";
         this.scmCommentPrefix = "";
         this.pullMaster = false;
+        this.pullDevelop = false;
     }
 
     public boolean isAllowSnapshots()
@@ -427,7 +429,7 @@ public class ReleaseContext
         return this;
     }
 
-    public boolean isPullMater()
+    public boolean isPullMaster()
     {
         return pullMaster;
     }
@@ -437,4 +439,16 @@ public class ReleaseContext
         this.pullMaster = pullMaster;
         return this;
     }
+
+    public ReleaseContext setPullDevelop(boolean pullDevelop)
+    {
+        this.pullDevelop = pullDevelop;
+        return this;
+    }
+
+    public boolean isPullDevelop()
+    {
+        return pullDevelop;
+    }
+
 }
