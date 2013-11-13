@@ -38,7 +38,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         JGitFlow flow = null;
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
 
             writeReportHeader(ctx,flow.getReporter());
             setupCredentialProviders(ctx,flow.getReporter());
@@ -79,7 +79,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         MavenJGitFlowConfiguration config = null;
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
 
             writeReportHeader(ctx,flow.getReporter());
             setupCredentialProviders(ctx,flow.getReporter());

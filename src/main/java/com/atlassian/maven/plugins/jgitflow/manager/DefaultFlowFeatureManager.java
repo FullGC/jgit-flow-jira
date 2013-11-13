@@ -44,7 +44,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         JGitFlow flow = null;
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
 
             writeReportHeader(ctx, flow.getReporter());
             setupCredentialProviders(ctx, flow.getReporter());
@@ -91,7 +91,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
 
             JGitFlowReporter reporter = flow.getReporter();
             
@@ -205,7 +205,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
+            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
             projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
 
             writeReportHeader(ctx, flow.getReporter());
