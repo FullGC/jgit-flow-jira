@@ -520,14 +520,14 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     public void ensureOrigin(String defaultRemote, JGitFlow flow) throws JGitFlowReleaseException
     {
         getLogger().info("ensuring origin exists...");
+        String newOriginUrl = defaultRemote;
+        
         try
         {
             StoredConfig config = flow.git().getRepository().getConfig();
             String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url");
             if (Strings.isNullOrEmpty(originUrl) && !Strings.isNullOrEmpty(defaultRemote))
             {
-                String newOriginUrl = defaultRemote;
-                
                 if(defaultRemote.startsWith("file://"))
                 {
                     File originFile = new File(defaultRemote.substring(7));
@@ -537,10 +537,30 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 getLogger().info("adding origin from default...");
                 config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", newOriginUrl);
                 config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
-                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "remote", Constants.DEFAULT_REMOTE_NAME);
-                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "merge", Constants.R_HEADS + flow.getMasterBranchName());
-                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "remote", Constants.DEFAULT_REMOTE_NAME);
-                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "merge", Constants.R_HEADS + flow.getDevelopBranchName());
+            }
+            
+            if(!Strings.isNullOrEmpty(originUrl) || !Strings.isNullOrEmpty(newOriginUrl))
+            {
+                if(Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION,flow.getMasterBranchName(),"remote")))
+                {
+                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "remote", Constants.DEFAULT_REMOTE_NAME);
+                }
+    
+                if(Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "merge")))
+                {
+                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "merge", Constants.R_HEADS + flow.getMasterBranchName());
+                }
+    
+                if(Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "remote")))
+                {
+                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "remote", Constants.DEFAULT_REMOTE_NAME);
+                }
+    
+                if(Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "merge")))
+                {
+                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "merge", Constants.R_HEADS + flow.getDevelopBranchName());
+                }
+
                 config.save();
 
                 try
@@ -552,31 +572,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 {
                     throw new JGitFlowReleaseException("error configuring remote git repo with url: " + newOriginUrl, e);
                 }
-
-                /*
-                getLogger().info("updating branch upstreams...");
-                Ref originMaster = GitHelper.getRemoteBranch(flow.git(), flow.getMasterBranchName());
-
-                if (null != originMaster)
-                {
-                    Ref localMaster = GitHelper.getLocalBranch(flow.git(), flow.getMasterBranchName());
-                    RefUpdate update = flow.git().getRepository().updateRef(localMaster.getName());
-                    update.setNewObjectId(originMaster.getObjectId());
-                    update.forceUpdate();
-                }
-
-                Ref originDevelop = GitHelper.getRemoteBranch(flow.git(), flow.getDevelopBranchName());
-
-                if (null != originDevelop)
-                {
-                    Ref localDevelop = GitHelper.getLocalBranch(flow.git(), flow.getDevelopBranchName());
-                    RefUpdate updateDevelop = flow.git().getRepository().updateRef(localDevelop.getName());
-                    updateDevelop.setNewObjectId(originDevelop.getObjectId());
-                    updateDevelop.forceUpdate();
-                }
-
-                commitAllChanges(flow.git(), "committing changes from new origin");
-                */
+                
             }
 
         }
@@ -584,10 +580,6 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         {
             throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultRemote, e);
         }
-//        catch (JGitFlowIOException e)
-//        {
-//            throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultRemote, e);
-//        }
     }
 
 
