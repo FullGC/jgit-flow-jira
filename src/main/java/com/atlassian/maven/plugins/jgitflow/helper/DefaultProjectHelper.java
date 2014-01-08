@@ -52,6 +52,7 @@ import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
@@ -69,6 +70,8 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     private static final String ls = System.getProperty("line.separator");
     private static String OS = System.getProperty("os.name").toLowerCase();
     private static boolean isWindows = (OS.indexOf("win") >= 0);
+
+    private static boolean isCygwin = (isWindows && !Strings.isNullOrEmpty(System.getenv("TERM")));
     
     private PrettyPrompter prompter;
     private ArtifactFactory artifactFactory;
@@ -83,6 +86,31 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         this.releaseVersions = new HashMap<String, Map<String, String>>();
         this.developmentVersions = new HashMap<String, Map<String, String>>();
         this.hotfixVersions = new HashMap<String, Map<String, String>>();
+    }
+
+    @Override
+    public void fixCygwinIfNeeded(JGitFlow flow) throws JGitFlowReleaseException
+    {
+        if(isCygwin)
+        {
+            try
+            {
+                getLogger().info("detected cygwin, turning off filemode...");
+                
+                StoredConfig config = flow.git().getRepository().getConfig();
+                config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
+                config.save();
+                config.load();
+            }
+            catch (IOException e)
+            {
+                throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
+            }
+            catch (ConfigInvalidException e)
+            {
+                throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
+            }
+        }
     }
 
     @Override

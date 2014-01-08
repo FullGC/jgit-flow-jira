@@ -24,6 +24,8 @@ public interface ProjectHelper
     public static final String AT_REPORT = "report";
     public static final String AT_EXTENSIONS = "extensions";
     
+    void fixCygwinIfNeeded(JGitFlow flow) throws JGitFlowReleaseException;
+    
     String getReleaseVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException;
     
     String getHotfixVersion(ReleaseContext ctx, MavenProject rootProject, String lastRelease) throws JGitFlowReleaseException;
