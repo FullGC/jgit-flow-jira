@@ -21,13 +21,16 @@ public class ConsoleInputHandler extends AbstractInputHandler implements Initial
 
     public ConsoleInputHandler()
     {
-        try
+        if(null == console)
         {
-            this.jline = new ConsoleReader();
-        }
-        catch (IOException e)
-        {
-            this.jline = null;
+            try
+            {
+                this.jline = new ConsoleReader();
+            }
+            catch (IOException e)
+            {
+                this.jline = null;
+            }
         }
     }
 
