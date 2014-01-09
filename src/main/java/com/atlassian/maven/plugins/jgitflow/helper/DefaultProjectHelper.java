@@ -93,9 +93,9 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     {
         if(isCygwin)
         {
+            getLogger().info("detected cygwin:");
             try
             {
-                getLogger().info("detected cygwin:");
                 getLogger().info("    - turning off filemode...");
                 
                 StoredConfig config = flow.git().getRepository().getConfig();
@@ -111,6 +111,9 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             {
                 throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
             }
+
+            getLogger().info("    - fixing maven prompter...");
+            prompter.setCygwinTerminal();
         }
     }
 

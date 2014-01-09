@@ -1,7 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow;
 
-import java.io.Console;
-import java.io.IOException;
+import java.io.*;
 
 import org.codehaus.plexus.components.interactivity.AbstractInputHandler;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Disposable;
@@ -10,6 +9,7 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationExce
 import org.eclipse.jgit.console.ConsoleText;
 
 import jline.ConsoleReader;
+import jline.UnixTerminal;
 
 /**
  * @since version
@@ -31,6 +31,23 @@ public class ConsoleInputHandler extends AbstractInputHandler implements Initial
         }
     }
 
+    public void setCygwinTerminal()
+    {
+        try
+        {
+            this.jline = new ConsoleReader(new FileInputStream(FileDescriptor.in)
+                                            ,new PrintWriter(
+                                                    new OutputStreamWriter(System.out,
+                                                            System.getProperty("jline.WindowsTerminal.output.encoding", System.getProperty("file.encoding"))))
+                                            ,null
+                                            ,new UnixTerminal());
+        }
+        catch (IOException e)
+        {
+            this.jline = null;
+        }
+    }
+    
     @Override
     public void dispose()
     {
