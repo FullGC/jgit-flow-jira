@@ -60,6 +60,11 @@ public class PrettyPrompter implements Prompter
             useAnsiColor = false;
         }
     }
+    
+    public void setCygwinTerminal()
+    {
+        ((ConsoleInputHandler) inputHandler).setCygwinTerminal();
+    }
 
     public String promptNotBlank(String message) throws PrompterException
     {
