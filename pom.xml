@@ -9,7 +9,7 @@
 
     <groupId>com.atlassian.maven.plugins</groupId>
     <artifactId>maven-jgitflow-plugin</artifactId>
-    <version>1.0-alpha27-mjf_105_cygwin_filemode_fix-SNAPSHOT</version>
+    <version>1.0-alpha27-SNAPSHOT</version>
 
     <packaging>maven-plugin</packaging>
 
