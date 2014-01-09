@@ -95,7 +95,8 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         {
             try
             {
-                getLogger().info("detected cygwin, turning off filemode...");
+                getLogger().info("detected cygwin:");
+                getLogger().info("    - turning off filemode...");
                 
                 StoredConfig config = flow.git().getRepository().getConfig();
                 config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
