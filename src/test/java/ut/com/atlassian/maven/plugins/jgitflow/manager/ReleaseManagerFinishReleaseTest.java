@@ -79,4 +79,20 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         
     }
 
+    @Test
+    public void releaseFinishWithComplexVersionAndSuffix() throws Exception
+    {
+        String commentPrefix = "woot!";
+
+        String projectName = "complex-version-and-suffix";
+
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectName);
+        File projectRoot = projects.get(0).getBasedir();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+        ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true).setReleaseBranchVersionSuffix("RC");
+
+        basicReleaseRewriteTest(projectName, ctx);
+    }
+
 }
