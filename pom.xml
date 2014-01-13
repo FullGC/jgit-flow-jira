@@ -328,6 +328,7 @@
             </build>
         </profile>
         <profile>
+            <!-- to run this, do a normal release and then run: mvn validate -Patlas-deploy -Dversion=1.0-alpha27 -->
             <id>atlas-deploy</id>
             <build>
                 <plugins>
