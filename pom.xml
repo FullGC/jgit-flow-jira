@@ -6,13 +6,13 @@
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
-    
+
     <groupId>com.atlassian.maven.plugins</groupId>
     <artifactId>maven-jgitflow-plugin</artifactId>
-    <version>1.0-alpha26</version>
-    
+    <version>1.0-alpha27</version>
+
     <packaging>maven-plugin</packaging>
-    
+
     <name>Maven JGitFlow Plugin</name>
     <description>A plugin to support doing git-flow releases</description>
     <url>https://bitbucket.org/atlassian/maven-jgitflow-plugin</url>
@@ -42,14 +42,14 @@
     <prerequisites>
         <maven>2.2.1</maven>
     </prerequisites>
-    
+
     <scm>
         <connection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</developerConnection>
         <url>https://bitbucket.org/atlassian/maven-jgitflow-plugin</url>
         <tag>HEAD</tag>
     </scm>
-    
+
     <dependencies>
         <dependency>
             <groupId>com.atlassian.jgitflow</groupId>
@@ -93,14 +93,14 @@
             <version>${mavenVersion}</version>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.apache.maven</groupId>-->
-            <!--<artifactId>maven-compat</artifactId>-->
-            <!--<version>${mavenVersion}</version>-->
+        <!--<groupId>org.apache.maven</groupId>-->
+        <!--<artifactId>maven-compat</artifactId>-->
+        <!--<version>${mavenVersion}</version>-->
         <!--</dependency>-->
         <!--<dependency>-->
-            <!--<groupId>org.apache.maven</groupId>-->
-            <!--<artifactId>maven-project</artifactId>-->
-            <!--<version>${mavenVersion}</version>-->
+        <!--<groupId>org.apache.maven</groupId>-->
+        <!--<artifactId>maven-project</artifactId>-->
+        <!--<version>${mavenVersion}</version>-->
         <!--</dependency>-->
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -141,14 +141,14 @@
             <artifactId>plexus-utils</artifactId>
             <version>1.5.15</version>
         </dependency>
-        
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -160,7 +160,7 @@
             <artifactId>maven-artifact</artifactId>
             <version>2.2.1</version>
         </dependency>
-        
+
         <!-- jsch agent stuff -->
         <dependency>
             <groupId>com.jcraft</groupId>
@@ -178,7 +178,7 @@
             <version>${jschAgentVersion}</version>
         </dependency>
     </dependencies>
-    
+
     <build>
         <resources>
             <resource>
@@ -232,12 +232,12 @@
                     <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                 </configuration>
                 <executions>
-                <execution>
-                    <id>mojo-descriptor</id>
-                    <goals>
-                        <goal>descriptor</goal>
-                    </goals>
-                </execution>
+                    <execution>
+                        <id>mojo-descriptor</id>
+                        <goals>
+                            <goal>descriptor</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -290,7 +290,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>it-tests</id>
             <build>
@@ -329,6 +329,58 @@
         </profile>
     </profiles>
     
+    <repositories>
+        <repository>
+            <id>atlas-central</id>
+            <url>https://maven.atlassian.com/content/repositories/central</url>
+            <releases>
+                <checksumPolicy>fail</checksumPolicy>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <checksumPolicy>fail</checksumPolicy>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>the-real-central</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <releases>
+                <checksumPolicy>fail</checksumPolicy>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <checksumPolicy>fail</checksumPolicy>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>atlas-central</id>
+            <url>https://maven.atlassian.com/content/repositories/central</url>
+            <releases>
+                <checksumPolicy>fail</checksumPolicy>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <checksumPolicy>fail</checksumPolicy>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>the-real-central</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <releases>
+                <checksumPolicy>fail</checksumPolicy>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <checksumPolicy>fail</checksumPolicy>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
     <properties>
         <mavenVersion>2.2.1</mavenVersion>
         <!--<mavenVersion>3.0.5</mavenVersion>-->

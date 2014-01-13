@@ -43,6 +43,12 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
 
     @Parameter( defaultValue = "false", property = "noFeatureBuild" )
     private boolean noFeatureBuild = false;
+
+    @Parameter( defaultValue = "false", property = "pullMaster" )
+    private boolean pullMaster = false;
+
+    @Parameter( defaultValue = "false", property = "pullDevelop" )
+    private boolean pullDevelop = false;
     
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
@@ -66,6 +72,8 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setNoBuild(noFeatureBuild)
                 .setDefaultOriginUrl(defaultOriginUrl)
                 .setScmCommentPrefix(scmCommentPrefix)
+                .setPullMaster(pullMaster)
+                .setPullDevelop(pullDevelop)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

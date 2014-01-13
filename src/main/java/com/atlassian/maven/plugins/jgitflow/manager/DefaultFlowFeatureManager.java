@@ -45,7 +45,9 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         try
         {
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
-
+            
+            projectHelper.fixCygwinIfNeeded(flow);
+            
             writeReportHeader(ctx, flow.getReporter());
             setupCredentialProviders(ctx, flow.getReporter());
 
@@ -93,10 +95,37 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
 
+            projectHelper.fixCygwinIfNeeded(flow);
+            
             JGitFlowReporter reporter = flow.getReporter();
             
             writeReportHeader(ctx, reporter);
             setupCredentialProviders(ctx, reporter);
+
+            if (ctx.isPushFeatures() || ctx.isPullDevelop())
+            {
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+            }
+
+            //do a pull if needed
+            if(GitHelper.remoteBranchExists(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
+            {
+                if(ctx.isPullDevelop())
+                {
+                    reporter.debugText("finishFeature", "pulling develop before remote behind check");
+                    reporter.flush();
+
+                    flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+                    flow.git().pull().call();
+                }
+
+                if(GitHelper.localBranchBehindRemote(flow.git(),flow.getDevelopBranchName(),flow.getReporter()))
+                {
+                    reporter.errorText("feature-finish","local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                }
+            }
 
             String featureLabel = getFeatureFinishName(ctx, flow);
             
@@ -116,16 +145,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 }
             }
 
-            if(GitHelper.remoteBranchExists(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
-            {
-                if(GitHelper.localBranchBehindRemote(flow.git(),flow.getDevelopBranchName(),flow.getReporter()))
-                {
-                    reporter.errorText("feature-finish","local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
-                    reporter.flush();
-                    throw new BranchOutOfDateException("local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
-                }
-            }
-
             if (ctx.isEnableFeatureVersions())
             {
                 updateFeaturePomsWithNonFeatureVersion(featureLabel, flow, ctx, reactorProjects, session);
@@ -138,10 +157,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 rootProject = ReleaseUtil.getRootProject(featureProjects);
             }
             
-            if (ctx.isPushFeatures())
-            {
-                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
-            }
 
             if (!ctx.isNoBuild())
             {
@@ -206,6 +221,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         try
         {
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
+            projectHelper.fixCygwinIfNeeded(flow);
             projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
 
             writeReportHeader(ctx, flow.getReporter());

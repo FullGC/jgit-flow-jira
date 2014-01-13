@@ -5,11 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.plexus.components.interactivity.InputHandler;
+import com.atlassian.maven.plugins.jgitflow.ConsoleInputHandler;
 
 /**
  * @since version
  */
-public class TestInputHandler implements InputHandler
+public class TestInputHandler extends ConsoleInputHandler implements InputHandler
 {
     private final StringBuilder sb;
 
