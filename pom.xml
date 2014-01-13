@@ -327,6 +327,41 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>atlas-deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deploy-to-atlas</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>deploy-file</goal>
+                                </goals>
+                                <configuration>
+                                    <repositoryId>atlassian-private</repositoryId>
+                                    <url>https://maven.atlassian.com/content/repositories/atlassian-private/</url>
+                                    <file>${basedir}/target/${project.artifactId}-${version}.jar</file>
+                                    <pomFile>${basedir}/target/${project.artifactId}-${version}.pom</pomFile>
+                                    <javadoc>${basedir}/target/${project.artifactId}-${version}-javadoc.jar</javadoc>
+                                    <sources>${basedir}/target/${project.artifactId}-${version}-sources.jar</sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <distributionManagement>
+                <repository>
+                    <id>atlassian-private</id>
+                    <name>Private Atlassian Repo</name>
+                    <url>https://maven.atlassian.com/content/repositories/atlassian-private/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
     </profiles>
     
     <repositories>
