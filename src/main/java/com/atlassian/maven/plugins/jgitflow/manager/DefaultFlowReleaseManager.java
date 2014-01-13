@@ -184,6 +184,27 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         try
         {
             JGitFlowReporter reporter = flow.getReporter();
+            
+            //do a pull if needed
+            if(GitHelper.remoteBranchExists(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
+            {
+                if(ctx.isPullDevelop())
+                {
+                    reporter.debugText("finishRelease", "pulling develop before remote behind check");
+                    reporter.flush();
+
+                    flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+                    flow.git().pull().call();
+                }
+
+                if(GitHelper.localBranchBehindRemote(flow.git(),flow.getDevelopBranchName(),flow.getReporter()))
+                {
+                    reporter.errorText("release-finish","local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                    reporter.flush();
+                    throw new BranchOutOfDateException("local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
+                }
+            }
+            
             //get the release branch
             List<Ref> releaseBranches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix());
 
@@ -215,26 +236,6 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                     reporter.errorText("release-finish","local branch '" + prefixedBranchName + "' is behind the remote branch");
                     reporter.flush();
                     throw new BranchOutOfDateException("local branch '" + prefixedBranchName + "' is behind the remote branch");
-                }
-            }
-
-            if(GitHelper.remoteBranchExists(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
-            {
-                if(ctx.isPullDevelop())
-                {
-                    reporter.debugText("finishRelease", "pulling develop before remote behind check");
-                    reporter.flush();
-
-                    flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-                    flow.git().pull().call();
-                    flow.git().checkout().setName(prefixedBranchName).call();
-                }
-                
-                if(GitHelper.localBranchBehindRemote(flow.git(),flow.getDevelopBranchName(),flow.getReporter()))
-                {
-                    reporter.errorText("release-finish","local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
-                    reporter.flush();
-                    throw new BranchOutOfDateException("local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
                 }
             }
 

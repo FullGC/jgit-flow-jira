@@ -64,6 +64,12 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Parameter( property = "tagMessage" )
     private String tagMessage;
 
+    @Parameter( defaultValue = "false", property = "pullMaster" )
+    private boolean pullMaster = false;
+
+    @Parameter( defaultValue = "false", property = "pullDevelop" )
+    private boolean pullDevelop = false;
+
     @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
 
@@ -89,6 +95,8 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setNoBuild(noHotfixBuild)
            .setDefaultOriginUrl(defaultOriginUrl)
            .setScmCommentPrefix(scmCommentPrefix)
+           .setPullMaster(pullMaster)
+           .setPullDevelop(pullDevelop)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
