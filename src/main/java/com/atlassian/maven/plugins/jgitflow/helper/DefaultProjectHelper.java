@@ -641,7 +641,28 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         {
             Status status = git.status().call();
             Repository repository = git.getRepository();
-            File repoDir = repository.getDirectory().getParentFile();
+
+            File canonicalRepoDir;
+
+            {
+                // MJF-111. Canonicalize repoDir, getAbsolutePath is not enough
+                File repoDir = repository.getDirectory( ).getParentFile( );
+
+                try
+                {
+                    canonicalRepoDir = repoDir.getCanonicalFile( );
+                }
+                catch ( IOException e )
+                {
+                    throw
+                        new JGitFlowReleaseException(
+                            "Cannot get canonical name for repository directory <" +
+                                repoDir + ">",
+                            e
+                        );
+                }
+            }
+
             if (!status.isClean())
             {
                 AddCommand add = git.add();
@@ -650,7 +671,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 //                File rootBaseDir = rootProject.getBasedir();
                 for (MavenProject project : reactorProjects)
                 {
-                    String pomPath = relativePath(repoDir, project.getFile());
+                    String pomPath = relativePath(canonicalRepoDir, project.getFile());
 
                     if (getLogger().isDebugEnabled())
                     {
@@ -674,17 +695,34 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         }
     }
 
-    private String relativePath(File basedir, File file)
+    private String relativePath(File canonicalBasedir, File file) throws JGitFlowReleaseException
     {
-        String pomPath = file.getAbsolutePath();
-        String basePath = basedir.getAbsolutePath();
+        final String basePath = canonicalBasedir.getPath();
+
+        String pomPath;
+
+        try
+        {
+            // MJF-111. Canonicalize pomPath, getAbsolutePath is not enough
+            pomPath = file.getCanonicalPath();
+        }
+        catch ( IOException e )
+        {
+            throw
+                new JGitFlowReleaseException(
+                    "Cannot get canonical name for pom file <" + file + ">",
+                    e
+                );
+        }
+
+        final int basePathLen = basePath.length();
 
         //Need to ingore case because it was comparing C:/repo/pom.xml to c:/repo
-        if (pomPath.regionMatches(true, 0, basePath, 0, basePath.length())) 
+        if (pomPath.regionMatches(true, 0, basePath, 0, basePathLen))
         {
-            pomPath = file.getAbsolutePath().substring(basedir.getAbsolutePath().length());
+            pomPath = pomPath.substring(basePathLen);
 
-            if (pomPath.startsWith(File.separator)) 
+            if (pomPath.startsWith(File.separator))
             {
                 pomPath = pomPath.substring(1);
             }
