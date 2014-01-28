@@ -15,12 +15,10 @@ import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
-
 import com.atlassian.maven.plugins.jgitflow.util.ConsoleCredentialsProvider;
 import com.atlassian.maven.plugins.jgitflow.util.SshCredentialsProvider;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-
 import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -31,6 +29,7 @@ import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import com.jcraft.jsch.agentproxy.USocketFactory;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -58,6 +57,7 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FS;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -957,17 +957,21 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
         return name;
     }
-
+    
     @Override
     public boolean setupUserPasswordCredentialsProvider(ReleaseContext ctx, JGitFlowReporter reporter)
     {
-        if (null != System.console())
+    	if(!Strings.isNullOrEmpty(ctx.getPassword()) && !Strings.isNullOrEmpty(ctx.getUsername())){
+    		reporter.debugText(getClass().getSimpleName(),"using provided username and password");
+    		CredentialsProvider.setDefault(new UsernamePasswordCredentialsProvider(ctx.getUsername(),ctx.getPassword()));
+    	}    	
+    	else if (null != System.console())
         {
             reporter.debugText(getClass().getSimpleName(),"installing ssh console credentials provider");
             CredentialsProvider.setDefault(new ConsoleCredentialsProvider(prompter));
             return true;
         }
-
+        
         return false;
     }
 
