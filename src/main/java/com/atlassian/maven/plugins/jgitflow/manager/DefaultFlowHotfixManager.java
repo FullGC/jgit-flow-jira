@@ -393,31 +393,6 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         }
     }
 
-    private void updateHotfixPoms(String hotfixLabel, JGitFlow flow, ReleaseContext ctx, MavenJGitFlowConfiguration config, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
-    {
-        try
-        {
-            //reload the reactor projects for hotfix
-            MavenSession hotfixSession = getSessionForBranch(flow, flow.getHotfixBranchPrefix() + hotfixLabel, originalProjects, session);
-            List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
-            updatePomsWithHotfixVersion("hotfixlabel", ctx, hotfixProjects, config);
-
-            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix");
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
-        }
-        catch (ReactorReloadException e)
-        {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
-        }
-        catch (IOException e)
-        {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
-        }
-    }
-
     private void updateHotfixPomsWithRelease(String hotfixLabel, JGitFlow flow, ReleaseContext ctx, MavenJGitFlowConfiguration config, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
         try
