@@ -368,6 +368,12 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for development");
 
+            if(ctx.isPushHotfixes())
+            {
+                RefSpec developSpec = new RefSpec(ctx.getFlowInitContext().getDevelop());
+                flow.git().push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(developSpec).call();
+            }
+
             config.setLastReleaseVersions(originalVersions);
             configManager.saveConfiguration(config, flow.git());
         }
