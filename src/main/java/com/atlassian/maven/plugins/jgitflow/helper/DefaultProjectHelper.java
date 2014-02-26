@@ -593,6 +593,9 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                     config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "merge", Constants.R_HEADS + flow.getDevelopBranchName());
                 }
 
+                if (Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch"))) {
+                    config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
+                }
                 config.save();
 
                 try
