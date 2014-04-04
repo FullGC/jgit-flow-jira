@@ -1,15 +1,11 @@
 package com.atlassian.maven.plugins.jgitflow;
 
+import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
+import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
+import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectReleaseVersionChange.projectReleaseVersionChange;
+
 import java.util.List;
 import java.util.Map;
-
-import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
-import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
-import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
-import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectRewriter;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -19,9 +15,12 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
-import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
-import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectReleaseVersionChange.projectReleaseVersionChange;
+import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
+import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
+import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
+import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectRewriter;
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 
 @Mojo(name = "build-number", aggregator = true)
 public class BuildNumberMojo extends AbstractJGitFlowMojo
@@ -32,6 +31,9 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
 
     @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies;
+
+    @Parameter(defaultValue = "-build", property = "buildNumberVersionSuffix")
+    private String buildNumberVersionSuffix;
 
     @Component
     protected ProjectHelper projectHelper;
@@ -55,7 +57,7 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
             {
                 if (input.endsWith("-SNAPSHOT"))
                 {
-                    return StringUtils.substringBeforeLast(input, "-SNAPSHOT") + "-build" + buildNumber;
+                    return StringUtils.substringBeforeLast(input, "-SNAPSHOT") + buildNumberVersionSuffix + buildNumber;
                 }
                 else
                 {
