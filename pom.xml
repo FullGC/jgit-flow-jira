@@ -9,7 +9,7 @@
 
     <groupId>com.atlassian.maven.plugins</groupId>
     <artifactId>maven-jgitflow-plugin</artifactId>
-    <version>1.0-internal8</version>
+    <version>1.0-m1-SNAPSHOT</version>
 
     <packaging>maven-plugin</packaging>
 
