@@ -898,7 +898,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             try
             {
                 String rheadPrefix = Constants.R_HEADS + flow.getFeatureBranchPrefix();
-                List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getFeatureBranchPrefix());
+                List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getFeatureBranchPrefix(),flow.getReporter());
 
                 for (Ref branch : branches)
                 {

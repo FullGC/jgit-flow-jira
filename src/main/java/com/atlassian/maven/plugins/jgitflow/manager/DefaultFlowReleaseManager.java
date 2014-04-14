@@ -206,7 +206,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             }
             
             //get the release branch
-            List<Ref> releaseBranches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix());
+            List<Ref> releaseBranches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix(),flow.getReporter());
 
             if (releaseBranches.isEmpty())
             {
@@ -216,6 +216,12 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             //there can be only one
             String rheadPrefix = Constants.R_HEADS + flow.getReleaseBranchPrefix();
             Ref releaseBranch = releaseBranches.get(0);
+            
+            if(null == releaseBranch)
+            {
+                throw new JGitFlowReleaseException("Could not find release branch!");
+            }
+            
             releaseLabel = releaseBranch.getName().substring(releaseBranch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
             
             String prefixedBranchName = flow.getReleaseBranchPrefix() + releaseLabel;
@@ -379,7 +385,6 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
         }
     }
-
     private void updateReleasePomsWithSnapshot(String releaseLabel, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
         try
