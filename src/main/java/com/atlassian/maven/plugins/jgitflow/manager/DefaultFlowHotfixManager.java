@@ -220,7 +220,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             }
             
             //get the hotfix branch
-            List<Ref> hotfixBranches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getHotfixBranchPrefix());
+            List<Ref> hotfixBranches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getHotfixBranchPrefix(),flow.getReporter());
 
             if (hotfixBranches.isEmpty())
             {
