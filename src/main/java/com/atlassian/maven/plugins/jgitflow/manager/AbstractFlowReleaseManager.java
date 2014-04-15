@@ -426,37 +426,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
             }
         }
     }
-    
-    protected void updatePomsWithHotfixVersion(String key, ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
-    {
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
-        Map<String, String> hotfixVersions = projectHelper.getHotfixVersions(key, reactorProjects, ctx, config.getLastReleaseVersions());
-
-        getLogger().info("updating poms for all projects...");
-        if(!getLogger().isDebugEnabled())
-        {
-            getLogger().info("turn on debug logging with -X to see exact changes");
-        }
-        for (MavenProject project : reactorProjects)
-        {
-            ProjectChangeset changes = new ProjectChangeset()
-                    .with(parentReleaseVersionChange(originalVersions, hotfixVersions))
-                    .with(projectReleaseVersionChange(hotfixVersions))
-                    .with(artifactReleaseVersionChange(originalVersions, hotfixVersions, ctx.isUpdateDependencies()));
-            try
-            {
-                getLogger().info("updating pom for " + project.getName() + "...");
-
-                projectRewriter.applyChanges(project, changes);
-
-                logChanges(changes);
-            }
-            catch (ProjectRewriteException e)
-            {
-                throw new JGitFlowReleaseException("Error updating poms with hotfix versions", e);
-            }
-        }
-    }
 
     protected void updatePomsWithHotfixVersion(String key, final String hotfixLabel, ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
     {

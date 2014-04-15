@@ -215,59 +215,92 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     @Override
     public String getHotfixVersion(ReleaseContext ctx, MavenProject rootProject, String lastRelease) throws JGitFlowReleaseException
     {
-        String projectVersion = rootProject.getVersion();
-        String defaultVersion = projectVersion;
+        final Logger log = getLogger();
 
+        final String projectVersion = rootProject.getVersion();
 
-        HotfixVersionInfo hotfixInfo = null;
-        if (StringUtils.isNotBlank(lastRelease) && !ArtifactUtils.isSnapshot(lastRelease))
+        if (log.isDebugEnabled())
         {
-            try
+            log.debug("calculating hotfix version for " + rootProject.getGroupId() + ":" + rootProject.getArtifactId());
+            log.debug("projectVersion is " + projectVersion);
+            log.debug("lastRelease is " + lastRelease);
+        }
+
+        // Get a value supplied by external configuration
+        String suggestedVersion = ctx.getDefaultReleaseVersion( );
+        boolean isUserDefined = false;
+
+        if (StringUtils.isNotBlank(suggestedVersion) && !ArtifactUtils.isSnapshot(suggestedVersion))
+        {
+            isUserDefined = true;
+
+            if (log.isDebugEnabled())
             {
-                DefaultVersionInfo projectInfo = new DefaultVersionInfo(projectVersion);
-                DefaultVersionInfo lastReleaseInfo = new DefaultVersionInfo(lastRelease);
-
-                String higherVersion = projectVersion;
-
-                if (projectInfo.isSnapshot())
-                {
-                    higherVersion = lastRelease;
-                }
-                else if (projectInfo.compareTo(lastReleaseInfo) < 1)
-                {
-                    higherVersion = lastRelease;
-                }
-
-                hotfixInfo = new HotfixVersionInfo(higherVersion);
-                defaultVersion = hotfixInfo.getHotfixVersionString();
-            }
-            catch (VersionParseException e)
-            {
-                //just ignore
+                log.debug("(user defined) suggestedVersion is currently: " + suggestedVersion);
             }
         }
         else
         {
-            try
+            suggestedVersion = null;
+
+            if (StringUtils.isNotBlank(lastRelease) && !ArtifactUtils.isSnapshot(lastRelease))
             {
-                hotfixInfo = new HotfixVersionInfo(projectVersion);
-                defaultVersion = hotfixInfo.getHotfixVersionString();
+                try
+                {
+                    DefaultVersionInfo projectInfo = new DefaultVersionInfo(projectVersion);
+                    DefaultVersionInfo lastReleaseInfo = new DefaultVersionInfo(lastRelease);
+
+                    String higherVersion = projectVersion;
+
+                    if (projectInfo.isSnapshot())
+                    {
+                        higherVersion = lastRelease;
+                    }
+                    else if (projectInfo.compareTo(lastReleaseInfo) < 1)
+                    {
+                        higherVersion = lastRelease;
+                    }
+
+                    final HotfixVersionInfo hotfixInfo = new HotfixVersionInfo(higherVersion);
+                    suggestedVersion = hotfixInfo.getHotfixVersionString();
+
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("lastRelease is " + lastRelease);
+                        log.debug("(lastRelease based) suggestedVersion is currently: " + suggestedVersion);
+                    }
+                }
+                catch (VersionParseException e)
+                {
+                    //just ignore
+                }
             }
-            catch (VersionParseException e)
+            else
             {
-                //ignore
+                try
+                {
+                    final HotfixVersionInfo hotfixInfo = new HotfixVersionInfo(projectVersion);
+                    suggestedVersion = hotfixInfo.getHotfixVersionString();
+
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("(projectVersion based) suggestedVersion is currently: " + suggestedVersion);
+                    }
+                }
+                catch (VersionParseException e)
+                {
+                    //ignore
+                }
             }
         }
 
-        String suggestedVersion = defaultVersion;
-        String hotfixVersion = null;
-
+        // Fixup project version, if it is a snapshot, in such a case decrement the snapshot version
         while (null == suggestedVersion || ArtifactUtils.isSnapshot(suggestedVersion))
         {
             HotfixVersionInfo info = null;
             try
             {
-                info = new HotfixVersionInfo(rootProject.getVersion());
+                info = new HotfixVersionInfo(projectVersion);
             }
             catch (VersionParseException e)
             {
@@ -289,7 +322,15 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             }
 
             suggestedVersion = info.getDecrementedHotfixVersionString();
+
+            if (log.isDebugEnabled())
+            {
+                log.debug("(projectVersion decremented) suggestedVersion is currently: " + suggestedVersion);
+            }
         }
+
+        // For user defined values do not prompt
+        String hotfixVersion = isUserDefined ? suggestedVersion : null;
 
         while (null == hotfixVersion || ArtifactUtils.isSnapshot(hotfixVersion))
         {
@@ -310,6 +351,11 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 hotfixVersion = suggestedVersion;
             }
 
+        }
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("hotfixVersion is " + hotfixVersion);
         }
 
         return hotfixVersion;
