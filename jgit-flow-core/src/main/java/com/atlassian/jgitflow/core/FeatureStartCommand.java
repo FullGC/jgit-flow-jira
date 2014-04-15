@@ -80,6 +80,13 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<Ref>
         return this;
     }
 
+    @Override
+    public FeatureStartCommand setScmMessageSuffix(String scmMessageSuffix)
+    {
+        super.setScmMessageSuffix(scmMessageSuffix);
+        return this;
+    }
+
     /**
      * 
      * @return A reference to the new feature branch

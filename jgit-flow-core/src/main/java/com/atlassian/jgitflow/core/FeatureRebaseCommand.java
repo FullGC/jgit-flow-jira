@@ -52,6 +52,13 @@ public class FeatureRebaseCommand extends AbstractGitFlowCommand<Void>
         super.setScmMessagePrefix(scmMessagePrefix);
         return this;
     }
+
+    @Override
+    public FeatureRebaseCommand setScmMessageSuffix(String scmMessageSuffix)
+    {
+        super.setScmMessageSuffix(scmMessageSuffix);
+        return this;
+    }
     
     /**
      * 

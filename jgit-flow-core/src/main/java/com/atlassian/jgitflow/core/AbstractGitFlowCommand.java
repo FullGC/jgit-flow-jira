@@ -32,6 +32,7 @@ public abstract class AbstractGitFlowCommand<T> implements Callable<T>
     protected final JGitFlowReporter reporter;
     private boolean allowUntracked;
     private String scmMessagePrefix;
+    private String scmMessageSuffix;
 
     protected AbstractGitFlowCommand(Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
@@ -44,6 +45,7 @@ public abstract class AbstractGitFlowCommand<T> implements Callable<T>
         this.reporter = reporter;
         this.allowUntracked = false;
         this.scmMessagePrefix = "";
+        this.scmMessageSuffix = "";
         
     }
 
@@ -66,6 +68,17 @@ public abstract class AbstractGitFlowCommand<T> implements Callable<T>
     public AbstractGitFlowCommand setScmMessagePrefix(String scmMessagePrefix)
     {
         this.scmMessagePrefix = scmMessagePrefix;
+        return this;
+    }
+
+    public String getScmMessageSuffix()
+    {
+        return scmMessageSuffix;
+    }
+
+    public AbstractGitFlowCommand setScmMessageSuffix(String scmMessageSuffix)
+    {
+        this.scmMessageSuffix = scmMessageSuffix;
         return this;
     }
 

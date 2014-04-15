@@ -32,8 +32,8 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.atlassian.maven.plugins</groupId>
-                <artifactId>maven-jgitflow-plugin</artifactId>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
                 <version>@project.version@</version>
                 <configuration>
                     <allowSnapshots>true</allowSnapshots>

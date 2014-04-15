@@ -104,6 +104,13 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
         return this;
     }
 
+    @Override
+    public ReleaseFinishCommand setScmMessageSuffix(String scmMessageSuffix)
+    {
+        super.setScmMessageSuffix(scmMessageSuffix);
+        return this;
+    }
+
     /**
      * @return nothing
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -169,7 +176,7 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
                         masterResult = git.merge().setSquash(true).include(releaseBranch).call();
                         if(masterResult.getMergeStatus().isSuccessful())
                         {
-                            git.commit().setMessage(getScmMessagePrefix() + "squashing '" + prefixedReleaseName + "' into '" + gfConfig.getMaster() + "'").call();
+                            git.commit().setMessage(getScmMessagePrefix() + "squashing '" + prefixedReleaseName + "' into '" + gfConfig.getMaster() + "'" + getScmMessageSuffix()).call();
                         }
                     }
                     else
@@ -209,7 +216,7 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
                         developResult = git.merge().setSquash(true).include(releaseBranch).call();
                         if(developResult.getMergeStatus().isSuccessful())
                         {
-                            git.commit().setMessage(getScmMessagePrefix() + "squashing '" + prefixedReleaseName + "' into '" + gfConfig.getDevelop() + "'").call();
+                            git.commit().setMessage(getScmMessagePrefix() + "squashing '" + prefixedReleaseName + "' into '" + gfConfig.getDevelop() + "'" + getScmMessageSuffix()).call();
                         }
                     }
                     else
@@ -252,7 +259,7 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
                 if (!GitHelper.tagExists(git, tagName))
                 {
                     reporter.infoText(getCommandName(), "tagging release with name:" + tagName);
-                    git.tag().setName(tagName).setMessage(getScmMessagePrefix() + message).call();
+                    git.tag().setName(tagName).setMessage(getScmMessagePrefix() + message + getScmMessageSuffix()).call();
                 }
             }
 

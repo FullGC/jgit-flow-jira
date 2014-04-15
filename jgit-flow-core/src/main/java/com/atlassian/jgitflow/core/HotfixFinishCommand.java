@@ -103,6 +103,13 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
         super.setScmMessagePrefix(scmMessagePrefix);
         return this;
     }
+
+    @Override
+    public HotfixFinishCommand setScmMessageSuffix(String scmMessageSuffix)
+    {
+        super.setScmMessageSuffix(scmMessageSuffix);
+        return this;
+    }
     
     /**
      * 
@@ -184,7 +191,7 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
                             masterResult.getMergeStatus( )
                         )
                     );
-                    git.tag().setName(tagName).setMessage(getScmMessagePrefix() + message).call();
+                    git.tag().setName(tagName).setMessage(getScmMessagePrefix() + message + getScmMessageSuffix()).call();
                 }
             }
         

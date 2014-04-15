@@ -80,6 +80,13 @@ public class ReleaseStartCommand extends AbstractGitFlowCommand<Ref>
         return this;
     }
 
+    @Override
+    public ReleaseStartCommand setScmMessageSuffix(String scmMessageSuffix)
+    {
+        super.setScmMessageSuffix(scmMessageSuffix);
+        return this;
+    }
+
     /**
      * 
      * @return A reference to the new release branch

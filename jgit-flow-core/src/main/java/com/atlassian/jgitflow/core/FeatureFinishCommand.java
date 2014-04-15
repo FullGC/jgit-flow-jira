@@ -98,6 +98,13 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
         return this;
     }
 
+    @Override
+    public FeatureFinishCommand setScmMessageSuffix(String scmMessageSuffix)
+    {
+        super.setScmMessageSuffix(scmMessageSuffix);
+        return this;
+    }
+
     /**
      * 
      * @return nothing
@@ -203,7 +210,7 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
                     mergeResult = git.merge().setFastForward(MergeCommand.FastForwardMode.FF).include(featureBranch).call();
                     if(mergeResult.getMergeStatus().isSuccessful())
                     {
-                        git.commit().setMessage(getScmMessagePrefix() + "merging '" + prefixedBranchName + "' into '" + gfConfig.getDevelop() + "'").call();
+                        git.commit().setMessage(getScmMessagePrefix() + "merging '" + prefixedBranchName + "' into '" + gfConfig.getDevelop() + "'" + getScmMessageSuffix()).call();
                     }
                 }
                 else
@@ -213,7 +220,7 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
                         mergeResult = git.merge().setSquash(true).include(featureBranch).call();
                         if(mergeResult.getMergeStatus().isSuccessful())
                         {
-                            git.commit().setMessage(getScmMessagePrefix() + "squashing '" + prefixedBranchName + "' into '" + gfConfig.getDevelop() + "'").call();
+                            git.commit().setMessage(getScmMessagePrefix() + "squashing '" + prefixedBranchName + "' into '" + gfConfig.getDevelop() + "'" + getScmMessageSuffix()).call();
                         }
                         this.forceDeleteBranch = true;
                     }

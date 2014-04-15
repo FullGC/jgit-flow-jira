@@ -78,6 +78,13 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
         super.setScmMessagePrefix(scmMessagePrefix);
         return this;
     }
+
+    @Override
+    public HotfixStartCommand setScmMessageSuffix(String scmMessageSuffix)
+    {
+        super.setScmMessageSuffix(scmMessageSuffix);
+        return this;
+    }
     
     /**
      * 

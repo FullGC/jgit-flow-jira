@@ -60,6 +60,13 @@ public class FeaturePublishCommand extends AbstractGitFlowCommand<Void>
         return this;
     }
 
+    @Override
+    public FeaturePublishCommand setScmMessageSuffix(String scmMessageSuffix)
+    {
+        super.setScmMessageSuffix(scmMessageSuffix);
+        return this;
+    }
+
     /**
      * 
      * @return nothing
