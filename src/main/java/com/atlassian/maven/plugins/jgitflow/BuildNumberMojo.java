@@ -33,6 +33,9 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
     @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies;
 
+    @Parameter(defaultValue = "-build", property = "buildNumberVersionSuffix")
+    private String buildNumberVersionSuffix;
+
     @Component
     protected ProjectHelper projectHelper;
 
@@ -55,7 +58,7 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
             {
                 if (input.endsWith("-SNAPSHOT"))
                 {
-                    return StringUtils.substringBeforeLast(input, "-SNAPSHOT") + "-build" + buildNumber;
+                    return StringUtils.substringBeforeLast(input, "-SNAPSHOT") + buildNumberVersionSuffix + buildNumber;
                 }
                 else
                 {
