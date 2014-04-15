@@ -34,8 +34,8 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
      * Default version to use when preparing a release
      *
      */
-    @Parameter( property = "releaseVersion" )
-    private String releaseVersion;
+    @Parameter( property = "releaseVersion", defaultValue = "")
+    private String releaseVersion = "";
 
     @Parameter( defaultValue = "true", property = "updateDependencies" )
     private boolean updateDependencies = true;
@@ -44,7 +44,7 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
     private boolean pushHotfixes = false;
 
     @Parameter( property = "startCommit", defaultValue = "")
-    private String startCommit;
+    private String startCommit = "";
 
     @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;

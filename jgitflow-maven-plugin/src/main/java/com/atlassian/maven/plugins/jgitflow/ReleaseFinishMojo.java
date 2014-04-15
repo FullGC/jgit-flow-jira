@@ -34,8 +34,8 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
      * Default version to use for new local working copy.
      *
      */
-    @Parameter( property = "developmentVersion" )
-    private String developmentVersion;
+    @Parameter( property = "developmentVersion", defaultValue = "")
+    private String developmentVersion = "";
 
     @Parameter( defaultValue = "false", property = "pushReleases" )
     private boolean pushReleases = false;
@@ -70,11 +70,11 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter( defaultValue = "true", property = "updateDependencies" )
     private boolean updateDependencies = true;
 
-    @Parameter( property = "tagMessage" )
-    private String tagMessage;
+    @Parameter( property = "tagMessage", defaultValue = "")
+    private String tagMessage = "";
 
     @Parameter( property = "releaseBranchVersionSuffix", defaultValue = "")
-    private String releaseBranchVersionSuffix;
+    private String releaseBranchVersionSuffix = "";
     
     @Component(hint = "release")
     FlowReleaseManager releaseManager;

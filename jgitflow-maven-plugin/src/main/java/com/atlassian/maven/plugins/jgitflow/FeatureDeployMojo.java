@@ -21,13 +21,13 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
      *
      */
     @Parameter( property = "featureName", defaultValue = "")
-    private String featureName;
+    private String featureName = "";
 
     @Parameter( property = "goals", defaultValue = "")
-    private String goals;
+    private String goals = "";
 
-    @Parameter(property = "buildNumber")
-    private String buildNumber;
+    @Parameter(property = "buildNumber", defaultValue = "")
+    private String buildNumber = "";
 
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;

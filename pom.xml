@@ -332,7 +332,7 @@
         <maven.plugin.plugin.version>3.1</maven.plugin.plugin.version>
         <maven.release.version>2.4</maven.release.version>
         <jsch.agent.version>0.0.5</jsch.agent.version>
-        <jgit.version>3.0.0.201306101825-r</jgit.version>
+        <jgit.version>3.3.1.201403241930-r</jgit.version>
         <jline.version>1.0</jline.version>
         <gson.version>2.2.2</gson.version>
         <jdom2.version>2.0.4</jdom2.version>

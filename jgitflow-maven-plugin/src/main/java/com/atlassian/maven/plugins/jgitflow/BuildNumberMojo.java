@@ -31,10 +31,10 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
     private String buildNumber;
 
     @Parameter(defaultValue = "true", property = "updateDependencies")
-    private boolean updateDependencies;
+    private boolean updateDependencies = true;
 
     @Parameter(defaultValue = "-build", property = "buildNumberVersionSuffix")
-    private String buildNumberVersionSuffix;
+    private String buildNumberVersionSuffix = "-build";
 
     @Component
     protected ProjectHelper projectHelper;

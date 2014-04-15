@@ -35,14 +35,14 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
      * Default version to use when preparing a release
      *
      */
-    @Parameter( property = "releaseVersion" )
-    private String releaseVersion;
+    @Parameter( property = "releaseVersion", defaultValue = "")
+    private String releaseVersion = "";
 
     @Parameter( property = "releaseBranchVersionSuffix", defaultValue = "")
-    private String releaseBranchVersionSuffix;
+    private String releaseBranchVersionSuffix = "";
 
     @Parameter( defaultValue = "true", property = "updateDependencies" )
-    private boolean updateDependencies;
+    private boolean updateDependencies = true;
 
     @Parameter( defaultValue = "false", property = "pushReleases" )
     private boolean pushReleases = false;
@@ -51,7 +51,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
     FlowReleaseManager releaseManager;
 
     @Parameter( property = "startCommit", defaultValue = "")
-    private String startCommit;
+    private String startCommit = "";
     
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException

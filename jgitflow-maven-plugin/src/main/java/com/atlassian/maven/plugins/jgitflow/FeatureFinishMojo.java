@@ -21,7 +21,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
      *
      */
     @Parameter( property = "featureName", defaultValue = "")
-    private String featureName;
+    private String featureName = "";
     
     @Parameter( defaultValue = "false", property = "keepBranch" )
     private boolean keepBranch = false;

@@ -34,8 +34,8 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
      * Default version to use for new local working copy.
      *
      */
-    @Parameter( property = "developmentVersion" )
-    private String developmentVersion;
+    @Parameter( property = "developmentVersion" , defaultValue = "")
+    private String developmentVersion = "";
 
     @Parameter( defaultValue = "false", property = "pushHotfixes" )
     private boolean pushHotfixes = false;
@@ -59,10 +59,10 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     private boolean useReleaseProfile = true;
 
     @Parameter( defaultValue = "true", property = "updateDependencies" )
-    private boolean updateDependencies;
+    private boolean updateDependencies = true;
     
-    @Parameter( property = "tagMessage" )
-    private String tagMessage;
+    @Parameter( property = "tagMessage" , defaultValue = "")
+    private String tagMessage = "";
 
     @Parameter( defaultValue = "false", property = "pullMaster" )
     private boolean pullMaster = false;

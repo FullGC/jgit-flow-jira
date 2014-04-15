@@ -30,7 +30,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
     private boolean pushFeatures = false;
 
     @Parameter( property = "startCommit", defaultValue = "")
-    private String startCommit;
+    private String startCommit = "";
     
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
