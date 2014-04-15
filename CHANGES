@@ -1,0 +1,28 @@
+Version 1.0-m1
+
+** Bug
+    * [MJF-83] - Prompting doesn't work under Cygwin
+    * [MJF-88] - java.lang.StackOverflowError while using Plugin inside IDE (Intellij)
+    * [MJF-89] - release-start does not change version in parent or submodules
+    * [MJF-95] - Merge explosion, 2!=200?
+    * [MJF-96] - release-start does not push branch from Bamboo to Stash.
+    * [MJF-104] - jgit-flow-core versions 0.20 and 0.21 missing POM in repository
+    * [MJF-105] - Cannot release - unstaged changes on a clean tree
+    * [MJF-107] - gitflow:hotfix-finish - after merge pom.xml is not set back to the development version
+    * [MJF-108] - hotfix-start - you cannot overwrite releaseVersion via --define option
+    * [MJF-111] - If module references relative path, the pom for that module is not committed.
+    * [MJF-112] - Confusing 'API incompatibility was encountered' message when POM file is corrupt
+    * [MJF-114] - hotfix-start does not consume documented 'releaseVersion' parameter
+    * [MJF-117] - start-release fails with org.eclipse.jgit.errors.TransportException: Nothing to fetch
+    * [MJF-119] - Feature Finish reporting merge conflicts when none exist.
+    * [MJF-125] - hotfix-finish does not push develop branch with the final developmentVersion
+    * [MJF-127] - Rename maven-jgitflow-plugin to jgitflow-maven-plugin
+    * [MJF-136] - jgitflow:release-Start failed in Jenkins with error message - error configuring remote git repo with url: null: Nothing to fetch.
+    * [MJF-138] - Hotfix release is tagged on a hotfix branch, not on master
+
+** Improvement
+    * [MJF-13] - Rename maven-jgitflow-plugin to jgitflow-maven-plugin
+    * [MJF-135] - Add flag to always set origin url
+    * [MJF-141] - Add scmCommentSuffix
+    * [MJF-142] - Parameters to specify user/pass for ssh
+    * [MJF-143] - Add buildNumberVersionSuffix to BuildNumberMojo

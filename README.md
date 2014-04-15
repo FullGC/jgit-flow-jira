@@ -1,6 +1,6 @@
 # JGit-Flow
 
-**Current Version: ??**
+**Current Version: 1.0-m1**
 
 **Issue Tracker Has Moved To: [https://ecosystem.atlassian.net/browse/MJF](https://ecosystem.atlassian.net/browse/MJF)**
 
@@ -16,7 +16,7 @@ For more information and usage guide, [see the wiki](https://bitbucket.org/atlas
 
 # Maven JGit-Flow Plugin
 
-**Current Version: ??**
+**Current Version: 1.0-m1**
 
 **The Issue Tracker Has Moved To: [https://ecosystem.atlassian.net/browse/MJF](https://ecosystem.atlassian.net/browse/MJF)**
 
@@ -24,7 +24,7 @@ The Maven JGit-Flow Plugin is based on and a replacement for the maven-release-p
 
 This plugin also provides support for other git-flow tasks like managing features and hotfixes.
 
-For more information and usage guide, [see the wiki](https://bitbucket.org/atlassian/maven-jgitflow-plugin/wiki)
+For more information and usage guide, [see the wiki](https://bitbucket.org/atlassian/jgit-flow/wiki)
 
 For discussion about the plugin, [see the google group](https://groups.google.com/forum/#!forum/maven-jgitflow-users)
 
