@@ -81,6 +81,9 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(property = "password", defaultValue = "")
     protected String password = "";
 
+    @Parameter(defaultValue = "true", property = "alwaysUpdateOrigin")
+    protected boolean alwaysUpdateOrigin = true;
+
     Settings getSettings()
     {
         return settings;

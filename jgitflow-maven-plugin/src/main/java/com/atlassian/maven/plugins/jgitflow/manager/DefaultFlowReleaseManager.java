@@ -92,7 +92,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             if(ctx.isPushReleases() || !ctx.isNoTag())
             {
-                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
             }
             
             finishRelease(flow, config, ctx, originalProjects, session);
@@ -141,7 +141,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
     
             if(ctx.isPushReleases() || !ctx.isNoTag())
             {
-                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
             }
 
             releaseLabel = getReleaseLabel("releaseStartLabel", ctx, developProjects);

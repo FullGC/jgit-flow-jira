@@ -92,6 +92,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setEnableSshAgent(enableSshAgent)
            .setAllowUntracked(allowUntracked)
            .setAllowRemote(isRemoteAllowed())
+           .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
            .setNoBuild(noHotfixBuild)
            .setDefaultOriginUrl(defaultOriginUrl)
            .setScmCommentPrefix(scmCommentPrefix)

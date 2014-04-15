@@ -104,7 +104,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             if (ctx.isPushFeatures() || ctx.isPullDevelop())
             {
-                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
             }
 
             //do a pull if needed
@@ -223,7 +223,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
             projectHelper.fixCygwinIfNeeded(flow);
-            projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+            projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
 
             writeReportHeader(ctx, flow.getReporter());
 
@@ -319,7 +319,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             if(ctx.isPushFeatures())
             {
-                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
             }
 
             flow.featureStart(featureName)

@@ -10,7 +10,6 @@ import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
 import com.atlassian.jgitflow.core.exception.HotfixBranchExistsException;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
@@ -26,8 +25,6 @@ import org.apache.maven.shared.release.ReleaseExecutionException;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.RefSpec;
@@ -155,7 +152,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             if (ctx.isPushHotfixes() || !ctx.isNoTag())
             {
-                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
             }
 
 
@@ -326,7 +323,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             if (ctx.isPushHotfixes() || !ctx.isNoTag())
             {
-                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), flow);
+                projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
             }
 
             getLogger().info("running jgitflow hotfix finish...");

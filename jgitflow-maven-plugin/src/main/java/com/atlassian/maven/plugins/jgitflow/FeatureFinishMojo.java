@@ -68,6 +68,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setAllowUntracked(allowUntracked)
                 .setPushFeatures(pushFeatures)
                 .setAllowRemote(isRemoteAllowed())
+                .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
                 .setNoFeatureMerge(noFeatureMerge)
                 .setNoBuild(noFeatureBuild)
                 .setDefaultOriginUrl(defaultOriginUrl)

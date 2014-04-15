@@ -63,6 +63,7 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
            .setPushHotfixes(pushHotfixes)
            .setStartCommit(startCommit)
            .setAllowRemote(isRemoteAllowed())
+           .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
            .setDefaultOriginUrl(defaultOriginUrl)
            .setScmCommentPrefix(scmCommentPrefix)
            .setScmCommentSuffix(scmCommentSuffix)

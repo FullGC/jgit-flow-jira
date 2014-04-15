@@ -101,6 +101,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setAllowUntracked(allowUntracked)
                 .setNoReleaseMerge(noReleaseMerge)
                 .setAllowRemote(isRemoteAllowed())
+                .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
                 .setDefaultOriginUrl(defaultOriginUrl)
                 .setScmCommentPrefix(scmCommentPrefix)
                 .setScmCommentSuffix(scmCommentSuffix)

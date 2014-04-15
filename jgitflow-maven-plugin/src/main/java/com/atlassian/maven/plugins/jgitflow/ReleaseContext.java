@@ -47,6 +47,7 @@ public class ReleaseContext
     private String scmCommentSuffix;
     private String username;
     private String password;
+    private boolean alwaysUpdateOrigin;
     
     public ReleaseContext(File baseDir)
     {
@@ -85,6 +86,7 @@ public class ReleaseContext
         this.pullDevelop = false;
         this.username = "";
         this.password = "";
+        this.alwaysUpdateOrigin = true;
     }
 
     public boolean isAllowSnapshots()
@@ -490,7 +492,16 @@ public class ReleaseContext
 		this.password = password;
 		return this;
 	}
-    
-    
+
+    public boolean isAlwaysUpdateOrigin()
+    {
+        return alwaysUpdateOrigin;
+    }
+
+    public ReleaseContext setAlwaysUpdateOrigin(boolean update)
+    {
+        this.alwaysUpdateOrigin = update;
+        return this;
+    }
 
 }

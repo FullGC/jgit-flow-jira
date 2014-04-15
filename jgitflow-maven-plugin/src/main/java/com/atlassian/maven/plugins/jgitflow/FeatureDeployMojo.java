@@ -39,6 +39,7 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setNoDeploy(false)
                 .setEnableFeatureVersions(true)
+                .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
