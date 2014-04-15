@@ -103,6 +103,8 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
                 .setAllowRemote(isRemoteAllowed())
                 .setDefaultOriginUrl(defaultOriginUrl)
                 .setScmCommentPrefix(scmCommentPrefix)
+                .setUsername(username)
+                .setPassword(password)
                 .setPullMaster(pullMaster)
                 .setPullDevelop(pullDevelop)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
