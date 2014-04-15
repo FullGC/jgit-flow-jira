@@ -7,15 +7,15 @@
         <version>7</version>
     </parent>
 
-    <groupId>com.atlassian.maven.plugins</groupId>
-    <artifactId>maven-jgitflow-plugin</artifactId>
+    <groupId>external.atlassian.jgitflow</groupId>
+    <artifactId>jgitflow-parent</artifactId>
     <version>1.0-m1-SNAPSHOT</version>
 
-    <packaging>maven-plugin</packaging>
+    <packaging>pom</packaging>
 
-    <name>Maven JGitFlow Plugin</name>
-    <description>A plugin to support doing git-flow releases</description>
-    <url>https://bitbucket.org/atlassian/maven-jgitflow-plugin</url>
+    <name>JGitFlow Parent</name>
+    <description>The parent pom for the Jgit Flow project</description>
+    <url>https://bitbucket.org/atlassian/jgit-flow</url>
 
     <licenses>
         <license>
@@ -40,144 +40,153 @@
     </developers>
 
     <prerequisites>
-        <maven>2.2.1</maven>
+        <maven>${maven.version}</maven>
     </prerequisites>
 
     <scm>
-        <connection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@bitbucket.org/atlassian/maven-jgitflow-plugin.git</developerConnection>
-        <url>https://bitbucket.org/atlassian/maven-jgitflow-plugin</url>
+        <connection>scm:git:ssh://git@bitbucket.org/atlassian/jgit-flow.git</connection>
+        <developerConnection>scm:git:ssh://git@bitbucket.org/atlassian/jgit-flow.git</developerConnection>
+        <url>https://bitbucket.org/atlassian/jgit-flow</url>
         <tag>HEAD</tag>
     </scm>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.atlassian.jgitflow</groupId>
-            <artifactId>jgit-flow-core</artifactId>
-            <version>${jgitFlowVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jgit</groupId>
-            <artifactId>org.eclipse.jgit.console</artifactId>
-            <version>${jgitVersion}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.jcraft</groupId>
-                    <artifactId>jsch</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>jline</groupId>
-            <artifactId>jline</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jdom</groupId>
-            <artifactId>jdom2</artifactId>
-            <version>2.0.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>14.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-core</artifactId>
-            <version>${mavenVersion}</version>
-        </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.apache.maven</groupId>-->
-        <!--<artifactId>maven-compat</artifactId>-->
-        <!--<version>${mavenVersion}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>org.apache.maven</groupId>-->
-        <!--<artifactId>maven-project</artifactId>-->
-        <!--<version>${mavenVersion}</version>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-model</artifactId>
-            <version>${mavenVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-plugin-api</artifactId>
-            <version>${mavenVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-settings</artifactId>
-            <version>${mavenVersion}</version>
-        </dependency>
+    <modules>
+        <module>jgit-flow-core</module>
+        <module>jgitflow-maven-plugin</module>
+    </modules>
 
-        <dependency>
-            <groupId>org.apache.maven.release</groupId>
-            <artifactId>maven-release-manager</artifactId>
-            <version>${mavenReleaseVersion}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.maven.scm</groupId>
-                    <artifactId>maven-scm-providers-standard</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.plugin-tools</groupId>
-            <artifactId>maven-plugin-annotations</artifactId>
-            <version>${mavenPluginPluginVersion}</version>
-            <scope>provided</scope>
-        </dependency>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit.console</artifactId>
+                <version>${jgit.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.jcraft</groupId>
+                        <artifactId>jsch</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>${jgit.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.jcraft</groupId>
+                        <artifactId>jsch</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>${jline.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jdom</groupId>
+                <artifactId>jdom2</artifactId>
+                <version>${jdom2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-core</artifactId>
+                <version>${maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-model</artifactId>
+                <version>${maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-plugin-api</artifactId>
+                <version>${maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-settings</artifactId>
+                <version>${maven.version}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-utils</artifactId>
-            <version>1.5.15</version>
-        </dependency>
+            <dependency>
+                <groupId>org.apache.maven.release</groupId>
+                <artifactId>maven-release-manager</artifactId>
+                <version>${maven.release.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-providers-standard</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.plugin-tools</groupId>
+                <artifactId>maven-plugin-annotations</artifactId>
+                <version>${maven.plugin.plugin.version}</version>
+                <scope>provided</scope>
+            </dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>${plexus-utils.version}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-artifact</artifactId>
-            <version>2.2.1</version>
-        </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-        <!-- jsch agent stuff -->
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch.agentproxy.jsch</artifactId>
-            <version>${jschAgentVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch.agentproxy.usocket-jna</artifactId>
-            <version>${jschAgentVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch.agentproxy.sshagent</artifactId>
-            <version>${jschAgentVersion}</version>
-        </dependency>
-    </dependencies>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-artifact</artifactId>
+                <version>${maven-artifact.version}</version>
+            </dependency>
+
+            <!-- jsch agent stuff -->
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch.agentproxy.jsch</artifactId>
+                <version>${jsch.agent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch.agentproxy.usocket-jna</artifactId>
+                <version>${jsch.agent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch.agentproxy.sshagent</artifactId>
+                <version>${jsch.agent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.servicemix.bundles</groupId>
+                <artifactId>org.apache.servicemix.bundles.jsch</artifactId>
+                <version>0.1.49_1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
 
     <build>
         <resources>
@@ -197,24 +206,11 @@
             </resource>
         </resources>
         <plugins>
-            <!--
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <goals>deploy</goals>
-                    <pushChanges>false</pushChanges>
-                    <localCheckout>true</localCheckout>
-                    <tagNameFormat>mvn-@{project.version}</tagNameFormat>
-                </configuration>
-            </plugin>
-            -->
-            <plugin>
-                <groupId>com.atlassian.maven.plugins</groupId>
-                <artifactId>maven-jgitflow-plugin</artifactId>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
                 <version>${project.version}</version>
+                <inherited>false</inherited>
                 <configuration>
                     <allowSnapshots>true</allowSnapshots>
                     <enableFeatureVersions>true</enableFeatureVersions>
@@ -224,41 +220,13 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.2</version>
-                <configuration>
-                    <!-- see http://jira.codehaus.org/browse/MNG-5346 -->
-                    <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>mojo-descriptor</id>
-                        <goals>
-                            <goal>descriptor</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
         </plugins>
     </build>
 
@@ -290,81 +258,8 @@
                 </plugins>
             </build>
         </profile>
-
-        <profile>
-            <id>it-tests</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-invoker-plugin</artifactId>
-                        <version>1.8</version>
-                        <configuration>
-                            <localRepositoryPath>${project.build.directory}/it/local-repository</localRepositoryPath>
-                            <showErrors>true</showErrors>
-                            <settingsFile>src/it/settings.xml</settingsFile>
-                            <projectsDirectory>src/it/projects</projectsDirectory>
-                            <pomIncludes>
-                                <pomInclude>*/pom.xml</pomInclude>
-                            </pomIncludes>
-                            <cloneProjectsTo>${project.build.directory}/it/projects</cloneProjectsTo>
-                            <cloneClean>true</cloneClean>
-                            <reportsDirectory>${project.build.directory}/it/reports</reportsDirectory>
-                            <addTestClassPath>true</addTestClassPath>
-                            <debug>true</debug>
-                            <streamLogs>true</streamLogs>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>run-integration-tests</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>install</goal>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <!-- to run this, do a normal release and then run: mvn validate -Patlas-deploy -Dversion=1.0-alpha27 -->
-            <id>atlas-deploy</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>deploy-to-atlas</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <repositoryId>atlassian-private</repositoryId>
-                                    <url>https://maven.atlassian.com/content/repositories/atlassian-private/</url>
-                                    <file>${basedir}/target/${project.artifactId}-${version}.jar</file>
-                                    <pomFile>${basedir}/target/${project.artifactId}-${version}.pom</pomFile>
-                                    <javadoc>${basedir}/target/${project.artifactId}-${version}-javadoc.jar</javadoc>
-                                    <sources>${basedir}/target/${project.artifactId}-${version}-sources.jar</sources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-            <distributionManagement>
-                <repository>
-                    <id>atlassian-private</id>
-                    <name>Private Atlassian Repo</name>
-                    <url>https://maven.atlassian.com/content/repositories/atlassian-private/</url>
-                </repository>
-            </distributionManagement>
-        </profile>
     </profiles>
-    
+
     <repositories>
         <repository>
             <id>atlas-central</id>
@@ -417,15 +312,22 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
+    
     <properties>
-        <mavenVersion>2.2.1</mavenVersion>
+        <maven.version>2.2.1</maven.version>
         <!--<mavenVersion>3.0.5</mavenVersion>-->
-        <mavenPluginPluginVersion>3.1</mavenPluginPluginVersion>
-        <jgitFlowVersion>0.22-SNAPSHOT</jgitFlowVersion>
-        <scmVersion>1.8</scmVersion>
-        <mavenReleaseVersion>2.4</mavenReleaseVersion>
-        <jschAgentVersion>0.0.5</jschAgentVersion>
-        <jgitVersion>3.0.0.201306101825-r</jgitVersion>
+        <maven.plugin.plugin.version>3.1</maven.plugin.plugin.version>
+        <maven.release.version>2.4</maven.release.version>
+        <jsch.agent.version>0.0.5</jsch.agent.version>
+        <jgit.version>3.0.0.201306101825-r</jgit.version>
+        <jline.version>1.0</jline.version>
+        <gson.version>2.2.2</gson.version>
+        <jdom2.version>2.0.4</jdom2.version>
+        <guava.version>14.0.1</guava.version>
+        <plexus-utils.version>1.5.15</plexus-utils.version>
+        <junit.version>4.11</junit.version>
+        <commons-io.version>2.4</commons-io.version>
+        <maven-artifact.version>2.2.1</maven-artifact.version>
     </properties>
 </project>
 
