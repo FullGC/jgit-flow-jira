@@ -72,6 +72,8 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setNoBuild(noFeatureBuild)
                 .setDefaultOriginUrl(defaultOriginUrl)
                 .setScmCommentPrefix(scmCommentPrefix)
+                .setUsername(username)
+                .setPassword(password)
                 .setPullMaster(pullMaster)
                 .setPullDevelop(pullDevelop)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());

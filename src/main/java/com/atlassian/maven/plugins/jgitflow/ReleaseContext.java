@@ -44,6 +44,8 @@ public class ReleaseContext
     private String startCommit;
     private String defaultOriginUrl;
     private String scmCommentPrefix;
+    private String username;
+    private String password;
     
     public ReleaseContext(File baseDir)
     {
@@ -79,6 +81,8 @@ public class ReleaseContext
         this.scmCommentPrefix = "";
         this.pullMaster = false;
         this.pullDevelop = false;
+        this.username = "";
+        this.password = "";
     }
 
     public boolean isAllowSnapshots()
@@ -450,5 +454,25 @@ public class ReleaseContext
     {
         return pullDevelop;
     }
+
+	public String getUsername() {
+		return username;
+	}
+
+	public ReleaseContext setUsername(String username) {
+		this.username = username;
+		return this;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public ReleaseContext setPassword(String password) {
+		this.password = password;
+		return this;
+	}
+    
+    
 
 }
