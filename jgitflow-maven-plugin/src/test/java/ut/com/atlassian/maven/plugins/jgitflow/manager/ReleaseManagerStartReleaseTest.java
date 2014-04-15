@@ -420,6 +420,8 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+        
         projectHelper.ensureOrigin("file://" + remoteGit.getRepository().getWorkTree().getPath(), ctx.isAlwaysUpdateOrigin(), flow);
 
         flow.releaseStart("1.0").call();

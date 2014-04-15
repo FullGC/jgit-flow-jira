@@ -166,6 +166,7 @@
                                 <goals>
                                     <goal>install</goal>
                                     <goal>run</goal>
+                                    <goal>report</goal>
                                 </goals>
                             </execution>
                         </executions>
