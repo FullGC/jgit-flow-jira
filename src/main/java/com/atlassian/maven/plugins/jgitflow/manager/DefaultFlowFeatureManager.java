@@ -179,6 +179,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 .setPush(ctx.isPushFeatures())
                 .setNoMerge(ctx.isNoFeatureMerge())
                 .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                .setScmMessageSuffix(ctx.getScmCommentSuffix())
                 .call();
 
             //make sure we're on develop
@@ -326,6 +327,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 .setPush(ctx.isPushFeatures())
                 .setStartCommit(ctx.getStartCommit())
                 .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                .setScmMessageSuffix(ctx.getScmCommentSuffix())
                 .call();
         }
         catch (GitAPIException e)
@@ -353,7 +355,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             updatePomsWithFeatureVersion("featureStartLabel", featureVersion, ctx, featureProjects);
 
-            projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version");
+            projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version" + ctx.getScmCommentSuffix());
         }
         catch (GitAPIException e)
         {
@@ -382,7 +384,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             updatePomsWithNonFeatureVersion("featureFinishLabel", featureVersion, ctx, featureProjects);
 
-            projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version");
+            projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version" + ctx.getScmCommentSuffix());
         }
         catch (GitAPIException e)
         {

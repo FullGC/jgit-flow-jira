@@ -29,6 +29,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
     public void releaseBasicPomWithoutOrigin() throws Exception
     {
         String commentPrefix = "woot!";
+        String commentSuffix = "+review CR-XYZ @reviewer1 @reviewer2";
         
         String projectName = "basic-pom";
         Git git = null;
@@ -55,7 +56,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false);
-        ctx.setNoBuild(true).setScmCommentPrefix(commentPrefix);
+        ctx.setNoBuild(true).setScmCommentPrefix(commentPrefix).setScmCommentSuffix(commentSuffix);
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
@@ -74,9 +75,10 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
 
         relman.finish(ctx, projects, session);
         
-        assertTrue(GitHelper.getLatestCommit(flow.git(),flow.git().getRepository().getBranch()).getFullMessage().startsWith(commentPrefix));
+        String fullMessage = GitHelper.getLatestCommit(flow.git(),flow.git().getRepository().getBranch()).getFullMessage();
         
-        
+        assertTrue(fullMessage.startsWith(commentPrefix));
+        assertTrue(fullMessage.endsWith(commentSuffix));
     }
 
     @Test

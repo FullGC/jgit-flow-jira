@@ -165,6 +165,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
                 .setPush(ctx.isPushHotfixes())
                 .setStartCommit(ctx.getStartCommit())
                 .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                .setScmMessageSuffix(ctx.getScmCommentSuffix())
                 .call();
         }
         catch (GitAPIException e)
@@ -273,7 +274,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
 
             updateHotfixPomsWithRelease(hotfixLabel,flow,ctx,config,originalProjects,session);
-            projectHelper.commitAllPoms(flow.git(), originalProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), originalProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix" + ctx.getScmCommentSuffix());
 
             //reload the reactor projects for hotfix
             hotfixSession = getSessionForBranch(flow, prefixedBranchName, originalProjects, session);
@@ -319,7 +320,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
             updatePomsWithVersionCopy(ctx, developProjects, hotfixProjects);
             flow.git().add().addFilepattern(".").call();
-            flow.git().commit().setMessage(ctx.getScmCommentPrefix() + "updating develop with hotfix versions to avoid merge conflicts").call();
+            flow.git().commit().setMessage(ctx.getScmCommentPrefix() + "updating develop with hotfix versions to avoid merge conflicts" + ctx.getScmCommentSuffix()).call();
 
             flow.git().checkout().setName(prefixedBranchName);
 
@@ -337,6 +338,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
                 .setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()))
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                .setScmMessageSuffix(ctx.getScmCommentSuffix())
                 .call();
 
             if(!mergeResult.wasSuccessful())
@@ -366,7 +368,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             developProjects = developSession.getSortedProjects();
             updatePomsWithPreviousVersions("hotfix", ctx, developProjects, config);
 
-            projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for development");
+            projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for development" + ctx.getScmCommentSuffix());
 
             if(ctx.isPushHotfixes())
             {
@@ -408,7 +410,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixVersion("hotfixlabel", ctx, hotfixProjects, config);
 
-            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix" + ctx.getScmCommentSuffix());
         }
         catch (GitAPIException e)
         {
@@ -433,7 +435,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixVersion("hotfixlabel", hotfixLabel, ctx, hotfixProjects, config);
 
-            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix" + ctx.getScmCommentSuffix());
         }
         catch (GitAPIException e)
         {
@@ -458,7 +460,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
             updatePomsWithHotfixSnapshotVersion("hotfixlabel", hotfixLabel, ctx, hotfixProjects, config);
 
-            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix");
+            projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix" + ctx.getScmCommentSuffix());
         }
         catch (GitAPIException e)
         {

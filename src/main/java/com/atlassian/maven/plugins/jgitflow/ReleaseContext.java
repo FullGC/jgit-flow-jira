@@ -44,6 +44,7 @@ public class ReleaseContext
     private String startCommit;
     private String defaultOriginUrl;
     private String scmCommentPrefix;
+    private String scmCommentSuffix;
     private String username;
     private String password;
     
@@ -79,6 +80,7 @@ public class ReleaseContext
         this.allowRemote = true;
         this.defaultOriginUrl = "";
         this.scmCommentPrefix = "";
+        this.scmCommentSuffix = "";
         this.pullMaster = false;
         this.pullDevelop = false;
         this.username = "";
@@ -430,6 +432,22 @@ public class ReleaseContext
     public ReleaseContext setScmCommentPrefix(String scmCommentPrefix)
     {
         this.scmCommentPrefix = scmCommentPrefix;
+        return this;
+    }
+
+    public String getScmCommentSuffix()
+    {
+        if(null == scmCommentSuffix || scmCommentSuffix.equalsIgnoreCase("null"))
+        {
+            this.scmCommentSuffix = "";
+        }
+
+        return scmCommentSuffix;
+    }
+
+    public ReleaseContext setScmCommentSuffix(String scmCommentSuffix)
+    {
+        this.scmCommentSuffix = scmCommentSuffix;
         return this;
     }
 

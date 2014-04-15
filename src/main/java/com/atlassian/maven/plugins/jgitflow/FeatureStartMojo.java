@@ -49,6 +49,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
                 .setAllowRemote(isRemoteAllowed())
                 .setDefaultOriginUrl(defaultOriginUrl)
                 .setScmCommentPrefix(scmCommentPrefix)
+                .setScmCommentSuffix(scmCommentSuffix)
                 .setUsername(username)
                 .setPassword(password)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());

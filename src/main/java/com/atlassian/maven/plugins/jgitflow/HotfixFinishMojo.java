@@ -95,6 +95,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setNoBuild(noHotfixBuild)
            .setDefaultOriginUrl(defaultOriginUrl)
            .setScmCommentPrefix(scmCommentPrefix)
+           .setScmCommentSuffix(scmCommentSuffix)
            .setUsername(username)
            .setPassword(password)
            .setPullMaster(pullMaster)

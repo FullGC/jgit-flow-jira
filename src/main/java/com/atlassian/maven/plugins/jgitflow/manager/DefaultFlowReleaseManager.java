@@ -151,6 +151,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 .setPush(ctx.isPushReleases())
                 .setStartCommit(ctx.getStartCommit())
                 .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                .setScmMessageSuffix(ctx.getScmCommentSuffix())
                 .call();
         }
         catch (GitAPIException e)
@@ -274,7 +275,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 getLogger().debug("updating release poms with release...");
             }
             updateReleasePomsWithRelease(releaseLabel,flow,ctx,originalProjects,session);
-            projectHelper.commitAllPoms(flow.git(), originalProjects, ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release");
+            projectHelper.commitAllPoms(flow.git(), originalProjects, ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release" + ctx.getScmCommentSuffix());
 
             //reload the reactor projects for release
             releaseSession = getSessionForBranch(flow, prefixedBranchName, originalProjects, session);
@@ -322,6 +323,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .setNoMerge(ctx.isNoReleaseMerge())
                 .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                .setScmMessageSuffix(ctx.getScmCommentSuffix())
                 .call();
             
             if(!mergeResult.wasSuccessful())
@@ -353,7 +355,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             String developLabel = getDevelopmentLabel("develop", ctx, developProjects);
             updatePomsWithDevelopmentVersion("develop", ctx, developProjects);
 
-            projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for " + developLabel + " development");
+            projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for " + developLabel + " development" + ctx.getScmCommentSuffix());
 
             if(ctx.isPushReleases())
             {
@@ -394,7 +396,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
             updatePomsWithReleaseSnapshotVersion("releaseStartLabel", releaseLabel, ctx, releaseProjects);
 
-            projectHelper.commitAllPoms(flow.git(), releaseProjects, ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release");
+            projectHelper.commitAllPoms(flow.git(), releaseProjects, ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release" + ctx.getScmCommentSuffix());
         }
         catch (GitAPIException e)
         {
@@ -419,7 +421,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
             updatePomsWithReleaseVersion("releaseFinishLabel", releaseLabel, ctx, releaseProjects);
 
-            projectHelper.commitAllPoms(flow.git(), releaseProjects,ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release");
+            projectHelper.commitAllPoms(flow.git(), releaseProjects,ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release" + ctx.getScmCommentSuffix());
         }
         catch (GitAPIException e)
         {

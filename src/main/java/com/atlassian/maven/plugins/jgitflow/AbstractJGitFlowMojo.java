@@ -71,6 +71,9 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     
     @Parameter(property = "scmCommentPrefix", defaultValue = "")
     protected String scmCommentPrefix = "";
+
+    @Parameter(property = "scmCommentSuffix", defaultValue = "")
+    protected String scmCommentSuffix = "";
     
     @Parameter(property = "username", defaultValue = "")
     protected String username = "";
