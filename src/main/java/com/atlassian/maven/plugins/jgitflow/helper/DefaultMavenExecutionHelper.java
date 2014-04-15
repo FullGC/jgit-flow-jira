@@ -115,6 +115,19 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
                 }
                 catch (Exception e)
                 {
+                    // MJF-112: Check that the exception is a result of not having Maven 3
+                    // installed, or a genuine project configuration error
+                    try
+                    {
+                        oldSession.getClass( ).getMethod( "getProjectBuilderConfiguration" );
+                    }
+                    catch ( NoSuchMethodException e1 )
+                    {
+                        // There is no Maven 2 environment, just report the error
+                        throw e;
+                    }
+
+                    // Fallback to Maven 2 API
                     project = projectBuilder.build(file,oldSession.getProjectBuilderConfiguration());
                 }
                 
