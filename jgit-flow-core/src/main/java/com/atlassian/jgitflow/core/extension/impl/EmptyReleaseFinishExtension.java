@@ -74,4 +74,16 @@ public class EmptyReleaseFinishExtension implements ReleaseFinishExtension
     {
         return Collections.EMPTY_LIST;
     }
+
+    @Override
+    public List<ExtensionCommand> before()
+    {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public List<ExtensionCommand> after()
+    {
+        return Collections.EMPTY_LIST;
+    }
 }

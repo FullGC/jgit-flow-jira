@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.ExtensionCommand;
+import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 import com.atlassian.jgitflow.core.extension.ExtensionProvider;
 import com.atlassian.jgitflow.core.extension.impl.EmptyExtensionProvider;
 import com.atlassian.jgitflow.core.util.CleanStatus;
@@ -16,6 +18,8 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.atlassian.jgitflow.core.util.Preconditions.checkNotNull;
 
@@ -29,6 +33,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkNotNull;
  */
 public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
 {
+    private static final Logger log = LoggerFactory.getLogger(AbstractGitFlowCommand.class);
     protected final Git git;
     protected final GitFlowConfiguration gfConfig;
     protected final JGitFlowReporter reporter;
@@ -281,6 +286,28 @@ public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
             reporter.errorText(getCommandName(), "requireCommitOnBranch() failed: '" + commit.getName() + "' is not on " + branch);
             reporter.flush();
             throw new LocalBranchExistsException("commit '" + commit.getName() + "' does not exist on " + branch);
+        }
+    }
+    
+    protected void runExtensionCommands(List<ExtensionCommand> commands) throws JGitFlowExtensionException
+    {
+        for(final ExtensionCommand command : commands)
+        {
+            try
+            {
+                command.execute();
+            }
+            catch (JGitFlowExtensionException e)
+            {
+                if(ExtensionFailStrategy.ERROR.equals(command.failStrategy()))
+                {
+                    throw e;
+                }
+                else
+                {
+                    log.warn("Error running JGitFlow Extension", e);
+                }
+            }
         }
     }
 

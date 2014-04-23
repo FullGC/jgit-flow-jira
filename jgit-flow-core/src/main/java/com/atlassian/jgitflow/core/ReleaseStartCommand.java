@@ -3,6 +3,7 @@ package com.atlassian.jgitflow.core;
 import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.ReleaseStartExtension;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
@@ -79,8 +80,11 @@ public class ReleaseStartCommand extends AbstractGitFlowCommand<ReleaseStartComm
      * @throws com.atlassian.jgitflow.core.exception.BranchOutOfDateException
      */
     @Override
-    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, ReleaseBranchExistsException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchExistsException, TagExistsException, BranchOutOfDateException, LocalBranchMissingException, RemoteBranchExistsException
+    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, ReleaseBranchExistsException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchExistsException, TagExistsException, BranchOutOfDateException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
     {
+        ReleaseStartExtension extension = getExtensionProvider().provideReleaseStartExtension();
+        
+        runExtensionCommands(extension.before());
         String prefixedReleaseName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()) + releaseName;
 
         requireGitFlowInitialized();
@@ -92,10 +96,13 @@ public class ReleaseStartCommand extends AbstractGitFlowCommand<ReleaseStartComm
         {
             if (fetch)
             {
+                runExtensionCommands(extension.beforeFetch());
                 RefSpec spec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getDevelop() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getDevelop());
                 git.fetch().setRefSpecs(spec).call();
+                runExtensionCommands(extension.afterFetch());
             }
 
+            runExtensionCommands(extension.beforeCreateBranch());
             RevCommit startPoint = null;
 
             if(null != startCommit)
@@ -131,6 +138,8 @@ public class ReleaseStartCommand extends AbstractGitFlowCommand<ReleaseStartComm
                       .call();
 
             reporter.debugText(getCommandName(),"created branch: " + prefixedReleaseName);
+            
+            runExtensionCommands(extension.afterCreateBranch());
 
             if (push)
             {
@@ -149,8 +158,11 @@ public class ReleaseStartCommand extends AbstractGitFlowCommand<ReleaseStartComm
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedReleaseName, ConfigConstants.CONFIG_KEY_REMOTE, "origin");
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedReleaseName, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + prefixedReleaseName);
                 config.save();
+                
+                runExtensionCommands(extension.afterPush());
             }
             
+            runExtensionCommands(extension.after());
             return newBranch;
 
         }

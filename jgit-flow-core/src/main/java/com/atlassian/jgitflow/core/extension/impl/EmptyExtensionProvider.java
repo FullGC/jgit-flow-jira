@@ -9,38 +9,38 @@ public class EmptyExtensionProvider implements ExtensionProvider
 {
 
     @Override
-    public List<ReleaseStartExtension> provideReleaseStartExtensions()
+    public ReleaseStartExtension provideReleaseStartExtension()
     {
-        return Collections.EMPTY_LIST;
+        return new EmptyReleaseStartExtension();
     }
 
     @Override
-    public List<ReleaseFinishExtension> provideReleaseFinishExtensions()
+    public ReleaseFinishExtension provideReleaseFinishExtension()
     {
-        return Collections.EMPTY_LIST;
+        return new EmptyReleaseFinishExtension();
     }
 
     @Override
-    public List<HotfixStartExtension> provideHotfixStartExtensions()
+    public HotfixStartExtension provideHotfixStartExtension()
     {
-        return Collections.EMPTY_LIST;
+        return new EmptyHotfixStartExtension();
     }
 
     @Override
-    public List<HotfixFinishExtension> provideHotfixFinishExtensions()
+    public HotfixFinishExtension provideHotfixFinishExtension()
     {
-        return Collections.EMPTY_LIST;
+        return new EmptyHotfixFinishExtension();
     }
 
     @Override
-    public List<FeatureStartExtension> provideFeatureStartExtensions()
+    public FeatureStartExtension provideFeatureStartExtension()
     {
-        return Collections.EMPTY_LIST;
+        return new EmptyFeatureStartExtension();
     }
 
     @Override
-    public List<FeatureFinishExtension> provideFeatureFinishExtensions()
+    public FeatureFinishExtension provideFeatureFinishExtension()
     {
-        return Collections.EMPTY_LIST;
+        return new EmptyFeatureFinishExtension();
     }
 }

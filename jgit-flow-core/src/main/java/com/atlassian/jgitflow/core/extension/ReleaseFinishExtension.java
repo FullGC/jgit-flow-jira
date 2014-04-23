@@ -2,7 +2,7 @@ package com.atlassian.jgitflow.core.extension;
 
 import java.util.List;
 
-public interface ReleaseFinishExtension
+public interface ReleaseFinishExtension extends JGitFlowExtension
 {
     List<ExtensionCommand> beforeFetch();
 

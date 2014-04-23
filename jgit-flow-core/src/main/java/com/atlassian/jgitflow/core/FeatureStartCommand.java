@@ -3,6 +3,7 @@ package com.atlassian.jgitflow.core;
 import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.FeatureStartExtension;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
@@ -76,10 +77,14 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<FeatureStartComm
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
      */
     @Override
-    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchExistsException, BranchOutOfDateException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException
+    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchExistsException, BranchOutOfDateException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
     {
+        FeatureStartExtension extensions = getExtensionProvider().provideFeatureStartExtension();
+        
         reporter.commandCall(SHORT_NAME);
         
+        runExtensionCommands(extensions.before());
+
         //TODO: we should test for remote feature and pull it if it exists
         final String prefixedBranchName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.FEATURE.configKey()) + branchName;
         requireGitFlowInitialized();
@@ -87,10 +92,12 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<FeatureStartComm
         
         if(fetchDevelop)
         {
+            runExtensionCommands(extensions.beforeFetch());
             RefSpec spec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getDevelop() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getDevelop());
             try
             {
                 git.fetch().setRefSpecs(spec).call();
+                runExtensionCommands(extensions.afterFetch());
             }
             catch (GitAPIException e)
             {
@@ -105,6 +112,7 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<FeatureStartComm
                 requireLocalBranchNotBehindRemote(gfConfig.getDevelop());
             }
 
+            runExtensionCommands(extensions.beforeCreateBranch());
             RevCommit startPoint = null;
 
             if(null != startCommit)
@@ -127,6 +135,8 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<FeatureStartComm
                     .setCreateBranch(true)
                     .setStartPoint(startPoint)
                     .call();
+            
+            runExtensionCommands(extensions.afterCreateBranch());
 
             if (push)
             {
@@ -140,8 +150,11 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<FeatureStartComm
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedBranchName, ConfigConstants.CONFIG_KEY_REMOTE, "origin");
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedBranchName, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + prefixedBranchName);
                 config.save();
+                
+                runExtensionCommands(extensions.afterPush());
             }
 
+            runExtensionCommands(extensions.after());
             return newBranch;
 
         }

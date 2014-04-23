@@ -3,6 +3,7 @@ package com.atlassian.jgitflow.core;
 import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.HotfixStartExtension;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
@@ -78,8 +79,11 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartComman
      * @throws com.atlassian.jgitflow.core.exception.BranchOutOfDateException
      */
     @Override
-    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, HotfixBranchExistsException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchExistsException, TagExistsException, BranchOutOfDateException, LocalBranchMissingException, RemoteBranchExistsException
+    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, HotfixBranchExistsException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchExistsException, TagExistsException, BranchOutOfDateException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
     {
+        HotfixStartExtension extension = getExtensionProvider().provideHotfixStartExtension();
+        
+        runExtensionCommands(extension.before());
         String prefixedHotfixName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.HOTFIX.configKey()) + hotfixName;
 
         requireGitFlowInitialized();
@@ -91,8 +95,10 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartComman
         {
             if (fetch)
             {
+                runExtensionCommands(extension.beforeFetch());
                 RefSpec spec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getMaster() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getMaster());
                 git.fetch().setRefSpecs(spec).call();
+                runExtensionCommands(extension.afterFetch());
             }
 
             requireTagAbsent(gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.VERSIONTAG.configKey()) + hotfixName);
@@ -101,7 +107,8 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartComman
             {
                 requireLocalBranchNotBehindRemote(gfConfig.getMaster());
             }
-
+            
+            runExtensionCommands(extension.beforeCreateBranch());
             RevCommit startPoint = null;
 
             if(null != startCommit)
@@ -124,6 +131,8 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartComman
                       .setCreateBranch(true)
                       .setStartPoint(startPoint)
                       .call();
+            
+            runExtensionCommands(extension.afterCreateBranch());
 
             if (push)
             {
@@ -137,8 +146,11 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartComman
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedHotfixName, ConfigConstants.CONFIG_KEY_REMOTE, "origin");
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedHotfixName, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + prefixedHotfixName);
                 config.save();
+                
+                runExtensionCommands(extension.afterPush());
             }
 
+            runExtensionCommands(extension.after());
             return newBranch;
         }
         catch (GitAPIException e)

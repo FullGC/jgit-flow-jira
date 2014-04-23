@@ -6,12 +6,12 @@ import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 
 public interface ExtensionProvider
 {
-    List<ReleaseStartExtension> provideReleaseStartExtensions();
-    List<ReleaseFinishExtension> provideReleaseFinishExtensions();
+    ReleaseStartExtension provideReleaseStartExtension();
+    ReleaseFinishExtension provideReleaseFinishExtension();
 
-    List<HotfixStartExtension> provideHotfixStartExtensions();
-    List<HotfixFinishExtension> provideHotfixFinishExtensions();
+    HotfixStartExtension provideHotfixStartExtension();
+    HotfixFinishExtension provideHotfixFinishExtension();
 
-    List<FeatureStartExtension> provideFeatureStartExtensions();
-    List<FeatureFinishExtension> provideFeatureFinishExtensions();
+    FeatureStartExtension provideFeatureStartExtension();
+    FeatureFinishExtension provideFeatureFinishExtension();
 }
