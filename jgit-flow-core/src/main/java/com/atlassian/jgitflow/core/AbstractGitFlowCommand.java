@@ -295,7 +295,7 @@ public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
         {
             try
             {
-                command.execute();
+                command.execute(gfConfig, git, reporter);
             }
             catch (JGitFlowExtensionException e)
             {
