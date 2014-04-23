@@ -37,7 +37,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.featureStart(&quot;feature&quot;).setFetchDevelop(true).call();
  * </pre>
  */
-public class FeatureStartCommand extends AbstractGitFlowCommand<Ref>
+public class FeatureStartCommand extends AbstractGitFlowCommand<FeatureStartCommand,Ref>
 {
     private static final String SHORT_NAME = "feature-start";
     
@@ -56,7 +56,7 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<Ref>
      * @param gfConfig The GitFlowConfiguration to use
      * @param reporter
      */
-    FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter) 
+    public FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter) 
     {
         super(git,gfConfig, reporter);
 
@@ -64,27 +64,6 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<Ref>
         this.branchName = branchName;
         this.fetchDevelop = false;
         this.push = false;
-    }
-
-    @Override
-    public FeatureStartCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public FeatureStartCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public FeatureStartCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.atlassian.jgitflow.core;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.ExtensionProvider;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -19,7 +20,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.featureRebase(&quot;feature&quot;).call();
  * </pre>
  */
-public class FeatureRebaseCommand extends AbstractGitFlowCommand<Void>
+public class FeatureRebaseCommand extends AbstractGitFlowCommand<FeatureRebaseCommand, Void>
 {
     private static final String SHORT_NAME = "feature-rebase";
     private final String branchName;
@@ -39,27 +40,6 @@ public class FeatureRebaseCommand extends AbstractGitFlowCommand<Void>
         this.branchName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.FEATURE.configKey()) + name;
     }
 
-    @Override
-    public FeatureRebaseCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public FeatureRebaseCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public FeatureRebaseCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
-    }
-    
     /**
      * 
      * @return nothing

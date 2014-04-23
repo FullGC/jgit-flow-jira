@@ -54,7 +54,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.releaseFinish(&quot;1.0&quot;).setNoTag(true).call();
  * </pre>
  */
-public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResult>
+public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseFinishCommand, ReleaseMergeResult>
 {
     private static final String SHORT_NAME = "release-finish";
     private final String releaseName;
@@ -88,27 +88,6 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
         this.noTag = false;
         this.squash = false;
         this.noMerge = false;
-    }
-
-    @Override
-    public ReleaseFinishCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public ReleaseFinishCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public ReleaseFinishCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
     }
 
     /**

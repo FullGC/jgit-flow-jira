@@ -34,7 +34,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.releaseStart(&quot;1.0&quot;).setFetch(true).call();
  * </pre>
  */
-public class ReleaseStartCommand extends AbstractGitFlowCommand<Ref>
+public class ReleaseStartCommand extends AbstractGitFlowCommand<ReleaseStartCommand, Ref>
 {
     private static final String SHORT_NAME = "release-start";
     
@@ -64,27 +64,6 @@ public class ReleaseStartCommand extends AbstractGitFlowCommand<Ref>
         this.push = false;
         this.startCommit = null;
         this.startCommitString = null;
-    }
-
-    @Override
-    public ReleaseStartCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public ReleaseStartCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public ReleaseStartCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
     }
 
     /**

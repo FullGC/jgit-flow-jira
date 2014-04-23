@@ -58,7 +58,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.hotfixFinish(&quot;1.0&quot;).setNoTag(true).call();
  * </pre>
  */
-public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResult>
+public class HotfixFinishCommand extends AbstractGitFlowCommand<HotfixFinishCommand, ReleaseMergeResult>
 {
     private static final String SHORT_NAME = "hotfix-finish";
     private final String hotfixName;
@@ -90,27 +90,6 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
         this.noTag = false;
     }
 
-    @Override
-    public HotfixFinishCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public HotfixFinishCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public HotfixFinishCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
-    }
-    
     /**
      * 
      * @return nothing

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.ExtensionProvider;
 import com.atlassian.jgitflow.core.util.FileHelper;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.jgitflow.core.util.IterableHelper;
@@ -48,7 +49,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.featureFinish(&quot;feature&quot;).setSquash(true).call();
  * </pre>
  */
-public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
+public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCommand,Void>
 {
     private static final String SHORT_NAME = "feature-finish";
     private final String branchName;
@@ -82,27 +83,6 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
         this.squash = false;
         this.push = false;
         this.noMerge = false;
-    }
-
-    @Override
-    public FeatureFinishCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public FeatureFinishCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public FeatureFinishCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
     }
 
     /**

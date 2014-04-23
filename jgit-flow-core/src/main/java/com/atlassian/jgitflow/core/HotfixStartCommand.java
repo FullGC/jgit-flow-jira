@@ -37,7 +37,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.hotfixStart(&quot;1.0.1&quot;).setFetch(true).call();
  * </pre>
  */
-public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
+public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartCommand, Ref>
 {
     private static final String SHORT_NAME = "hotfix-start";
     private final String hotfixName;
@@ -65,27 +65,6 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
         this.push = false;
     }
 
-    @Override
-    public HotfixStartCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public HotfixStartCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public HotfixStartCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
-    }
-    
     /**
      * 
      * @return A reference to the new hotfix branch
