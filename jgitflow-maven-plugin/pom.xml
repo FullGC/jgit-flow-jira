@@ -4,7 +4,7 @@
     <parent>
         <groupId>external.atlassian.jgitflow</groupId>
         <artifactId>jgitflow-parent</artifactId>
-        <version>1.0-m2-SNAPSHOT</version>
+        <version>1.0-m2-mjf_150_internal_command_refactor-SNAPSHOT</version>
     </parent>
 
     <artifactId>jgitflow-maven-plugin</artifactId>
