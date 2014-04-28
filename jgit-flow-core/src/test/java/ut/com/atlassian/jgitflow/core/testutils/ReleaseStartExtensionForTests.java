@@ -1,16 +1,13 @@
 package ut.com.atlassian.jgitflow.core.testutils;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
-import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.jgitflow.core.extension.FeatureStartExtension;
+import com.atlassian.jgitflow.core.extension.ReleaseStartExtension;
 
 import com.google.common.collect.Lists;
 
-public class FeatureStartExtensionForTests extends BaseExtensionForTests<FeatureStartExtensionForTests> implements FeatureStartExtension
+public class ReleaseStartExtensionForTests extends BaseExtensionForTests<ReleaseStartExtensionForTests> implements ReleaseStartExtension
 {
     @Override
     public List<ExtensionCommand> beforeCreateBranch()
@@ -29,5 +26,4 @@ public class FeatureStartExtensionForTests extends BaseExtensionForTests<Feature
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_PUSH));
     }
-    
 }

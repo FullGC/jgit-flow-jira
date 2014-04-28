@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.exception.*;
-import com.atlassian.jgitflow.core.extension.ExtensionProvider;
 import com.atlassian.jgitflow.core.extension.FeatureFinishExtension;
 import com.atlassian.jgitflow.core.util.FileHelper;
 import com.atlassian.jgitflow.core.util.GitHelper;
@@ -188,7 +187,7 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
 
                 runExtensionCommands(extensions.afterDevelopCheckout());
 
-                runExtensionCommands(extensions.beforeMerge());
+                runExtensionCommands(extensions.beforeDevelopMerge());
                 Ref featureBranch = GitHelper.getLocalBranch(git, prefixedBranchName);
     
                 RevCommit developCommit = GitHelper.getLatestCommit(git, gfConfig.getDevelop());
@@ -223,7 +222,7 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
                     }
                 }
 
-                runExtensionCommands(extensions.afterMerge());
+                runExtensionCommands(extensions.afterDevelopMerge());
     
                 if (null == mergeResult || mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.FAILED) || mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING))
                 {

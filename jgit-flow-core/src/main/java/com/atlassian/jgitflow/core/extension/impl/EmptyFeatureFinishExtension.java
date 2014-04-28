@@ -51,13 +51,13 @@ public class EmptyFeatureFinishExtension implements FeatureFinishExtension
     }
 
     @Override
-    public List<ExtensionCommand> beforeMerge()
+    public List<ExtensionCommand> beforeDevelopMerge()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> afterMerge()
+    public List<ExtensionCommand> afterDevelopMerge()
     {
         return Collections.EMPTY_LIST;
     }

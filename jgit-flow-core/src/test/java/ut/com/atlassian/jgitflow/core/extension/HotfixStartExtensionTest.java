@@ -6,10 +6,6 @@ import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowInitCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.jgitflow.core.extension.ExtensionProvider;
-import com.atlassian.jgitflow.core.extension.FeatureStartExtension;
-import com.atlassian.jgitflow.core.extension.impl.EmptyExtensionProvider;
-import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -18,16 +14,17 @@ import org.junit.Test;
 import ut.com.atlassian.jgitflow.core.BaseGitFlowTest;
 import ut.com.atlassian.jgitflow.core.testutils.BaseExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.ExtensionProviderForTests;
-import ut.com.atlassian.jgitflow.core.testutils.FeatureStartExtensionForTests;
+import ut.com.atlassian.jgitflow.core.testutils.HotfixStartExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class FeatureStartExtensionTest extends BaseGitFlowTest
+public class HotfixStartExtensionTest extends BaseGitFlowTest
 {
     @Test
-    public void startFeatureExtension() throws Exception
+    public void startHotfixExtension() throws Exception
     {
         Git git = null;
         Git remoteGit = null;
@@ -39,12 +36,26 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
         git.push().setRemote("origin").add("develop").call();
 
-        FeatureStartExtensionForTests extension = new FeatureStartExtensionForTests();
+        HotfixStartExtensionForTests extension = new HotfixStartExtensionForTests();
 
         ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setFeatureStartExtension(extension);
+        provider.setHotfixStartExtension(extension);
 
-        flow.featureStart("myFeature").setFetchDevelop(true).setPush(true).setExtensionProvider(provider).call();
+        //do a commit to the remote develop branch
+        remoteGit.checkout().setName("master").call();
+        File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        remoteGit.add().addFilepattern(junkFile.getName()).call();
+        remoteGit.commit().setMessage("adding junk file").call();
+
+        //update local
+        git.checkout().setName("master").call();
+        git.pull().call();
+        git.checkout().setName("develop").call();
+
+        flow.hotfixStart("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+
+        assertEquals(flow.getHotfixBranchPrefix() + "1.0", git.getRepository().getBranch());
 
         assertTrue("before was not called", extension.wasCalled(BaseExtensionForTests.BEFORE));
         assertTrue("beforeFetch was not called", extension.wasCalled(BaseExtensionForTests.BEFORE_FETCH));
@@ -56,7 +67,7 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
     }
 
     @Test
-    public void startFeatureExtensionWithThrownException() throws Exception
+    public void startHotfixExtensionWithThrownException() throws Exception
     {
         Git git = null;
         Git remoteGit = null;
@@ -68,15 +79,27 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
         git.push().setRemote("origin").add("develop").call();
 
-        FeatureStartExtensionForTests extension = new FeatureStartExtensionForTests();
+        HotfixStartExtensionForTests extension = new HotfixStartExtensionForTests();
         extension.withException(BaseExtensionForTests.AFTER_CREATE_BRANCH, ExtensionFailStrategy.ERROR);
-
+        
         ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setFeatureStartExtension(extension);
+        provider.setHotfixStartExtension(extension);
+
+        //do a commit to the remote develop branch
+        remoteGit.checkout().setName("master").call();
+        File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        remoteGit.add().addFilepattern(junkFile.getName()).call();
+        remoteGit.commit().setMessage("adding junk file").call();
+
+        //update local
+        git.checkout().setName("master").call();
+        git.pull().call();
+        git.checkout().setName("develop").call();
 
         try
         {
-            flow.featureStart("myFeature").setFetchDevelop(true).setPush(true).setExtensionProvider(provider).call();
+            flow.hotfixStart("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
 
             fail("Exception should have been thrown!!");
         }
@@ -87,11 +110,10 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
             assertTrue("afterFetch was not called", extension.wasCalled(BaseExtensionForTests.AFTER_FETCH));
             assertTrue("beforeCreateBranch was not called", extension.wasCalled(BaseExtensionForTests.BEFORE_CREATE_BRANCH));
         }
-
     }
 
     @Test
-    public void startFeatureExtensionWithWarnException() throws Exception
+    public void startHotfixExtensionWithWarnException() throws Exception
     {
         Git git = null;
         Git remoteGit = null;
@@ -103,13 +125,27 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
         git.push().setRemote("origin").add("develop").call();
 
-        FeatureStartExtensionForTests extension = new FeatureStartExtensionForTests();
+        HotfixStartExtensionForTests extension = new HotfixStartExtensionForTests();
         extension.withException(BaseExtensionForTests.AFTER_CREATE_BRANCH, ExtensionFailStrategy.WARN);
 
         ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setFeatureStartExtension(extension);
+        provider.setHotfixStartExtension(extension);
 
-        flow.featureStart("myFeature").setFetchDevelop(true).setPush(true).setExtensionProvider(provider).call();
+        //do a commit to the remote develop branch
+        remoteGit.checkout().setName("master").call();
+        File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        remoteGit.add().addFilepattern(junkFile.getName()).call();
+        remoteGit.commit().setMessage("adding junk file").call();
+
+        //update local
+        git.checkout().setName("master").call();
+        git.pull().call();
+        git.checkout().setName("develop").call();
+
+        flow.hotfixStart("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+
+        assertEquals(flow.getHotfixBranchPrefix() + "1.0", git.getRepository().getBranch());
 
         assertTrue("before was not called", extension.wasCalled(BaseExtensionForTests.BEFORE));
         assertTrue("beforeFetch was not called", extension.wasCalled(BaseExtensionForTests.BEFORE_FETCH));
@@ -118,7 +154,5 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
         assertTrue("afterCreateBranch was not called", extension.wasCalled(BaseExtensionForTests.AFTER_CREATE_BRANCH));
         assertTrue("afterPush was not called", extension.wasCalled(BaseExtensionForTests.AFTER_PUSH));
         assertTrue("after was not called", extension.wasCalled(BaseExtensionForTests.AFTER));
-
     }
-    
 }

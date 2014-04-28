@@ -16,9 +16,9 @@ public interface FeatureFinishExtension extends JGitFlowExtension
 
     List<ExtensionCommand> afterDevelopCheckout();
 
-    List<ExtensionCommand> beforeMerge();
+    List<ExtensionCommand> beforeDevelopMerge();
 
-    List<ExtensionCommand> afterMerge();
+    List<ExtensionCommand> afterDevelopMerge();
 
     List<ExtensionCommand> afterPush();
 }
