@@ -3,6 +3,7 @@ package com.atlassian.jgitflow.core;
 import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.HotfixStartExtension;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
@@ -37,7 +38,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.hotfixStart(&quot;1.0.1&quot;).setFetch(true).call();
  * </pre>
  */
-public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
+public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartCommand, Ref>
 {
     private static final String SHORT_NAME = "hotfix-start";
     private final String hotfixName;
@@ -65,27 +66,6 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
         this.push = false;
     }
 
-    @Override
-    public HotfixStartCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public HotfixStartCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public HotfixStartCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
-    }
-    
     /**
      * 
      * @return A reference to the new hotfix branch
@@ -99,8 +79,11 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
      * @throws com.atlassian.jgitflow.core.exception.BranchOutOfDateException
      */
     @Override
-    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, HotfixBranchExistsException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchExistsException, TagExistsException, BranchOutOfDateException, LocalBranchMissingException, RemoteBranchExistsException
+    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, HotfixBranchExistsException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchExistsException, TagExistsException, BranchOutOfDateException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
     {
+        HotfixStartExtension extension = getExtensionProvider().provideHotfixStartExtension();
+        
+        runExtensionCommands(extension.before());
         String prefixedHotfixName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.HOTFIX.configKey()) + hotfixName;
 
         requireGitFlowInitialized();
@@ -112,8 +95,10 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
         {
             if (fetch)
             {
+                runExtensionCommands(extension.beforeFetch());
                 RefSpec spec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getMaster() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getMaster());
                 git.fetch().setRefSpecs(spec).call();
+                runExtensionCommands(extension.afterFetch());
             }
 
             requireTagAbsent(gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.VERSIONTAG.configKey()) + hotfixName);
@@ -122,7 +107,8 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
             {
                 requireLocalBranchNotBehindRemote(gfConfig.getMaster());
             }
-
+            
+            runExtensionCommands(extension.beforeCreateBranch());
             RevCommit startPoint = null;
 
             if(null != startCommit)
@@ -145,6 +131,8 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
                       .setCreateBranch(true)
                       .setStartPoint(startPoint)
                       .call();
+            
+            runExtensionCommands(extension.afterCreateBranch());
 
             if (push)
             {
@@ -158,8 +146,11 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<Ref>
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedHotfixName, ConfigConstants.CONFIG_KEY_REMOTE, "origin");
                 config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedHotfixName, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + prefixedHotfixName);
                 config.save();
+                
+                runExtensionCommands(extension.afterPush());
             }
 
+            runExtensionCommands(extension.after());
             return newBranch;
         }
         catch (GitAPIException e)

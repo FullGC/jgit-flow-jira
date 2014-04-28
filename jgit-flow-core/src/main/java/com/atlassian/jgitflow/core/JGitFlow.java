@@ -7,6 +7,7 @@ import com.atlassian.jgitflow.core.exception.AlreadyInitializedException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.exception.SameBranchException;
+import com.atlassian.jgitflow.core.FeatureFinishCommand;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.RepositoryBuilder;

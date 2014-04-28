@@ -3,6 +3,7 @@ package com.atlassian.jgitflow.core;
 import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.ExtensionProvider;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -25,7 +26,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.featurePublish(&quot;feature&quot;).call();
  * </pre>
  */
-public class FeaturePublishCommand extends AbstractGitFlowCommand<Void>
+public class FeaturePublishCommand extends AbstractGitFlowCommand<FeaturePublishCommand, Void>
 {
     private static final String SHORT_NAME = "feature-publish";
     private final String branchName;
@@ -44,27 +45,6 @@ public class FeaturePublishCommand extends AbstractGitFlowCommand<Void>
         super(git, gfConfig, reporter);
         checkState(!StringUtils.isEmptyOrNull(name));
         this.branchName = name;
-    }
-
-    @Override
-    public FeaturePublishCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public FeaturePublishCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public FeaturePublishCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
     }
 
     /**

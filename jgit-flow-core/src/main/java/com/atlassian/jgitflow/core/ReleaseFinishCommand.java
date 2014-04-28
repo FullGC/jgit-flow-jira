@@ -1,6 +1,7 @@
 package com.atlassian.jgitflow.core;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.ReleaseFinishExtension;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
@@ -54,7 +55,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.releaseFinish(&quot;1.0&quot;).setNoTag(true).call();
  * </pre>
  */
-public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResult>
+public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseFinishCommand, ReleaseMergeResult>
 {
     private static final String SHORT_NAME = "release-finish";
     private final String releaseName;
@@ -90,27 +91,6 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
         this.noMerge = false;
     }
 
-    @Override
-    public ReleaseFinishCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public ReleaseFinishCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public ReleaseFinishCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
-    }
-
     /**
      * @return nothing
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -120,9 +100,14 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
      * @throws com.atlassian.jgitflow.core.exception.BranchOutOfDateException
      */
     @Override
-    public ReleaseMergeResult call() throws JGitFlowGitAPIException, LocalBranchMissingException, DirtyWorkingTreeException, JGitFlowIOException, BranchOutOfDateException
+    public ReleaseMergeResult call() throws JGitFlowGitAPIException, LocalBranchMissingException, DirtyWorkingTreeException, JGitFlowIOException, BranchOutOfDateException, JGitFlowExtensionException
     {
+        ReleaseFinishExtension extension = getExtensionProvider().provideReleaseFinishExtension();
+        
         reporter.commandCall(getCommandName());
+        
+        runExtensionCommands(extension.before());
+        
         String prefixedReleaseName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()) + releaseName;
 
         requireLocalBranchExists(prefixedReleaseName);
@@ -134,12 +119,15 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
         {
             if (fetch)
             {
+                runExtensionCommands(extension.beforeFetch());
                 RefSpec developSpec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getDevelop() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getDevelop());
                 RefSpec masterSpec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getMaster() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getMaster());
 
                 git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(masterSpec).call();
                 git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(developSpec).call();
                 git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
+                
+                runExtensionCommands(extension.afterFetch());
             }
 
             if (GitHelper.remoteBranchExists(git, prefixedReleaseName, reporter))
@@ -157,6 +145,8 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
                 requireLocalBranchNotBehindRemote(gfConfig.getDevelop());
             }
 
+            runExtensionCommands(extension.beforeMasterCheckout());
+            
             Ref releaseBranch = GitHelper.getLocalBranch(git, prefixedReleaseName);
         
         if(!noMerge)
@@ -169,7 +159,12 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
                 if (!GitHelper.isMergedInto(git, prefixedReleaseName, gfConfig.getMaster()))
                 {
                     git.checkout().setName(gfConfig.getMaster()).call();
+                    
+                    runExtensionCommands(extension.afterMasterCheckout());
+                    
                     reporter.infoText(getCommandName(), "merging '" + prefixedReleaseName + "' into '" + gfConfig.getMaster() + "'...");
+                    
+                    runExtensionCommands(extension.beforeMasterMerge());
                     if (squash)
                     {
                         reporter.infoText(getCommandName(), "squashing merge");
@@ -183,6 +178,8 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
                     {
                         masterResult = git.merge().setFastForward(MergeCommand.FastForwardMode.NO_FF).include(releaseBranch).call();
                     }
+                    
+                    runExtensionCommands(extension.afterMasterMerge());
                 }
     
                 reporter.mergeResult(getCommandName(), masterResult);
@@ -205,10 +202,15 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
                 in case a previous attempt to finish this release branch has failed,
                 but the merge into develop was successful, we skip it now
                  */
+                runExtensionCommands(extension.beforeDevelopCheckout());
                 if (!GitHelper.isMergedInto(git, prefixedReleaseName, gfConfig.getDevelop()))
                 {
                     reporter.infoText(getCommandName(), "merging '" + prefixedReleaseName + "' into '" + gfConfig.getDevelop() + "'...");
                     git.checkout().setName(gfConfig.getDevelop()).call();
+                    
+                    runExtensionCommands(extension.afterDevelopCheckout());
+                    
+                    runExtensionCommands(extension.beforeDevelopMerge());
     
                     if (squash)
                     {
@@ -223,6 +225,8 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
                     {
                         developResult = git.merge().setFastForward(MergeCommand.FastForwardMode.NO_FF).include(releaseBranch).call();
                     }
+                    
+                    runExtensionCommands(extension.afterDevelopMerge());
                 }
     
                 reporter.mergeResult(getCommandName(), developResult);
@@ -289,6 +293,8 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
                     RefSpec branchSpec = new RefSpec(prefixedReleaseName);
                     git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(branchSpec).call();
                 }
+                
+                runExtensionCommands(extension.afterPush());
             }
 
             if (!keepBranch && masterResult.getMergeStatus().isSuccessful() && developResult.getMergeStatus().isSuccessful())
@@ -317,6 +323,8 @@ public class ReleaseFinishCommand extends AbstractGitFlowCommand<ReleaseMergeRes
         }
 
         reporter.endCommand();
+        
+        runExtensionCommands(extension.after());
         return new ReleaseMergeResult(masterResult, developResult);
     }
 

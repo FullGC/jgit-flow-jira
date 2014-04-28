@@ -3,6 +3,7 @@ package com.atlassian.jgitflow.core;
 import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.HotfixFinishExtension;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
@@ -58,7 +59,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.hotfixFinish(&quot;1.0&quot;).setNoTag(true).call();
  * </pre>
  */
-public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResult>
+public class HotfixFinishCommand extends AbstractGitFlowCommand<HotfixFinishCommand, ReleaseMergeResult>
 {
     private static final String SHORT_NAME = "hotfix-finish";
     private final String hotfixName;
@@ -90,27 +91,6 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
         this.noTag = false;
     }
 
-    @Override
-    public HotfixFinishCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public HotfixFinishCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public HotfixFinishCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
-    }
-    
     /**
      * 
      * @return nothing
@@ -121,8 +101,12 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
      * @throws com.atlassian.jgitflow.core.exception.BranchOutOfDateException
      */
     @Override
-    public ReleaseMergeResult call() throws JGitFlowGitAPIException, LocalBranchMissingException, DirtyWorkingTreeException, JGitFlowIOException, BranchOutOfDateException
+    public ReleaseMergeResult call() throws JGitFlowGitAPIException, LocalBranchMissingException, DirtyWorkingTreeException, JGitFlowIOException, BranchOutOfDateException, JGitFlowExtensionException
     {
+        HotfixFinishExtension extension = getExtensionProvider().provideHotfixFinishExtension();
+        
+        runExtensionCommands(extension.before());
+        
         String prefixedHotfixName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.HOTFIX.configKey()) + hotfixName;
 
         requireLocalBranchExists(prefixedHotfixName);
@@ -134,12 +118,15 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
         {
             if (fetch)
             {
+                runExtensionCommands(extension.beforeFetch());
                 RefSpec developSpec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getDevelop() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getDevelop());
                 RefSpec masterSpec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getMaster() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getMaster());
 
                 git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(masterSpec).call();
                 git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(developSpec).call();
                 git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
+                
+                runExtensionCommands(extension.afterFetch());
             }
 
             if (GitHelper.remoteBranchExists(git, prefixedHotfixName, reporter))
@@ -157,6 +144,7 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
                 requireLocalBranchNotBehindRemote(gfConfig.getDevelop());
             }
 
+            runExtensionCommands(extension.beforeMasterCheckout());
             Ref hotfixBranch = GitHelper.getLocalBranch(git, prefixedHotfixName);
             RevCommit hotfixCommit = GitHelper.getLatestCommit(git, prefixedHotfixName);
         
@@ -169,7 +157,11 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
             {
                 git.checkout().setName(gfConfig.getMaster()).call();
 
+                runExtensionCommands(extension.afterMasterCheckout());
+                
+                runExtensionCommands(extension.beforeMasterMerge());
                 masterResult = git.merge().setFastForward(MergeCommand.FastForwardMode.NO_FF).include(hotfixBranch).call();
+                runExtensionCommands(extension.afterMasterMerge());
             }
 
             if (!noTag && masterResult.getMergeStatus().isSuccessful())
@@ -200,11 +192,16 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
         in case a previous attempt to finish this release branch has failed,
         but the merge into develop was successful, we skip it now
          */
+            runExtensionCommands(extension.beforeDevelopCheckout());
             if (!GitHelper.isMergedInto(git, prefixedHotfixName, gfConfig.getDevelop()))
             {
                 git.checkout().setName(gfConfig.getDevelop()).call();
+                
+                runExtensionCommands(extension.afterDevelopCheckout());
 
+                runExtensionCommands(extension.beforeDevelopMerge());
                 developResult = git.merge().setFastForward(MergeCommand.FastForwardMode.NO_FF).include(hotfixBranch).call();
+                runExtensionCommands(extension.afterDevelopMerge());
             }
 
             if (push && masterResult.getMergeStatus().isSuccessful() && developResult.getMergeStatus().isSuccessful())
@@ -227,6 +224,8 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
                     RefSpec branchSpec = new RefSpec(prefixedHotfixName);
                     git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(branchSpec).call();
                 }
+
+                runExtensionCommands(extension.afterPush());
             }
 
             if (!keepBranch && masterResult.getMergeStatus().isSuccessful() && developResult.getMergeStatus().isSuccessful())
@@ -253,6 +252,8 @@ public class HotfixFinishCommand extends AbstractGitFlowCommand<ReleaseMergeResu
             throw new JGitFlowIOException(e);
         }
 
+        runExtensionCommands(extension.after());
+        
         return new ReleaseMergeResult(masterResult,developResult);
     }
 

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.FeatureFinishExtension;
 import com.atlassian.jgitflow.core.util.FileHelper;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.jgitflow.core.util.IterableHelper;
@@ -48,7 +49,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.featureFinish(&quot;feature&quot;).setSquash(true).call();
  * </pre>
  */
-public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
+public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCommand,Void>
 {
     private static final String SHORT_NAME = "feature-finish";
     private final String branchName;
@@ -84,27 +85,6 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
         this.noMerge = false;
     }
 
-    @Override
-    public FeatureFinishCommand setAllowUntracked(boolean allow)
-    {
-        super.setAllowUntracked(allow);
-        return this;
-    }
-
-    @Override
-    public FeatureFinishCommand setScmMessagePrefix(String scmMessagePrefix)
-    {
-        super.setScmMessagePrefix(scmMessagePrefix);
-        return this;
-    }
-
-    @Override
-    public FeatureFinishCommand setScmMessageSuffix(String scmMessageSuffix)
-    {
-        super.setScmMessageSuffix(scmMessageSuffix);
-        return this;
-    }
-
     /**
      * 
      * @return nothing
@@ -117,9 +97,13 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
      * @throws com.atlassian.jgitflow.core.exception.BranchOutOfDateException
      */
     @Override
-    public Void call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchMissingException, JGitFlowIOException, DirtyWorkingTreeException, MergeConflictsNotResolvedException, BranchOutOfDateException
+    public Void call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchMissingException, JGitFlowIOException, DirtyWorkingTreeException, MergeConflictsNotResolvedException, BranchOutOfDateException, JGitFlowExtensionException
     {
+        FeatureFinishExtension extensions = getExtensionProvider().provideFeatureFinishExtension();
+        
         reporter.debugCommandCall(getCommandName());
+        
+        runExtensionCommands(extensions.before());
         String prefixedBranchName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.FEATURE.configKey()) + branchName;
 
         requireGitFlowInitialized();
@@ -167,10 +151,12 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
             //update from remote if needed
             if (remoteFeatureExists && fetchDevelop)
             {
+                runExtensionCommands(extensions.beforeFetch());
                 RefSpec branchSpec = new RefSpec("+" + Constants.R_HEADS + prefixedBranchName + ":" + Constants.R_REMOTES + "origin/" + prefixedBranchName);
                 RefSpec developSpec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getDevelop() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getDevelop());
                 git.fetch().setRefSpecs(branchSpec).call();
                 git.fetch().setRefSpecs(developSpec).call();
+                runExtensionCommands(extensions.afterFetch());
             }
 
             //make sure nothing is behind
@@ -186,16 +172,22 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
 
             if (rebase)
             {
+                runExtensionCommands(extensions.beforeRebase());
                 FeatureRebaseCommand rebaseCommand = new FeatureRebaseCommand(branchName, git, gfConfig, reporter);
                 rebaseCommand.setAllowUntracked(isAllowUntracked()).call();
+                runExtensionCommands(extensions.afterRebase());
             }
 
             if(!noMerge)
             {
+                runExtensionCommands(extensions.beforeDevelopCheckout());
                 reporter.debugText(getCommandName(),"beginning merges...");
                 //merge into base
                 git.checkout().setName(gfConfig.getDevelop()).call();
-    
+
+                runExtensionCommands(extensions.afterDevelopCheckout());
+
+                runExtensionCommands(extensions.beforeDevelopMerge());
                 Ref featureBranch = GitHelper.getLocalBranch(git, prefixedBranchName);
     
                 RevCommit developCommit = GitHelper.getLatestCommit(git, gfConfig.getDevelop());
@@ -229,6 +221,8 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
                         mergeResult = git.merge().setFastForward(MergeCommand.FastForwardMode.NO_FF).include(featureBranch).call();
                     }
                 }
+
+                runExtensionCommands(extensions.afterDevelopMerge());
     
                 if (null == mergeResult || mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.FAILED) || mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING))
                 {
@@ -252,9 +246,12 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<Void>
                     RefSpec branchSpec = new RefSpec(prefixedBranchName);
                     git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(branchSpec).call();
                 }
+                runExtensionCommands(extensions.afterPush());
             }
             
             cleanupBranch(prefixedBranchName);
+            
+            runExtensionCommands(extensions.after());
 
         }
         catch (GitAPIException e)

@@ -25,7 +25,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.hotfixPublish(&quot;hotfix&quot;).call();
  * </pre>
  */
-public class HotfixPublishCommand extends AbstractGitFlowCommand<Void>
+public class HotfixPublishCommand extends AbstractGitFlowCommand<HotfixPublishCommand,Void>
 {
 
     private static final String SHORT_NAME = "hotfix-publish";

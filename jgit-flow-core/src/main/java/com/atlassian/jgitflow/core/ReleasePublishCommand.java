@@ -25,7 +25,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * flow.releasePublish(&quot;release&quot;).call();
  * </pre>
  */
-public class ReleasePublishCommand extends AbstractGitFlowCommand<Void>
+public class ReleasePublishCommand extends AbstractGitFlowCommand<ReleasePublishCommand, Void>
 {
 
     private static final String SHORT_NAME = "release-publish";
