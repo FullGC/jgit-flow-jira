@@ -13,7 +13,7 @@ public final class JGitFlowConstants
     public static final String GITFLOW_DIR = ".gitflow";
     public static final String MERGE_BASE = "MERGE_BASE";
     public static final String R_REMOTE_ORIGIN = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + "/";
-    
+
     public static enum PREFIXES
     {
         FEATURE, RELEASE, HOTFIX, SUPPORT, VERSIONTAG;
@@ -23,5 +23,5 @@ public final class JGitFlowConstants
             return name().toLowerCase();
         }
     }
-    
+
 }

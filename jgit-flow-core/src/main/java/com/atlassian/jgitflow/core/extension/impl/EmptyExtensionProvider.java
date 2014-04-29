@@ -1,8 +1,5 @@
 package com.atlassian.jgitflow.core.extension.impl;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.atlassian.jgitflow.core.extension.*;
 
 public class EmptyExtensionProvider implements ExtensionProvider

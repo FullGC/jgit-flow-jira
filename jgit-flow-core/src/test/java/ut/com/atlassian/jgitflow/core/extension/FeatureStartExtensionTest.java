@@ -44,7 +44,7 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
         ExtensionProviderForTests provider = new ExtensionProviderForTests();
         provider.setFeatureStartExtension(extension);
 
-        flow.featureStart("myFeature").setFetchDevelop(true).setPush(true).setExtensionProvider(provider).call();
+        flow.featureStart("myFeature").setFetch(true).setPush(true).setExtensionProvider(provider).call();
 
         assertTrue("before was not called", extension.wasCalled(BaseExtensionForTests.BEFORE));
         assertTrue("beforeFetch was not called", extension.wasCalled(BaseExtensionForTests.BEFORE_FETCH));
@@ -76,7 +76,7 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
 
         try
         {
-            flow.featureStart("myFeature").setFetchDevelop(true).setPush(true).setExtensionProvider(provider).call();
+            flow.featureStart("myFeature").setFetch(true).setPush(true).setExtensionProvider(provider).call();
 
             fail("Exception should have been thrown!!");
         }
@@ -109,7 +109,7 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
         ExtensionProviderForTests provider = new ExtensionProviderForTests();
         provider.setFeatureStartExtension(extension);
 
-        flow.featureStart("myFeature").setFetchDevelop(true).setPush(true).setExtensionProvider(provider).call();
+        flow.featureStart("myFeature").setFetch(true).setPush(true).setExtensionProvider(provider).call();
 
         assertTrue("before was not called", extension.wasCalled(BaseExtensionForTests.BEFORE));
         assertTrue("beforeFetch was not called", extension.wasCalled(BaseExtensionForTests.BEFORE_FETCH));

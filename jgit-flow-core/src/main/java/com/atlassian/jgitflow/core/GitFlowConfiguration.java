@@ -17,10 +17,10 @@ import org.eclipse.jgit.lib.StoredConfig;
 /**
  * Represents the configuration for a git flow project
  * <p>
- *     Instances of this class are usually created internally by initializing a git flow project.
+ * Instances of this class are usually created internally by initializing a git flow project.
  * </p>
  * <p>
- *     for example: JGitFlow.getOrInit(new File(&quot;some dir&quot;));
+ * for example: JGitFlow.getOrInit(new File(&quot;some dir&quot;));
  * </p>
  */
 public class GitFlowConfiguration
@@ -36,6 +36,7 @@ public class GitFlowConfiguration
 
     /**
      * Create a new configuration instance
+     *
      * @param git The git instance to use
      */
     public GitFlowConfiguration(Git git)
@@ -44,7 +45,6 @@ public class GitFlowConfiguration
     }
 
     /**
-     * 
      * @return The name of the develop branch
      */
     public String getDevelop()
@@ -53,7 +53,6 @@ public class GitFlowConfiguration
     }
 
     /**
-     * 
      * @return the name of the master branch
      */
     public String getMaster()
@@ -63,6 +62,7 @@ public class GitFlowConfiguration
 
     /**
      * Sets the name of the master branch
+     *
      * @param branchName
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
      */
@@ -82,6 +82,7 @@ public class GitFlowConfiguration
 
     /**
      * Sets the name of the develop branch
+     *
      * @param branchName
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
      */
@@ -100,7 +101,6 @@ public class GitFlowConfiguration
     }
 
     /**
-     * 
      * @return if the current project has been initialized for git flow
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */
@@ -110,7 +110,6 @@ public class GitFlowConfiguration
     }
 
     /**
-     * 
      * @return if the local develop branch exists
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */
@@ -120,7 +119,6 @@ public class GitFlowConfiguration
     }
 
     /**
-     * 
      * @return if the local master branch exists
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */
@@ -130,7 +128,6 @@ public class GitFlowConfiguration
     }
 
     /**
-     * 
      * @return if all of the prefixes have been configured
      */
     public boolean hasPrefixesConfigured()
@@ -141,7 +138,6 @@ public class GitFlowConfiguration
     }
 
     /**
-     * 
      * @return A list of all the prefix names
      */
     public List<String> getPrefixNames()
@@ -150,7 +146,6 @@ public class GitFlowConfiguration
     }
 
     /**
-     * 
      * @param prefixName
      * @return If a specific prefix has been configured
      */
@@ -163,7 +158,6 @@ public class GitFlowConfiguration
     }
 
     /**
-     * 
      * @param prefixName
      * @return The configured value of the given prefix
      */
@@ -176,6 +170,7 @@ public class GitFlowConfiguration
 
     /**
      * Sets the value for a given prefix
+     *
      * @param prefixName
      * @param prefixValue
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException

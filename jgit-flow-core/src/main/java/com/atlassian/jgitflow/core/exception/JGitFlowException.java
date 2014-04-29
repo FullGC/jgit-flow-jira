@@ -3,7 +3,6 @@ package com.atlassian.jgitflow.core.exception;
 /**
  * Superclass of all exceptions thrown by the API classes in
  * {@code com.atlassian.jgitflow.core}
- *
  */
 public class JGitFlowException extends Exception
 {

@@ -4,12 +4,8 @@ import java.util.List;
 
 public interface FeatureFinishExtension extends JGitFlowExtension
 {
-    List<ExtensionCommand> beforeFetch();
-
-    List<ExtensionCommand> afterFetch();
-
     List<ExtensionCommand> beforeRebase();
-    
+
     List<ExtensionCommand> afterRebase();
 
     List<ExtensionCommand> beforeDevelopCheckout();
@@ -19,6 +15,4 @@ public interface FeatureFinishExtension extends JGitFlowExtension
     List<ExtensionCommand> beforeDevelopMerge();
 
     List<ExtensionCommand> afterDevelopMerge();
-
-    List<ExtensionCommand> afterPush();
 }

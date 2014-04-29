@@ -4,10 +4,6 @@ import java.util.List;
 
 public interface ReleaseFinishExtension extends JGitFlowExtension
 {
-    List<ExtensionCommand> beforeFetch();
-
-    List<ExtensionCommand> afterFetch();
-
     List<ExtensionCommand> beforeMasterCheckout();
 
     List<ExtensionCommand> afterMasterCheckout();
@@ -24,5 +20,5 @@ public interface ReleaseFinishExtension extends JGitFlowExtension
 
     List<ExtensionCommand> afterDevelopMerge();
 
-    List<ExtensionCommand> afterPush();
+
 }

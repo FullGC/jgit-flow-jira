@@ -4,70 +4,52 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.HotfixStartExtension;
-import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.util.StringUtils;
-
-import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
 
 /**
  * Start a hotfix.
  * <p>
  * This will create a new branch using the hotfix prefix and release name from the tip of develop
  * </p>
- * <p>
+ * <p/>
  * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p>
+ * <p/>
  * Start a feature:
- *
+ * <p/>
  * <pre>
  * flow.hotfixStart(&quot;1.0.1&quot;).call();
  * </pre>
- * <p>
+ * <p/>
  * Perform a fetch of develop before branching
- *
+ * <p/>
  * <pre>
  * flow.hotfixStart(&quot;1.0.1&quot;).setFetch(true).call();
  * </pre>
  */
-public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartCommand, Ref>
+public class HotfixStartCommand extends AbstractBranchCreatingCommand<HotfixStartCommand, Ref>
 {
     private static final String SHORT_NAME = "hotfix-start";
-    private final String hotfixName;
-    private boolean fetch;
-    private boolean push;
-    private RevCommit startCommit;
-    private String startCommitString;
 
     /**
      * Create a new hotfix start command instance.
      * <p></p>
      * An instance of this class is usually obtained by calling {@link com.atlassian.jgitflow.core.JGitFlow#hotfixStart(String)}
+     *
      * @param hotfixName The name of the hotfix
-     * @param git The git instance to use
-     * @param gfConfig The GitFlowConfiguration to use
+     * @param git        The git instance to use
+     * @param gfConfig   The GitFlowConfiguration to use
      * @param reporter
      */
     public HotfixStartCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
-        super(git, gfConfig, reporter);
+        super(hotfixName, git, gfConfig, reporter);
 
-        checkState(!StringUtils.isEmptyOrNull(hotfixName));
-        this.hotfixName = hotfixName;
-        this.fetch = false;
-        this.push = false;
     }
 
     /**
-     * 
      * @return A reference to the new hotfix branch
      * @throws com.atlassian.jgitflow.core.exception.NotInitializedException
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -82,73 +64,21 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartComman
     public Ref call() throws NotInitializedException, JGitFlowGitAPIException, HotfixBranchExistsException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchExistsException, TagExistsException, BranchOutOfDateException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
     {
         HotfixStartExtension extension = getExtensionProvider().provideHotfixStartExtension();
-        
-        runExtensionCommands(extension.before());
-        String prefixedHotfixName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.HOTFIX.configKey()) + hotfixName;
 
-        requireGitFlowInitialized();
-        requireNoExistingHotfixBranches();
-        requireCleanWorkingTree();
-        requireLocalBranchAbsent(prefixedHotfixName);
+        String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.HOTFIX);
+
+        enforcer().requireGitFlowInitialized();
+        enforcer().requireNoExistingHotfixBranches();
+        enforcer().requireLocalBranchAbsent(prefixedBranchName);
+        enforcer().requireCleanWorkingTree(isAllowUntracked());
 
         try
         {
-            if (fetch)
-            {
-                runExtensionCommands(extension.beforeFetch());
-                RefSpec spec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getMaster() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getMaster());
-                git.fetch().setRefSpecs(spec).call();
-                runExtensionCommands(extension.afterFetch());
-            }
+            doFetchIfNeeded(extension);
 
-            requireTagAbsent(gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.VERSIONTAG.configKey()) + hotfixName);
+            Ref newBranch = doCreateBranch(gfConfig.getMaster(), prefixedBranchName, extension);
 
-            if (GitHelper.remoteBranchExists(git, gfConfig.getMaster(), reporter))
-            {
-                requireLocalBranchNotBehindRemote(gfConfig.getMaster());
-            }
-            
-            runExtensionCommands(extension.beforeCreateBranch());
-            RevCommit startPoint = null;
-
-            if(null != startCommit)
-            {
-                startPoint = startCommit;
-            }
-            else if(!StringUtils.isEmptyOrNull(startCommitString))
-            {
-                startPoint = GitHelper.getCommitForString(git,startCommitString);
-            }
-            else
-            {
-                startPoint = GitHelper.getLatestCommit(git, gfConfig.getMaster());
-            }
-
-            requireCommitOnBranch(startPoint,gfConfig.getMaster());
-            
-            Ref newBranch = git.checkout()
-                      .setName(prefixedHotfixName)
-                      .setCreateBranch(true)
-                      .setStartPoint(startPoint)
-                      .call();
-            
-            runExtensionCommands(extension.afterCreateBranch());
-
-            if (push)
-            {
-                requireRemoteBranchAbsent(prefixedHotfixName);
-                RefSpec branchSpec = new RefSpec(prefixedHotfixName + ":" + Constants.R_HEADS + prefixedHotfixName);
-                git.push().setRemote("origin").setRefSpecs(branchSpec).call();
-                git.fetch().setRemote("origin").call();
-
-                //setup tracking
-                StoredConfig config = git.getRepository().getConfig();
-                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedHotfixName, ConfigConstants.CONFIG_KEY_REMOTE, "origin");
-                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedHotfixName, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + prefixedHotfixName);
-                config.save();
-                
-                runExtensionCommands(extension.afterPush());
-            }
+            doPushNewBranchIfNeeded(extension, prefixedBranchName);
 
             runExtensionCommands(extension.after());
             return newBranch;
@@ -161,44 +91,11 @@ public class HotfixStartCommand extends AbstractGitFlowCommand<HotfixStartComman
         {
             throw new JGitFlowIOException(e);
         }
-    }
-
-    /**
-     * Set whether to perform a git fetch of the remote develop branch before branching
-     * @param fetch
-     *              <code>true</code> to do the fetch, <code>false</code>(default) otherwise
-     * @return {@code this}
-     */
-    public HotfixStartCommand setFetch(boolean fetch)
-    {
-        this.fetch = fetch;
-        return this;
-    }
-
-    public HotfixStartCommand setStartCommit(String commitId)
-    {
-        this.startCommitString = commitId;
-
-        return this;
-    }
-
-    public HotfixStartCommand setStartCommit(RevCommit commit)
-    {
-        this.startCommit = commit;
-
-        return this;
-    }
-
-    /**
-     * Set whether to push the changes to the remote repository
-     *
-     * @param push <code>true</code> to do the push, <code>false</code>(default) otherwise
-     * @return {@code this}
-     */
-    public HotfixStartCommand setPush(boolean push)
-    {
-        this.push = push;
-        return this;
+        finally
+        {
+            reporter.endCommand();
+            reporter.flush();
+        }
     }
 
     @Override

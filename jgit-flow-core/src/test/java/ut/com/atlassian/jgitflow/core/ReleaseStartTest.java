@@ -137,7 +137,6 @@ public class ReleaseStartTest extends BaseGitFlowTest
 
     }
 
-    @Test(expected = JGitFlowGitAPIException.class)
     public void startReleaseWithFetchNoRemote() throws Exception
     {
         Git git = RepoUtil.createRepositoryWithMaster(newDir());

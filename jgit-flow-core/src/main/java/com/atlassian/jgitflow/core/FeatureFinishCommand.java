@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.FeatureFinishExtension;
+import com.atlassian.jgitflow.core.extension.impl.MergeProcessExtensionWrapper;
 import com.atlassian.jgitflow.core.util.FileHelper;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.jgitflow.core.util.IterableHelper;
@@ -14,10 +15,8 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.util.FileUtils;
 import org.eclipse.jgit.util.StringUtils;
 
@@ -28,65 +27,55 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * <p>
  * This will merge the feature into develop and set the local branch to develop.
  * </p>
- * <p>
+ * <p/>
  * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p>
+ * <p/>
  * Finish a feature:
- *
+ * <p/>
  * <pre>
  * flow.featureFinish(&quot;feature&quot;).call();
  * </pre>
- * <p>
+ * <p/>
  * Don't delete the local feature branch
- *
+ * <p/>
  * <pre>
  * flow.featureFinish(&quot;feature&quot;).setKeepBranch(true).call();
  * </pre>
- * <p>
+ * <p/>
  * Squash all commits on the feature branch into one before merging
- *
+ * <p/>
  * <pre>
  * flow.featureFinish(&quot;feature&quot;).setSquash(true).call();
  * </pre>
  */
-public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCommand,Void>
+public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFinishCommand, MergeResult>
 {
     private static final String SHORT_NAME = "feature-finish";
-    private final String branchName;
-    private boolean fetchDevelop;
     private boolean rebase;
-    private boolean keepBranch;
-    private boolean forceDeleteBranch;
     private boolean squash;
-    private boolean push;
     private boolean noMerge;
 
     /**
      * Create a new feature finish command instance.
      * <p></p>
      * An instance of this class is usually obtained by calling {@link com.atlassian.jgitflow.core.JGitFlow#featureFinish(String)}
-     * @param name The name of the feature
-     * @param git The git instance to use
+     *
+     * @param name     The name of the feature
+     * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
      * @param reporter
      */
-    public FeatureFinishCommand(String name, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public FeatureFinishCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
-        super(git, gfConfig, reporter);
+        super(branchName, git, gfConfig, reporter);
 
-        checkState(!StringUtils.isEmptyOrNull(name));
-        this.branchName = name;
-        this.fetchDevelop = false;
+        checkState(!StringUtils.isEmptyOrNull(branchName));
         this.rebase = false;
-        this.keepBranch = false;
-        this.forceDeleteBranch = false;
         this.squash = false;
-        this.push = false;
         this.noMerge = false;
     }
 
     /**
-     * 
      * @return nothing
      * @throws com.atlassian.jgitflow.core.exception.NotInitializedException
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -97,17 +86,15 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
      * @throws com.atlassian.jgitflow.core.exception.BranchOutOfDateException
      */
     @Override
-    public Void call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchMissingException, JGitFlowIOException, DirtyWorkingTreeException, MergeConflictsNotResolvedException, BranchOutOfDateException, JGitFlowExtensionException
+    public MergeResult call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchMissingException, JGitFlowIOException, DirtyWorkingTreeException, MergeConflictsNotResolvedException, BranchOutOfDateException, JGitFlowExtensionException, GitAPIException
     {
-        FeatureFinishExtension extensions = getExtensionProvider().provideFeatureFinishExtension();
-        
-        reporter.debugCommandCall(getCommandName());
-        
-        runExtensionCommands(extensions.before());
-        String prefixedBranchName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.FEATURE.configKey()) + branchName;
+        MergeResult mergeResult = null;
+        FeatureFinishExtension extension = getExtensionProvider().provideFeatureFinishExtension();
 
-        requireGitFlowInitialized();
-        requireLocalBranchExists(prefixedBranchName);
+        String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.FEATURE);
+
+        enforcer().requireGitFlowInitialized();
+        enforcer().requireLocalBranchExists(prefixedBranchName);
 
         //check to see if we're restoring from a merge conflict
         File flowDir = new File(git.getRepository().getDirectory(), JGitFlowConstants.GITFLOW_DIR);
@@ -115,7 +102,7 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
 
         if (!noMerge && mergeBase.exists())
         {
-            reporter.debugText(getCommandName(),"restoring from merge conflict. base: " + mergeBase.getAbsolutePath());
+            reporter.debugText(getCommandName(), "restoring from merge conflict. base: " + mergeBase.getAbsolutePath());
             if (GitHelper.workingTreeIsClean(git, isAllowUntracked(), reporter).isClean())
             {
                 //check to see if the merge was done
@@ -123,7 +110,7 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
                 if (GitHelper.isMergedInto(git, prefixedBranchName, finishBase))
                 {
                     mergeBase.delete();
-                    cleanupBranch(prefixedBranchName);
+                    cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
                     reporter.endCommand();
                     return null;
                 }
@@ -134,96 +121,48 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
             }
             else
             {
-                reporter.errorText(getCommandName(),"Merge conflicts are not resolved");
+                reporter.errorText(getCommandName(), "Merge conflicts are not resolved");
                 reporter.endCommand();
                 throw new MergeConflictsNotResolvedException("Merge conflicts are not resolved");
             }
         }
 
         //not restoring a merge, continue
-        requireCleanWorkingTree();
+        enforcer().requireCleanWorkingTree(isAllowUntracked());
 
-        boolean remoteFeatureExists = GitHelper.remoteBranchExists(git, prefixedBranchName, reporter);
-
-        reporter.debugText(getCommandName(),"remote feature exists? " + remoteFeatureExists);
         try
         {
-            //update from remote if needed
-            if (remoteFeatureExists && fetchDevelop)
-            {
-                runExtensionCommands(extensions.beforeFetch());
-                RefSpec branchSpec = new RefSpec("+" + Constants.R_HEADS + prefixedBranchName + ":" + Constants.R_REMOTES + "origin/" + prefixedBranchName);
-                RefSpec developSpec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getDevelop() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getDevelop());
-                git.fetch().setRefSpecs(branchSpec).call();
-                git.fetch().setRefSpecs(developSpec).call();
-                runExtensionCommands(extensions.afterFetch());
-            }
+            doFetchIfNeeded(extension);
 
-            //make sure nothing is behind
-            if (remoteFeatureExists)
-            {
-                requireLocalBranchNotBehindRemote(prefixedBranchName);
-            }
-
-            if (GitHelper.remoteBranchExists(git, gfConfig.getDevelop(), reporter))
-            {
-                requireLocalBranchNotBehindRemote(gfConfig.getDevelop());
-            }
+            ensureLocalBranchesNotBehindRemotes(prefixedBranchName, prefixedBranchName, gfConfig.getDevelop());
 
             if (rebase)
             {
-                runExtensionCommands(extensions.beforeRebase());
-                FeatureRebaseCommand rebaseCommand = new FeatureRebaseCommand(branchName, git, gfConfig, reporter);
+                runExtensionCommands(extension.beforeRebase());
+                FeatureRebaseCommand rebaseCommand = new FeatureRebaseCommand(getBranchName(), git, gfConfig, reporter);
                 rebaseCommand.setAllowUntracked(isAllowUntracked()).call();
-                runExtensionCommands(extensions.afterRebase());
+                runExtensionCommands(extension.afterRebase());
             }
 
-            if(!noMerge)
+            if (!noMerge)
             {
-                runExtensionCommands(extensions.beforeDevelopCheckout());
-                reporter.debugText(getCommandName(),"beginning merges...");
-                //merge into base
-                git.checkout().setName(gfConfig.getDevelop()).call();
+                Ref localBranchRef = GitHelper.getLocalBranch(git, prefixedBranchName);
 
-                runExtensionCommands(extensions.afterDevelopCheckout());
-
-                runExtensionCommands(extensions.beforeDevelopMerge());
-                Ref featureBranch = GitHelper.getLocalBranch(git, prefixedBranchName);
-    
                 RevCommit developCommit = GitHelper.getLatestCommit(git, gfConfig.getDevelop());
                 RevCommit featureCommit = GitHelper.getLatestCommit(git, prefixedBranchName);
-    
+
                 List<RevCommit> commitList = IterableHelper.asList(git.log().setMaxCount(2).addRange(developCommit, featureCommit).call());
-    
-                MergeResult mergeResult = null;
-    
+
+                MergeProcessExtensionWrapper developExtension = new MergeProcessExtensionWrapper(extension.beforeDevelopCheckout(), extension.afterDevelopCheckout(), extension.beforeDevelopMerge(), extension.afterDevelopMerge());
                 if (commitList.size() < 2)
                 {
-                    mergeResult = git.merge().setFastForward(MergeCommand.FastForwardMode.FF).include(featureBranch).call();
-                    if(mergeResult.getMergeStatus().isSuccessful())
-                    {
-                        git.commit().setMessage(getScmMessagePrefix() + "merging '" + prefixedBranchName + "' into '" + gfConfig.getDevelop() + "'" + getScmMessageSuffix()).call();
-                    }
+                    mergeResult = doMerge(localBranchRef, gfConfig.getDevelop(), developExtension, false, MergeCommand.FastForwardMode.FF);
                 }
                 else
                 {
-                    if (squash)
-                    {
-                        mergeResult = git.merge().setSquash(true).include(featureBranch).call();
-                        if(mergeResult.getMergeStatus().isSuccessful())
-                        {
-                            git.commit().setMessage(getScmMessagePrefix() + "squashing '" + prefixedBranchName + "' into '" + gfConfig.getDevelop() + "'" + getScmMessageSuffix()).call();
-                        }
-                        this.forceDeleteBranch = true;
-                    }
-                    else
-                    {
-                        mergeResult = git.merge().setFastForward(MergeCommand.FastForwardMode.NO_FF).include(featureBranch).call();
-                    }
+                    mergeResult = doMerge(localBranchRef, gfConfig.getDevelop(), developExtension, squash);
                 }
 
-                runExtensionCommands(extensions.afterDevelopMerge());
-    
                 if (null == mergeResult || mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.FAILED) || mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING))
                 {
                     FileHelper.createParentDirs(mergeBase);
@@ -235,23 +174,17 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
                 }
             }
 
-            reporter.debugText(getCommandName(),"do wee need to push? " + push);
-            if (push)
-            {
-                reporter.debugText(getCommandName(),"does remote branch [" + prefixedBranchName + "] exist? " + GitHelper.remoteBranchExists(git, prefixedBranchName, reporter));
-                
-                if (GitHelper.remoteBranchExists(git, prefixedBranchName, reporter))
-                {
-                    reporter.infoText(getCommandName(), "pushing feature branch");
-                    RefSpec branchSpec = new RefSpec(prefixedBranchName);
-                    git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(branchSpec).call();
-                }
-                runExtensionCommands(extensions.afterPush());
-            }
-            
-            cleanupBranch(prefixedBranchName);
-            
-            runExtensionCommands(extensions.after());
+            doPushIfNeeded(extension, false, gfConfig.getDevelop(), prefixedBranchName);
+
+            cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
+
+            reporter.infoText(getCommandName(), "checking out '" + gfConfig.getDevelop() + "'");
+            git.checkout().setName(gfConfig.getDevelop()).call();
+
+            reporter.endCommand();
+
+            runExtensionCommands(extension.after());
+            return mergeResult;
 
         }
         catch (GitAPIException e)
@@ -269,62 +202,12 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
             reporter.endCommand();
             reporter.flush();
         }
-
-        
-        return null;
-    }
-
-    private void cleanupBranch(String branch) throws JGitFlowGitAPIException, LocalBranchMissingException, DirtyWorkingTreeException, JGitFlowIOException
-    {
-        requireLocalBranchExists(branch);
-        requireCleanWorkingTree();
-
-        try
-        {
-            //make sure we're on the develop branch
-            git.checkout().setName(gfConfig.getDevelop()).call();
-
-            //delete the branch
-            if (fetchDevelop)
-            {
-                RefSpec spec = new RefSpec(":" + Constants.R_HEADS + branch);
-                git.push().setRemote("origin").setRefSpecs(spec).call();
-            }
-
-            if (!keepBranch)
-            {
-                if (noMerge || forceDeleteBranch)
-                {
-                    git.branchDelete().setForce(true).setBranchNames(branch).call();
-                }
-                else
-                {
-                    git.branchDelete().setForce(false).setBranchNames(branch).call();
-                }
-            }
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowGitAPIException(e);
-        }
-    }
-
-    /**
-     * Set whether to perform a git fetch of the remote develop branch before doing the merge
-     * @param fetch
-     *              <code>true</code> to do the fetch, <code>false</code>(default) otherwise
-     * @return {@code this}
-     */
-    public FeatureFinishCommand setFetchDevelop(boolean fetch)
-    {
-        this.fetchDevelop = fetch;
-        return this;
     }
 
     /**
      * Set whether to perform a git rebase on the feature before doing the merge
-     * @param rebase
-     *              <code>true</code> to do a rebase, <code>false</code>(default) otherwise
+     *
+     * @param rebase <code>true</code> to do a rebase, <code>false</code>(default) otherwise
      * @return {@code this}
      */
     public FeatureFinishCommand setRebase(boolean rebase)
@@ -334,33 +217,9 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
     }
 
     /**
-     * Set whether to keep the local feature branch after the merge
-     * @param keep
-     *              <code>true</code> to keep the branch, <code>false</code>(default) otherwise
-     * @return {@code this}
-     */
-    public FeatureFinishCommand setKeepBranch(boolean keep)
-    {
-        this.keepBranch = keep;
-        return this;
-    }
-
-    /**
-     * Set whether to use the force flag when deleting the local feature branch
-     * @param force
-     *              <code>true</code> to force, <code>false</code>(default) otherwise
-     * @return {@code this}
-     */
-    public FeatureFinishCommand setForceDeleteBranch(boolean force)
-    {
-        this.forceDeleteBranch = force;
-        return this;
-    }
-
-    /**
      * Set whether to squash all commits into a single commit before the merge
-     * @param squash
-     *              <code>true</code> to squash, <code>false</code>(default) otherwise
+     *
+     * @param squash <code>true</code> to squash, <code>false</code>(default) otherwise
      * @return {@code this}
      */
     public FeatureFinishCommand setSquash(boolean squash)
@@ -369,18 +228,12 @@ public class FeatureFinishCommand extends AbstractGitFlowCommand<FeatureFinishCo
         return this;
     }
 
-    public FeatureFinishCommand setPush(boolean push)
-    {
-        this.push = push;
-        return this;
-    }
-
     public FeatureFinishCommand setNoMerge(boolean noMerge)
     {
         this.noMerge = noMerge;
         return this;
     }
-    
+
     @Override
     protected String getCommandName()
     {
