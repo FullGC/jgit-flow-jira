@@ -1,23 +1,24 @@
 package com.atlassian.jgitflow.core;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
+import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
+import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
+import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 import com.atlassian.jgitflow.core.extension.ExtensionProvider;
+import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyExtensionProvider;
-import com.atlassian.jgitflow.core.util.CleanStatus;
 import com.atlassian.jgitflow.core.util.GitHelper;
+import com.atlassian.jgitflow.core.util.RequirementHelper;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.revwalk.filter.RevFilter;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.transport.RefSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,24 +30,32 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkNotNull;
  * Most commands should extend this class as it provides common helper methods
  * and methods to ensure valid state.
  * </p>
+ *
  * @param <T> The return type of the call() method
  */
-public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
+public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
 {
     private static final Logger log = LoggerFactory.getLogger(AbstractGitFlowCommand.class);
     protected final Git git;
     protected final GitFlowConfiguration gfConfig;
     protected final JGitFlowReporter reporter;
+    protected final RequirementHelper requirementHelper;
     private boolean allowUntracked;
     private String scmMessagePrefix;
     private String scmMessageSuffix;
     private ExtensionProvider extensionProvider;
+    private boolean fetch;
+    private boolean push;
+    private final String branchName;
 
-    protected AbstractGitFlowCommand(Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    protected AbstractGitFlowCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
+        checkNotNull(branchName);
         checkNotNull(git);
         checkNotNull(gfConfig);
         checkNotNull(reporter);
+
+        this.requirementHelper = new RequirementHelper(git, gfConfig, reporter, getCommandName());
 
         this.git = git;
         this.gfConfig = gfConfig;
@@ -55,13 +64,73 @@ public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
         this.scmMessagePrefix = "";
         this.scmMessageSuffix = "";
         this.extensionProvider = new EmptyExtensionProvider();
-        
+        this.fetch = false;
+        this.push = false;
+        this.branchName = branchName;
     }
 
-    public R setExtensionProvider(ExtensionProvider provider)
+    protected void doFetchIfNeeded(JGitFlowExtension fetchingExtension) throws GitAPIException, JGitFlowGitAPIException, JGitFlowExtensionException
+    {
+        if (fetch)
+        {
+            runExtensionCommands(fetchingExtension.beforeFetch());
+
+            git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
+
+            runExtensionCommands(fetchingExtension.afterFetch());
+        }
+    }
+
+    protected void doPushIfNeeded(JGitFlowExtension pushExtension, boolean includeTags, String... branchesToPush) throws GitAPIException, JGitFlowGitAPIException, JGitFlowExtensionException
+    {
+        if (push)
+        {
+            reporter.infoText(getCommandName(), "pushing changes to origin...");
+
+            for (String branchToPush : branchesToPush)
+            {
+                if (GitHelper.remoteBranchExists(git, branchToPush, reporter))
+                {
+                    reporter.infoText(getCommandName(), "pushing '" + branchToPush + "'");
+                    RefSpec branchSpec = new RefSpec(branchToPush);
+                    git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(branchSpec).call();
+                }
+            }
+
+            if (includeTags)
+            {
+                reporter.infoText(getCommandName(), "pushing tags");
+                git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setPushTags().call();
+            }
+
+            git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
+
+            runExtensionCommands(pushExtension.afterPush());
+        }
+    }
+
+    protected String runBeforeAndGetPrefixedBranchName(List<ExtensionCommand> before, JGitFlowConstants.PREFIXES prefix) throws JGitFlowExtensionException
+    {
+        reporter.commandCall(getCommandName());
+        runExtensionCommands(before);
+        return gfConfig.getPrefixValue(prefix.configKey()) + branchName;
+    }
+
+    protected void ensureLocalBranchesNotBehindRemotes(String... branchesToTest) throws JGitFlowGitAPIException, BranchOutOfDateException, JGitFlowIOException
+    {
+        for (String branchToTest : branchesToTest)
+        {
+            if (GitHelper.remoteBranchExists(git, branchToTest, reporter))
+            {
+                enforcer().requireLocalBranchNotBehindRemote(branchToTest);
+            }
+        }
+    }
+
+    public C setExtensionProvider(ExtensionProvider provider)
     {
         this.extensionProvider = provider;
-        return (R) this;
+        return (C) this;
     }
 
     public ExtensionProvider getExtensionProvider()
@@ -69,12 +138,12 @@ public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
         return extensionProvider;
     }
 
-    public R setAllowUntracked(boolean allow)
+    public C setAllowUntracked(boolean allow)
     {
         this.allowUntracked = allow;
-        return (R) this;
+        return (C) this;
     }
-    
+
     public boolean isAllowUntracked()
     {
         return allowUntracked;
@@ -85,10 +154,10 @@ public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
         return scmMessagePrefix;
     }
 
-    public R setScmMessagePrefix(String scmMessagePrefix)
+    public C setScmMessagePrefix(String scmMessagePrefix)
     {
         this.scmMessagePrefix = scmMessagePrefix;
-        return (R) this;
+        return (C) this;
     }
 
     public String getScmMessageSuffix()
@@ -96,202 +165,56 @@ public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
         return scmMessageSuffix;
     }
 
-    public R setScmMessageSuffix(String scmMessageSuffix)
+    public C setScmMessageSuffix(String scmMessageSuffix)
     {
         this.scmMessageSuffix = scmMessageSuffix;
-        return (R) this;
+        return (C) this;
     }
 
     /**
-     * Requires that git flow has been initialized for the project represented by the internal {Git} instance
-     * @throws com.atlassian.jgitflow.core.exception.NotInitializedException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
+     * Set whether to perform a git fetch of the remote branches before doing the merge
+     *
+     * @param fetch <code>true</code> to do the fetch, <code>false</code>(default) otherwise
+     * @return {@code this}
      */
-    protected void requireGitFlowInitialized() throws NotInitializedException, JGitFlowGitAPIException
+    public C setFetch(boolean fetch)
     {
-        if (!gfConfig.gitFlowIsInitialized())
-        {
-            reporter.errorText(getCommandName(), "requireGitFlowInitialized() failed");
-            reporter.flush();
-            throw new NotInitializedException("Git flow is not initialized in " + git.getRepository().getWorkTree().getPath());
-        }
+        this.fetch = fetch;
+        return (C) this;
+    }
+
+    public boolean isFetch()
+    {
+        return fetch;
+    }
+
+    /**
+     * Set whether to push the changes to the remote repository
+     *
+     * @param push <code>true</code> to do the push, <code>false</code>(default) otherwise
+     * @return {@code this}
+     */
+    public C setPush(boolean push)
+    {
+        this.push = push;
+        return (C) this;
+    }
+
+    public boolean isPush()
+    {
+        return push;
+    }
+
+    public String getBranchName()
+    {
+        return branchName;
     }
 
     protected abstract String getCommandName();
 
-    /**
-     * Requires that a local branch with the given name does not yet exist
-     * @param branch the name of the branch to test
-     * @throws com.atlassian.jgitflow.core.exception.LocalBranchExistsException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
-     */
-    protected void requireLocalBranchAbsent(String branch) throws LocalBranchExistsException, JGitFlowGitAPIException
-    {
-        if (GitHelper.localBranchExists(git, branch))
-        {
-            reporter.errorText(getCommandName(), "requireLocalBranchAbsent() failed: '" + branch + "' already exists");
-            reporter.flush();
-            throw new LocalBranchExistsException("local branch '" + branch + "' already exists");
-        }
-    }
-
-    /**
-     * Requires that a local branch with the given name exists
-     * @param branch The name of the branch to test
-     * @throws com.atlassian.jgitflow.core.exception.LocalBranchMissingException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
-     */
-    protected void requireLocalBranchExists(String branch) throws LocalBranchMissingException, JGitFlowGitAPIException
-    {
-        if (!GitHelper.localBranchExists(git, branch))
-        {
-            reporter.errorText(getCommandName(), "localBranchExists() failed: '" + branch + "' does not exist");
-            reporter.flush();
-            throw new LocalBranchMissingException("local branch " + branch + " does not exist");
-        }
-    }
-
-    /**
-     * Requires that a remote branch with the given name does not yet exist
-     * @param branch The name of the branch to test
-     * @throws com.atlassian.jgitflow.core.exception.RemoteBranchExistsException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
-     */
-    protected void requireRemoteBranchAbsent(String branch) throws RemoteBranchExistsException, JGitFlowGitAPIException
-    {
-        if (GitHelper.remoteBranchExists(git, branch, reporter))
-        {
-            reporter.errorText(getCommandName(), "requireRemoteBranchAbsent() failed: '" + branch + "' already exists");
-            reporter.flush();
-            throw new RemoteBranchExistsException("remote branch '" + branch + "' already exists");
-        }
-    }
-
-    /**
-     * Requires that a remote branch with the given name exists
-     * @param branch The name of the branch to test
-     * @throws com.atlassian.jgitflow.core.exception.RemoteBranchMissingException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
-     */
-    protected void requireRemoteBranchExists(String branch) throws RemoteBranchMissingException, JGitFlowGitAPIException
-    {
-        if (!GitHelper.remoteBranchExists(git, branch, reporter))
-        {
-            reporter.errorText(getCommandName(), "requireRemoteBranchExists() failed: '" + branch + "' does not exist");
-            reporter.flush();
-            throw new RemoteBranchMissingException("remote branch " + branch + " does not exist");
-        }
-    }
-
-    /**
-     * Requires that a tag with the given name does not yet exist
-     * @param name The name of the tag to test
-     * @throws com.atlassian.jgitflow.core.exception.TagExistsException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
-     */
-    protected void requireTagAbsent(String name) throws TagExistsException, JGitFlowGitAPIException
-    {
-        if (GitHelper.tagExists(git, name))
-        {
-            reporter.errorText(getCommandName(), "requireTagAbsent() failed: '" + name + "' already exists");
-            reporter.flush();
-            throw new TagExistsException("tag '" + name + "' already exists");
-        }
-    }
-
-    /**
-     * Requires that the local branch with the given name is not behind a remote brach with the same name
-     * @param branch The name of the branch to test
-     * @throws com.atlassian.jgitflow.core.exception.BranchOutOfDateException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
-     */
-    protected void requireLocalBranchNotBehindRemote(String branch) throws BranchOutOfDateException, JGitFlowIOException
-    {
-        reporter.debugMethod(getCommandName(),"requireLocalBranchNotBehindRemote");
-        boolean behind = GitHelper.localBranchBehindRemote(git,branch,reporter);
-
-        if (behind)
-        {
-            reporter.errorText(getCommandName(),"local branch '" + branch + "' is behind the remote branch");
-            reporter.endMethod();
-            reporter.flush();
-            throw new BranchOutOfDateException("local branch '" + branch + "' is behind the remote branch");
-        }
-        
-        reporter.endMethod();
-    }
-
-    /**
-     * Requires that the local working tree has no un-committed changes
-     * @throws com.atlassian.jgitflow.core.exception.DirtyWorkingTreeException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
-     */
-    protected void requireCleanWorkingTree() throws DirtyWorkingTreeException, JGitFlowIOException, JGitFlowGitAPIException
-    {
-        CleanStatus cs = GitHelper.workingTreeIsClean(git,isAllowUntracked(),reporter);
-        if (cs.isNotClean())
-        {
-            reporter.errorText(getCommandName(),cs.getMessage());
-            reporter.flush();
-            throw new DirtyWorkingTreeException(cs.getMessage());
-        }
-    }
-
-    /**
-     * Requires that no release branches already exist
-     * @throws com.atlassian.jgitflow.core.exception.ReleaseBranchExistsException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
-     */
-    protected void requireNoExistingReleaseBranches() throws ReleaseBranchExistsException, JGitFlowGitAPIException
-    {
-        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, JGitFlowConstants.PREFIXES.RELEASE.configKey(),reporter);
-
-        if (!branches.isEmpty())
-        {
-            reporter.errorText(getCommandName(),"a release branch [" + branches.get(0).getName() + "] already exists. Finish that first!");
-            reporter.flush();
-            throw new ReleaseBranchExistsException("a release branch [" + branches.get(0).getName() + "] already exists. Finish that first!");
-        }
-    }
-
-    /**
-     * Requires that no hotfix branches already exist
-     * @throws com.atlassian.jgitflow.core.exception.HotfixBranchExistsException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
-     */
-    protected void requireNoExistingHotfixBranches() throws HotfixBranchExistsException, JGitFlowGitAPIException
-    {
-        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, JGitFlowConstants.PREFIXES.HOTFIX.configKey(),reporter);
-
-        if (!branches.isEmpty())
-        {
-            reporter.errorText(getCommandName(),"a hotfix branch [" + branches.get(0).getName() + "] already exists. Finish that first!");
-            reporter.flush();
-            throw new HotfixBranchExistsException("a hotfix branch [" + branches.get(0).getName() + "] already exists. Finish that first!");
-        }
-    }
-
-    /**
-     * Requires that a local branch contains the given commit
-     * @param commit the commit to test
-     * @param branch the name of the branch to check
-     * @throws com.atlassian.jgitflow.core.exception.LocalBranchMissingException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
-     */
-    protected void requireCommitOnBranch(RevCommit commit, String branch) throws LocalBranchExistsException, JGitFlowGitAPIException, JGitFlowIOException
-    {
-        if (!GitHelper.isMergedInto(git,commit,branch))
-        {
-            reporter.errorText(getCommandName(), "requireCommitOnBranch() failed: '" + commit.getName() + "' is not on " + branch);
-            reporter.flush();
-            throw new LocalBranchExistsException("commit '" + commit.getName() + "' does not exist on " + branch);
-        }
-    }
-    
     protected void runExtensionCommands(List<ExtensionCommand> commands) throws JGitFlowExtensionException
     {
-        for(final ExtensionCommand command : commands)
+        for (final ExtensionCommand command : commands)
         {
             try
             {
@@ -299,7 +222,7 @@ public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
             }
             catch (JGitFlowExtensionException e)
             {
-                if(ExtensionFailStrategy.ERROR.equals(command.failStrategy()))
+                if (ExtensionFailStrategy.ERROR.equals(command.failStrategy()))
                 {
                     throw e;
                 }
@@ -311,4 +234,8 @@ public abstract class AbstractGitFlowCommand<R,T> implements Callable<T>
         }
     }
 
+    protected RequirementHelper enforcer()
+    {
+        return requirementHelper;
+    }
 }

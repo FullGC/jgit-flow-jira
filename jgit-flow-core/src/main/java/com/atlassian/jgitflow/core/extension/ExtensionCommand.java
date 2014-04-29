@@ -9,6 +9,6 @@ import org.eclipse.jgit.api.Git;
 public interface ExtensionCommand
 {
     void execute(GitFlowConfiguration configuration, Git git, JGitFlowReporter reporter) throws JGitFlowExtensionException;
-    
+
     ExtensionFailStrategy failStrategy();
 }

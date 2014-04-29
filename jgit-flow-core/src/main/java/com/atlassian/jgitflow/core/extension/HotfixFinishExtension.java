@@ -4,14 +4,10 @@ import java.util.List;
 
 public interface HotfixFinishExtension extends JGitFlowExtension
 {
-    List<ExtensionCommand> beforeFetch();
-
-    List<ExtensionCommand> afterFetch();
-
     List<ExtensionCommand> beforeMasterCheckout();
 
     List<ExtensionCommand> afterMasterCheckout();
-    
+
     List<ExtensionCommand> beforeMasterMerge();
 
     List<ExtensionCommand> afterMasterMerge();
@@ -23,7 +19,5 @@ public interface HotfixFinishExtension extends JGitFlowExtension
     List<ExtensionCommand> beforeDevelopMerge();
 
     List<ExtensionCommand> afterDevelopMerge();
-
-    List<ExtensionCommand> afterPush();
 
 }

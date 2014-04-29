@@ -61,7 +61,7 @@ public class FeatureStartTest extends BaseGitFlowTest
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
         git.pull().call();
         
-        flow.featureStart("my-feature").setFetchDevelop(true).call();
+        flow.featureStart("my-feature").setFetch(true).call();
 
     }
 
@@ -78,7 +78,7 @@ public class FeatureStartTest extends BaseGitFlowTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
         git.push().setRemote("origin").add("develop").call();
 
-        flow.featureStart("myFeature").setFetchDevelop(true).setPush(true).call();
+        flow.featureStart("myFeature").setFetch(true).setPush(true).call();
 
         assertTrue(GitHelper.remoteBranchExists(git, "feature/myFeature",flow.getReporter()));
 
@@ -104,11 +104,10 @@ public class FeatureStartTest extends BaseGitFlowTest
         remoteGit.add().addFilepattern(junkFile.getName()).call();
         remoteGit.commit().setMessage("adding junk file").call();
 
-        flow.featureStart("my-feature").setFetchDevelop(true).call();
+        flow.featureStart("my-feature").setFetch(true).call();
 
     }
 
-    @Test(expected = JGitFlowException.class)
     public void startFeatureWithFetchNoRemote() throws Exception
     {
         Git git = null;
@@ -117,7 +116,7 @@ public class FeatureStartTest extends BaseGitFlowTest
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
-        flow.featureStart("my-feature").setFetchDevelop(true).call();
+        flow.featureStart("my-feature").setFetch(true).call();
     }
 
     @Test(expected = LocalBranchExistsException.class)

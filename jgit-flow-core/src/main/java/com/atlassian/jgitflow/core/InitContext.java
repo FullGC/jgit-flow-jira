@@ -8,23 +8,23 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
 /**
  * Initialization context to be used when initializing a git flow project.
  * <p>
- *     Instances of this class can be passed to the {@link com.atlassian.jgitflow.core.JGitFlow} init methods to override the default
- *     branch names and prefixes used by git flow.
+ * Instances of this class can be passed to the {@link com.atlassian.jgitflow.core.JGitFlow} init methods to override the default
+ * branch names and prefixes used by git flow.
  * </p>
- * <p>
+ * <p/>
  * Examples:
- * <p>
+ * <p/>
  * Override master branch name
- *
+ * <p/>
  * <pre>
  * InitContext ctx = new InitContext();
  * ctx.setMaster("GA");
- * 
+ *
  * JGitFlow flow = JGitFlow.getOrInit(new File(&quot;some dir&quot;), ctx);
  * </pre>
- * <p>
+ * <p/>
  * Override master branch and release prefix
- * 
+ * <p/>
  * <pre>
  * InitContext ctx = new InitContext();
  * ctx.setMaster(&quot;GA&quot;).setRelease(&quot;rel/&quot;);
@@ -59,19 +59,21 @@ public class InitContext
 
     /**
      * Set the name of the master branch
+     *
      * @param master
      * @return {@code this}
      */
     public InitContext setMaster(String master)
     {
         checkState(!StringUtils.isEmptyOrNull(master));
-        
+
         this.master = master;
         return this;
     }
 
     /**
      * Set the name of the develop branch
+     *
      * @param develop
      * @return {@code this}
      */
@@ -84,6 +86,7 @@ public class InitContext
 
     /**
      * Set the feature branch prefix
+     *
      * @param feature
      * @return {@code this}
      */
@@ -96,6 +99,7 @@ public class InitContext
 
     /**
      * Set the release branch prefix
+     *
      * @param release
      * @return {@code this}
      */
@@ -108,6 +112,7 @@ public class InitContext
 
     /**
      * Set the hotfix branch prefix
+     *
      * @param hotfix
      * @return {@code this}
      */
@@ -127,13 +132,14 @@ public class InitContext
 
     /**
      * Set the prefix used when creating tags
+     *
      * @param versiontag
      * @return {@code this}
      */
     public InitContext setVersiontag(String versiontag)
     {
         checkNotNull(versiontag);
-        
+
         this.versiontag = versiontag;
         return this;
     }
@@ -218,7 +224,7 @@ public class InitContext
                 value = getVersiontag();
                 break;
         }
-        
+
         return value;
     }
 }

@@ -7,21 +7,20 @@ import com.atlassian.jgitflow.core.exception.AlreadyInitializedException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.exception.SameBranchException;
-import com.atlassian.jgitflow.core.FeatureFinishCommand;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.RepositoryBuilder;
 
 /**
  * Offers a Git Flow API to interact with a git repository.
- * <p>
+ * <p/>
  * This class only offers methods to construct so-called command classes. Each
  * command is represented by one command class.<br>
  * Example: this class offers a {@code featureStart} method returning an instance of
  * the {@code FeatureStartCommand} class. The {@code FeatureStartCommand} class has setters
  * for all the arguments and options. The {@code FeatureStartCommand} class also has a
- * {@code call} method to actually execute the command. 
- * <p>
+ * {@code call} method to actually execute the command.
+ * <p/>
  * All mandatory parameters for commands have to be specified in the methods of
  * this class, the optional parameters have to be specified by the
  * setter-methods of the Command class.
@@ -31,7 +30,7 @@ public class JGitFlow
     private Git git;
     private GitFlowConfiguration gfConfig;
     private JGitFlowReporter reporter;
-    
+
     private JGitFlow()
     {
     }
@@ -42,14 +41,15 @@ public class JGitFlow
         this.gfConfig = gfConfig;
         this.reporter = reporter;
 
-        this.reporter.setGitFlowConfiguration(git,gfConfig);
+        this.reporter.setGitFlowConfiguration(git, gfConfig);
     }
 
     /**
      * Initializes a project for use with git flow and returns a JGitFlow instance.
      * <p>
-     *     This method will throw exceptions if the project has already been initialized
+     * This method will throw exceptions if the project has already been initialized
      * </p>
+     *
      * @param projectDir
      * @return
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -66,8 +66,9 @@ public class JGitFlow
     /**
      * Initializes a project for use with git flow and returns a JGitFlow instance.
      * <p>
-     *     This method will throw exceptions if the project has already been initialized
+     * This method will throw exceptions if the project has already been initialized
      * </p>
+     *
      * @param projectDir
      * @return
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -84,8 +85,9 @@ public class JGitFlow
     /**
      * Initializes a project for use with git flow using a custom context and returns a JGitFlow instance.
      * <p>
-     *     This method will throw exceptions if the project has already been initialized
+     * This method will throw exceptions if the project has already been initialized
      * </p>
+     *
      * @param projectDir
      * @param context
      * @return
@@ -103,8 +105,9 @@ public class JGitFlow
     /**
      * Initializes a project for use with git flow using a custom context and returns a JGitFlow instance.
      * <p>
-     *     This method will throw exceptions if the project has already been initialized
+     * This method will throw exceptions if the project has already been initialized
      * </p>
+     *
      * @param projectDir
      * @param context
      * @return
@@ -121,6 +124,7 @@ public class JGitFlow
 
     /**
      * Initializes a project for use with git flow using a default context overriding any existing configuration.
+     *
      * @param projectDir
      * @return
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -136,6 +140,7 @@ public class JGitFlow
 
     /**
      * Initializes a project for use with git flow using a default context overriding any existing configuration.
+     *
      * @param projectDir
      * @return
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -151,6 +156,7 @@ public class JGitFlow
 
     /**
      * Initializes a project for use with git flow using a custom context overriding any existing configuration.
+     *
      * @param projectDir
      * @param context
      * @return
@@ -167,6 +173,7 @@ public class JGitFlow
 
     /**
      * Initializes a project for use with git flow using a custom context overriding any existing configuration.
+     *
      * @param projectDir
      * @param context
      * @return
@@ -183,6 +190,7 @@ public class JGitFlow
 
     /**
      * Gets an existing git flow project and returns a JGitFlow instance
+     *
      * @param projectDir
      * @return
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -209,6 +217,7 @@ public class JGitFlow
 
     /**
      * Initializes a project for use with git flow or gets an existing project and returns a JGitFlow instance.
+     *
      * @param projectDir
      * @return
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -230,6 +239,7 @@ public class JGitFlow
 
     /**
      * Initializes a project for use with git flow or gets an existing project and returns a JGitFlow instance.
+     *
      * @param projectDir
      * @return
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -245,12 +255,13 @@ public class JGitFlow
         }
         else
         {
-            return init(projectDir,defaultOriginUrl);
+            return init(projectDir, defaultOriginUrl);
         }
     }
 
     /**
      * Initializes a project for use with git flow using a custom context or gets an existing project and returns a JGitFlow instance.
+     *
      * @param projectDir
      * @param ctx
      * @return
@@ -270,9 +281,10 @@ public class JGitFlow
             return init(projectDir, ctx);
         }
     }
-    
+
     /**
      * Initializes a project for use with git flow using a custom context or gets an existing project and returns a JGitFlow instance.
+     *
      * @param projectDir
      * @param ctx
      * @return
@@ -292,10 +304,11 @@ public class JGitFlow
             return init(projectDir, ctx, defaultOriginUrl);
         }
     }
-    
+
 
     /**
      * Tests whether a project folder is git flow enabled
+     *
      * @param dir
      * @return
      */
@@ -307,7 +320,7 @@ public class JGitFlow
             RepositoryBuilder rb = new RepositoryBuilder()
                     .readEnvironment()
                     .findGitDir(dir);
-            
+
             File gitDir = rb.getGitDir();
             if (gitDir != null)
             {
@@ -315,7 +328,7 @@ public class JGitFlow
                 GitFlowConfiguration gfConfig = new GitFlowConfiguration(gitRepo);
                 inited = gfConfig.gitFlowIsInitialized();
             }
-            
+
         }
         catch (IOException e)
         {
@@ -331,6 +344,7 @@ public class JGitFlow
 
     /**
      * Tests whether the current project is git flow enabled
+     *
      * @return
      */
     public boolean isInitialized()
@@ -350,6 +364,7 @@ public class JGitFlow
 
     /**
      * Returns a command object to start a feature
+     *
      * @param name
      * @return a {@link com.atlassian.jgitflow.core.FeatureStartCommand}
      */
@@ -360,6 +375,7 @@ public class JGitFlow
 
     /**
      * Returns a command object to finish a feature
+     *
      * @param name
      * @return a {@link com.atlassian.jgitflow.core.FeatureFinishCommand}
      */
@@ -370,6 +386,7 @@ public class JGitFlow
 
     /**
      * Returns a command object to publish a feature
+     *
      * @param name
      * @return a {@link com.atlassian.jgitflow.core.FeaturePublishCommand}
      */
@@ -380,6 +397,7 @@ public class JGitFlow
 
     /**
      * Returns a command object to start a release
+     *
      * @param name
      * @return a {@link com.atlassian.jgitflow.core.ReleaseStartCommand}
      */
@@ -390,6 +408,7 @@ public class JGitFlow
 
     /**
      * Returns a command object to finish a release
+     *
      * @param name
      * @return a {@link com.atlassian.jgitflow.core.ReleaseFinishCommand}
      */
@@ -411,6 +430,7 @@ public class JGitFlow
 
     /**
      * Returns a command object to start a hotfix
+     *
      * @param name
      * @return a {@link com.atlassian.jgitflow.core.HotfixStartCommand}
      */
@@ -421,6 +441,7 @@ public class JGitFlow
 
     /**
      * Returns a command object to finish a hotfix
+     *
      * @param name
      * @return a {@link com.atlassian.jgitflow.core.HotfixFinishCommand}
      */
@@ -442,6 +463,7 @@ public class JGitFlow
 
     /**
      * Returns the {@link org.eclipse.jgit.api.Git} instance used by this JGitFlow instance
+     *
      * @return
      */
     public Git git()
@@ -451,6 +473,7 @@ public class JGitFlow
 
     /**
      * Returns the master branch name configured for this instance's git flow project
+     *
      * @return
      */
     public String getMasterBranchName()
@@ -460,6 +483,7 @@ public class JGitFlow
 
     /**
      * Returns the develop branch name configured for this instance's git flow project
+     *
      * @return
      */
     public String getDevelopBranchName()
@@ -469,6 +493,7 @@ public class JGitFlow
 
     /**
      * Returns the feature branch prefix configured for this instance's git flow project
+     *
      * @return
      */
     public String getFeatureBranchPrefix()
@@ -478,6 +503,7 @@ public class JGitFlow
 
     /**
      * Returns the release branch prefix configured for this instance's git flow project
+     *
      * @return
      */
     public String getReleaseBranchPrefix()
@@ -487,6 +513,7 @@ public class JGitFlow
 
     /**
      * Returns the hotfix branch prefix configured for this instance's git flow project
+     *
      * @return
      */
     public String getHotfixBranchPrefix()
@@ -501,6 +528,7 @@ public class JGitFlow
 
     /**
      * Returns the versiontag prefix configured for this instance's git flow project
+     *
      * @return
      */
     public String getVersionTagPrefix()

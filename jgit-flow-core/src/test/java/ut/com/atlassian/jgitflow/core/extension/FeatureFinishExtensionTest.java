@@ -1,12 +1,16 @@
 package ut.com.atlassian.jgitflow.core.extension;
 
+import java.io.File;
+
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowInitCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.Test;
 
 import ut.com.atlassian.jgitflow.core.BaseGitFlowTest;
@@ -42,8 +46,13 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         //just in case
         assertEquals(flow.getFeatureBranchPrefix() + MY_FEATURE, git.getRepository().getBranch());
 
+        //do a commit so we get a merge
+        File junkFile = new File(flow.git().getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        flow.git().add().addFilepattern(junkFile.getName()).call();
+        RevCommit localcommit = flow.git().commit().setMessage("adding junk file").call();
         
-        flow.featureFinish(MY_FEATURE).setFetchDevelop(true).setPush(true).setExtensionProvider(provider).call();
+        flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtensionProvider(provider).call();
 
         //we should be on develop branch
         assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
@@ -88,10 +97,15 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         //just in case
         assertEquals(flow.getFeatureBranchPrefix() + MY_FEATURE, git.getRepository().getBranch());
 
-
+        //do a commit so we get a merge
+        File junkFile = new File(flow.git().getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        flow.git().add().addFilepattern(junkFile.getName()).call();
+        RevCommit localcommit = flow.git().commit().setMessage("adding junk file").call();
+        
         try
         {
-            flow.featureFinish(MY_FEATURE).setFetchDevelop(true).setPush(true).setExtensionProvider(provider).call();
+            flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtensionProvider(provider).call();
 
             fail("Exception should have been thrown!!");
         }
@@ -128,8 +142,13 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         //just in case
         assertEquals(flow.getFeatureBranchPrefix() + MY_FEATURE, git.getRepository().getBranch());
 
-
-        flow.featureFinish(MY_FEATURE).setFetchDevelop(true).setPush(true).setExtensionProvider(provider).call();
+        //do a commit so we get a merge
+        File junkFile = new File(flow.git().getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        flow.git().add().addFilepattern(junkFile.getName()).call();
+        RevCommit localcommit = flow.git().commit().setMessage("adding junk file").call();
+        
+        flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtensionProvider(provider).call();
 
         //we should be on develop branch
         assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());

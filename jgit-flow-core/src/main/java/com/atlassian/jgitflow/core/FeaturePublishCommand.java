@@ -3,7 +3,8 @@ package com.atlassian.jgitflow.core;
 import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
-import com.atlassian.jgitflow.core.extension.ExtensionProvider;
+import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
+import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureStartExtension;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -11,17 +12,14 @@ import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.util.StringUtils;
-
-import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
 
 /**
  * Publishes feature branch to the remote repository
- * <p>
+ * <p/>
  * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p>
+ * <p/>
  * Publish a feature:
- *
+ * <p/>
  * <pre>
  * flow.featurePublish(&quot;feature&quot;).call();
  * </pre>
@@ -29,26 +27,23 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
 public class FeaturePublishCommand extends AbstractGitFlowCommand<FeaturePublishCommand, Void>
 {
     private static final String SHORT_NAME = "feature-publish";
-    private final String branchName;
 
     /**
      * Create a new feature publish command instance.
      * <p></p>
      * An instance of this class is usually obtained by calling {@link com.atlassian.jgitflow.core.JGitFlow#featurePublish(String)}
-     * @param name The name of the feature
-     * @param git The git instance to use
+     *
+     * @param name     The name of the feature
+     * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
      * @param reporter
      */
-    public FeaturePublishCommand(String name, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public FeaturePublishCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
-        super(git, gfConfig, reporter);
-        checkState(!StringUtils.isEmptyOrNull(name));
-        this.branchName = name;
+        super(branchName, git, gfConfig, reporter);
     }
 
     /**
-     * 
      * @return nothing
      * @throws com.atlassian.jgitflow.core.exception.NotInitializedException
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -58,27 +53,31 @@ public class FeaturePublishCommand extends AbstractGitFlowCommand<FeaturePublish
      * @throws com.atlassian.jgitflow.core.exception.RemoteBranchExistsException
      */
     @Override
-    public Void call() throws NotInitializedException, JGitFlowGitAPIException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException
+    public Void call() throws NotInitializedException, JGitFlowGitAPIException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
     {
-        requireGitFlowInitialized();
-        String prefixedBranchName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.FEATURE.configKey()) + branchName;
+        JGitFlowExtension extension = new EmptyFeatureStartExtension();
 
-        requireCleanWorkingTree();
-        requireLocalBranchExists(prefixedBranchName);
+        String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.FEATURE);
+        enforcer().requireGitFlowInitialized();
+        enforcer().requireCleanWorkingTree(isAllowUntracked());
+        enforcer().requireLocalBranchExists(prefixedBranchName);
 
         try
         {
-            git.fetch().setRemote("origin").call();
-            requireRemoteBranchAbsent(prefixedBranchName);
+            setFetch(true);
+            
+            doFetchIfNeeded(extension);
+            
+            enforcer().requireRemoteBranchAbsent(prefixedBranchName);
 
             //create remote feature branch
             RefSpec branchSpec = new RefSpec(prefixedBranchName + ":" + Constants.R_HEADS + prefixedBranchName);
-            git.push().setRemote("origin").setRefSpecs(branchSpec).call();
-            git.fetch().setRemote("origin").call();
+            git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(branchSpec).call();
+            git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
 
             //setup tracking
             StoredConfig config = git.getRepository().getConfig();
-            config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedBranchName, ConfigConstants.CONFIG_KEY_REMOTE, "origin");
+            config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedBranchName, ConfigConstants.CONFIG_KEY_REMOTE, Constants.DEFAULT_REMOTE_NAME);
             config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedBranchName, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + prefixedBranchName);
             config.save();
 
@@ -93,6 +92,11 @@ public class FeaturePublishCommand extends AbstractGitFlowCommand<FeaturePublish
         catch (GitAPIException e)
         {
             throw new JGitFlowGitAPIException(e);
+        }
+        finally
+        {
+            reporter.endCommand();
+            reporter.flush();
         }
 
         return null;

@@ -68,7 +68,7 @@ public class JGitFlowReporter
     {
         entries.add(new JGitFlowReportEntry(shortName, Strings.repeat(" ", indent) + "## _Command call():_ ", true, false));
         indent += PAD;
-        
+
         return this;
     }
 
@@ -97,6 +97,12 @@ public class JGitFlowReporter
     public JGitFlowReporter endCommand()
     {
         indent -= PAD;
+        
+        if(indent < 0)
+        {
+            indent = 0;
+        }
+        
         flush();
 
         return this;
@@ -105,6 +111,12 @@ public class JGitFlowReporter
     public JGitFlowReporter endMethod()
     {
         indent -= PAD;
+
+        if(indent < 0)
+        {
+            indent = 0;
+        }
+        
         entries.add(new JGitFlowReportEntry("", Strings.repeat(" ", indent) + "_method END:_ ", true, false));
         flush();
 
@@ -142,11 +154,11 @@ public class JGitFlowReporter
 
     public synchronized void flush()
     {
-        if(null == logDir || !".git".equals(logDir.getName()))
+        if (null == logDir || !".git".equals(logDir.getName()))
         {
             return;
         }
-        
+
         File logFile = new File(logDir, "jgitflow.log");
         Charset utf8 = Charset.forName("UTF-8");
         try
@@ -161,14 +173,14 @@ public class JGitFlowReporter
                 Files.touch(logFile);
                 logFileCreated = true;
             }
-            
-            if(!wroteHeader && null != header)
+
+            if (!wroteHeader && null != header)
             {
                 Files.append(header, logFile, utf8);
                 wroteHeader = true;
             }
-            
-            if(!entries.isEmpty())
+
+            if (!entries.isEmpty())
             {
                 allEntries.addAll(entries);
                 List<JGitFlowReportEntry> entriesToWrite = ImmutableList.copyOf(entries);

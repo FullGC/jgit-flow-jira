@@ -28,9 +28,10 @@ public class GitHelper
 {
     /**
      * Checks to see if one branch is merged into another
-     * @param git The git instance to use
+     *
+     * @param git          The git instance to use
      * @param commitString The name of the commit we're testing
-     * @param baseBranch The name of the base branch to look for the merge
+     * @param baseBranch   The name of the base branch to look for the merge
      * @return if the contents of branchName has been merged into baseName
      * @throws com.atlassian.jgitflow.core.exception.LocalBranchMissingException
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -38,14 +39,15 @@ public class GitHelper
      */
     public static boolean isMergedInto(Git git, String commitString, String baseBranch) throws LocalBranchMissingException, JGitFlowIOException, JGitFlowGitAPIException
     {
-            RevCommit branchCommit = getCommitForString(git,commitString);
-        
-            return isMergedInto(git, branchCommit, baseBranch);
+        RevCommit branchCommit = getCommitForString(git, commitString);
+
+        return isMergedInto(git, branchCommit, baseBranch);
     }
 
     /**
      * Gets a commit for a given string with no body
-     * @param git The git instance to use
+     *
+     * @param git      The git instance to use
      * @param commitId The name of the commit to find
      * @return The commit
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -61,7 +63,7 @@ public class GitHelper
             {
                 throw new LocalBranchMissingException("commit " + commitId + " does not exist");
             }
-            
+
             walk = new RevWalk(git.getRepository());
             walk.setRetainBody(true);
 
@@ -82,8 +84,9 @@ public class GitHelper
 
     /**
      * Checks to see if a specific commit is merged into a branch
-     * @param git The git instance to use
-     * @param commit The commit to test
+     *
+     * @param git        The git instance to use
+     * @param commit     The commit to test
      * @param branchName The name of the base branch to look for the merge
      * @return if the contents of commit has been merged into baseName
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -129,12 +132,13 @@ public class GitHelper
         {
             throw new JGitFlowIOException(e);
         }
-        
+
     }
 
     /**
      * Gets the latest commit for a branch
-     * @param git The git instance to use
+     *
+     * @param git        The git instance to use
      * @param branchName The name of the branch to find the commit on
      * @return The latest commit for the branch
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -165,7 +169,8 @@ public class GitHelper
 
     /**
      * Checks to see if a local branch with the given name exists
-     * @param git The git instance to use
+     *
+     * @param git        The git instance to use
      * @param branchName The name of the branch to look for
      * @return if the branch exists or not
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -203,15 +208,16 @@ public class GitHelper
 
     /**
      * Checks to see if a remote branch with the given name exists
-     * @param git The git instance to use
+     *
+     * @param git    The git instance to use
      * @param branch The name of the branch to look for
      * @return if the branch exists or not
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */
     public static boolean remoteBranchExists(Git git, final String branch, JGitFlowReporter reporter) throws JGitFlowGitAPIException
     {
-        reporter.debugMethod(getName(),"remoteBranchExists");
-        reporter.debugText(getName(),"checking for branch: " + branch);
+        reporter.debugMethod(getName(), "remoteBranchExists");
+        reporter.debugText(getName(), "checking for branch: " + branch);
         boolean exists = false;
 
         if (StringUtils.isEmptyOrNull(branch))
@@ -222,22 +228,22 @@ public class GitHelper
         try
         {
             List<Ref> refs = git.branchList().setListMode(ListBranchCommand.ListMode.REMOTE).call();
-            reporter.debugText(getName(),"got " + refs.size() + " remote refs");
+            reporter.debugText(getName(), "got " + refs.size() + " remote refs");
             for (Ref ref : refs)
             {
-                reporter.debugText(getName(),"ref name: " + ref.getName());
+                reporter.debugText(getName(), "ref name: " + ref.getName());
 
                 //if we're not coming from origin, just ignore
                 if (!ref.getName().contains(JGitFlowConstants.R_REMOTE_ORIGIN))
                 {
                     continue;
                 }
-                
+
                 String simpleName = ref.getName().substring(ref.getName().indexOf(JGitFlowConstants.R_REMOTE_ORIGIN) + JGitFlowConstants.R_REMOTE_ORIGIN.length());
 
-                reporter.debugText(getName(),"ref simple name: " + simpleName);
+                reporter.debugText(getName(), "ref simple name: " + simpleName);
 
-                reporter.debugText(getName(),"simple name equals branch? " + simpleName.equals(branch));
+                reporter.debugText(getName(), "simple name equals branch? " + simpleName.equals(branch));
                 if (simpleName.equals(branch))
                 {
                     exists = true;
@@ -277,14 +283,14 @@ public class GitHelper
 
             if (!localCommit.equals(remoteCommit))
             {
-                reporter.debugText(getName(),localCommit.getName() + " !equals " + remoteCommit.getName());
+                reporter.debugText(getName(), localCommit.getName() + " !equals " + remoteCommit.getName());
                 behind = true;
                 walk.setRevFilter(RevFilter.MERGE_BASE);
                 walk.markStart(localCommit);
                 walk.markStart(remoteCommit);
 
                 RevCommit base = walk.next();
-                reporter.debugText(getName(),"checking if remote is at our merge base");
+                reporter.debugText(getName(), "checking if remote is at our merge base");
                 if (null != base)
                 {
                     walk.parseBody(base);
@@ -292,7 +298,7 @@ public class GitHelper
                     //remote is behind
                     if (remoteCommit.equals(base))
                     {
-                        reporter.debugText(getName(),"remote equals merge base, branch is newer");
+                        reporter.debugText(getName(), "remote equals merge base, branch is newer");
                         behind = false;
                     }
                 }
@@ -300,7 +306,7 @@ public class GitHelper
         }
         catch (IOException e)
         {
-            reporter.errorText(getName(),e.getMessage());
+            reporter.errorText(getName(), e.getMessage());
             reporter.endMethod();
             reporter.flush();
             throw new JGitFlowIOException(e);
@@ -309,13 +315,14 @@ public class GitHelper
         {
             walk.release();
         }
-        
+
         return behind;
     }
 
     /**
      * Gets a reference to a remote branch with the given name
-     * @param git The git instance to use
+     *
+     * @param git        The git instance to use
      * @param branchName The name of the remote branch
      * @return A reference to the remote branch or null
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -353,7 +360,8 @@ public class GitHelper
 
     /**
      * Gets a reference to a local branch with the given name
-     * @param git The git instance to use
+     *
+     * @param git        The git instance to use
      * @param branchName The name of the remote branch
      * @return A reference to the local branch or null
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
@@ -379,7 +387,8 @@ public class GitHelper
 
     /**
      * Gets a list of branch references that begin with the given prefix
-     * @param git The git instance to use
+     *
+     * @param git    The git instance to use
      * @param prefix The prefix to test for
      * @return A list of branch references matching the given prefix
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -387,7 +396,7 @@ public class GitHelper
     public static List<Ref> listBranchesWithPrefix(Git git, String prefix, JGitFlowReporter reporter) throws JGitFlowGitAPIException
     {
         List<Ref> branches = new ArrayList<Ref>();
-        reporter.debugMethod(getName(),"listBranchesWithPrefix");
+        reporter.debugMethod(getName(), "listBranchesWithPrefix");
 
         try
         {
@@ -396,14 +405,14 @@ public class GitHelper
             for (Ref ref : refs)
             {
                 String simpleName;
-                
+
                 String originPrefix = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + "/";
-                
-                if(ref.getName().indexOf(Constants.R_HEADS) > -1)
+
+                if (ref.getName().indexOf(Constants.R_HEADS) > -1)
                 {
                     simpleName = ref.getName().substring(ref.getName().indexOf(Constants.R_HEADS) + Constants.R_HEADS.length());
                 }
-                else if(ref.getName().indexOf(originPrefix) > -1)
+                else if (ref.getName().indexOf(originPrefix) > -1)
                 {
                     simpleName = ref.getName().substring(ref.getName().indexOf(originPrefix) + originPrefix.length());
                 }
@@ -412,8 +421,8 @@ public class GitHelper
                     simpleName = "";
                 }
 
-                reporter.debugText(getName(),"simple name [" + simpleName + "] startsWith prefix [" + prefix + "] ? " + simpleName.startsWith(prefix));
-                
+                reporter.debugText(getName(), "simple name [" + simpleName + "] startsWith prefix [" + prefix + "] ? " + simpleName.startsWith(prefix));
+
                 if (simpleName.startsWith(prefix))
                 {
                     branches.add(ref);
@@ -435,16 +444,15 @@ public class GitHelper
     /**
      * Tests to see if a working folder is clean. e.g. all changes have been committed.
      *
-     *
-     * @param git The git instance to use
+     * @param git            The git instance to use
      * @param allowUntracked
-     *@param reporter  @return if the branch is clean or not
+     * @param reporter       @return if the branch is clean or not
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */
     public static CleanStatus workingTreeIsClean(Git git, boolean allowUntracked, JGitFlowReporter reporter) throws JGitFlowIOException, JGitFlowGitAPIException
     {
-        reporter.debugMethod(getName(),"workingTreeIsClean");
+        reporter.debugMethod(getName(), "workingTreeIsClean");
         try
         {
             IndexDiff diffIndex = new IndexDiff(git.getRepository(), Constants.HEAD, new FileTreeIterator(git.getRepository()));
@@ -461,53 +469,53 @@ public class GitHelper
                 int removedSize = diffIndex.getRemoved().size();
                 int untrackedSize = diffIndex.getUntracked().size();
                 int untrackedFolderSize = diffIndex.getUntrackedFolders().size();
-                
+
                 boolean changed = false;
                 boolean untracked = false;
                 StringBuilder sb = new StringBuilder();
-                
-                reporter.debugText(getName(),"diffIndex.diff() returned diffs. working tree is dirty!");
-                reporter.debugText(getName(),"added size: " + addedSize);
-                reportDirtyDetails(getName(), "added", diffIndex.getAdded(),reporter);
-                reporter.debugText(getName(),"assume unchanged size: " + assumedSize);
-                reporter.debugText(getName(),"changed size: " + changedSize);
-                reportDirtyDetails(getName(), "changed", diffIndex.getChanged(),reporter);
-                reporter.debugText(getName(),"conflicting size: " + conflictSize);
-                reportDirtyDetails(getName(), "conflicting", diffIndex.getConflicting(),reporter);
-                reporter.debugText(getName(),"ignored not in index size: " + ignoredSize);
-                reporter.debugText(getName(),"missing size: " + missingSize);
-                reportDirtyDetails(getName(), "missing", diffIndex.getMissing(),reporter);
-                reporter.debugText(getName(),"modified size: " + modifiedSize);
-                reportDirtyDetails(getName(), "modified", diffIndex.getModified(),reporter);
-                reporter.debugText(getName(),"removed size: " + removedSize);
-                reportDirtyDetails(getName(), "removed", diffIndex.getRemoved(),reporter);
-                reporter.debugText(getName(),"untracked size: " + untrackedSize);
-                reportDirtyDetails(getName(), "untracked", diffIndex.getUntracked(),reporter);
-                reporter.debugText(getName(),"untracked folders size: " + untrackedFolderSize);
-                reportDirtyDetails(getName(), "untracked folders", diffIndex.getUntrackedFolders(),reporter);
+
+                reporter.debugText(getName(), "diffIndex.diff() returned diffs. working tree is dirty!");
+                reporter.debugText(getName(), "added size: " + addedSize);
+                reportDirtyDetails(getName(), "added", diffIndex.getAdded(), reporter);
+                reporter.debugText(getName(), "assume unchanged size: " + assumedSize);
+                reporter.debugText(getName(), "changed size: " + changedSize);
+                reportDirtyDetails(getName(), "changed", diffIndex.getChanged(), reporter);
+                reporter.debugText(getName(), "conflicting size: " + conflictSize);
+                reportDirtyDetails(getName(), "conflicting", diffIndex.getConflicting(), reporter);
+                reporter.debugText(getName(), "ignored not in index size: " + ignoredSize);
+                reporter.debugText(getName(), "missing size: " + missingSize);
+                reportDirtyDetails(getName(), "missing", diffIndex.getMissing(), reporter);
+                reporter.debugText(getName(), "modified size: " + modifiedSize);
+                reportDirtyDetails(getName(), "modified", diffIndex.getModified(), reporter);
+                reporter.debugText(getName(), "removed size: " + removedSize);
+                reportDirtyDetails(getName(), "removed", diffIndex.getRemoved(), reporter);
+                reporter.debugText(getName(), "untracked size: " + untrackedSize);
+                reportDirtyDetails(getName(), "untracked", diffIndex.getUntracked(), reporter);
+                reporter.debugText(getName(), "untracked folders size: " + untrackedFolderSize);
+                reportDirtyDetails(getName(), "untracked folders", diffIndex.getUntrackedFolders(), reporter);
                 reporter.endMethod();
-                
-                if(addedSize > 0 || changedSize > 0 || conflictSize > 0 || missingSize > 0 || modifiedSize > 0 || removedSize > 0)
+
+                if (addedSize > 0 || changedSize > 0 || conflictSize > 0 || missingSize > 0 || modifiedSize > 0 || removedSize > 0)
                 {
                     changed = true;
                     sb.append("Working tree has uncommitted changes");
                 }
-                
-                if(!allowUntracked && (untrackedSize > 0 || untrackedFolderSize > 0))
+
+                if (!allowUntracked && (untrackedSize > 0 || untrackedFolderSize > 0))
                 {
-                    if(ignoredSize > 0)
+                    if (ignoredSize > 0)
                     {
                         Set<String> ignores = diffIndex.getIgnoredNotInIndex();
-                        
-                        if(untrackedSize > 0)
+
+                        if (untrackedSize > 0)
                         {
                             Set<String> utFiles = diffIndex.getUntracked();
                             utFiles.removeAll(ignores);
-                            
+
                             untrackedSize = utFiles.size();
                         }
 
-                        if(untrackedFolderSize > 0)
+                        if (untrackedFolderSize > 0)
                         {
                             Set<String> utFolders = diffIndex.getUntrackedFolders();
                             utFolders.removeAll(ignores);
@@ -515,13 +523,13 @@ public class GitHelper
                             untrackedFolderSize = utFolders.size();
                         }
                     }
-                    
-                    if(untrackedSize > 0 || untrackedFolderSize > 0)
+
+                    if (untrackedSize > 0 || untrackedFolderSize > 0)
                     {
                         untracked = true;
                     }
-                    
-                    if(!changed)
+
+                    if (!changed)
                     {
                         sb.append("Working tree has untracked files");
                     }
@@ -530,17 +538,17 @@ public class GitHelper
                         sb.append(" and untracked files");
                     }
                 }
-                
-                return new CleanStatus(untracked,changed,sb.toString());
+
+                return new CleanStatus(untracked, changed, sb.toString());
             }
 
-            reporter.debugText(getName(),"working tree is clean");
+            reporter.debugText(getName(), "working tree is clean");
             reporter.endMethod();
-            return new CleanStatus(false,false,"Working tree is clean");
+            return new CleanStatus(false, false, "Working tree is clean");
         }
         catch (IOException e)
         {
-            reporter.errorText(getName(),e.getMessage());
+            reporter.errorText(getName(), e.getMessage());
             reporter.endMethod();
             reporter.flush();
             throw new JGitFlowIOException(e);
@@ -549,11 +557,11 @@ public class GitHelper
 
     private static void reportDirtyDetails(String cmdName, String reason, Set<String> files, JGitFlowReporter reporter)
     {
-        if(files.size() > 0)
+        if (files.size() > 0)
         {
-            reporter.debugText(cmdName,reason + " details: ");
-            
-            for(String file : files)
+            reporter.debugText(cmdName, reason + " details: ");
+
+            for (String file : files)
             {
                 reporter.debugText(cmdName, " -- " + reason + ": " + file);
             }
@@ -562,7 +570,8 @@ public class GitHelper
 
     /**
      * Tests to see if a tag exists with the given name
-     * @param git The git instance to use
+     *
+     * @param git     The git instance to use
      * @param tagName The name of the tag to test for
      * @return if the tag exists or not
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -596,7 +605,7 @@ public class GitHelper
             throw new JGitFlowGitAPIException(e);
         }
     }
-    
+
     private static String getName()
     {
         return GitHelper.class.getSimpleName();

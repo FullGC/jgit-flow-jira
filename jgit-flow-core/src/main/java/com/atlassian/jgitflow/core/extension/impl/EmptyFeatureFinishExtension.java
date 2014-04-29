@@ -13,7 +13,7 @@ public class EmptyFeatureFinishExtension implements FeatureFinishExtension
     {
         return Collections.EMPTY_LIST;
     }
-    
+
     @Override
     public List<ExtensionCommand> beforeFetch()
     {

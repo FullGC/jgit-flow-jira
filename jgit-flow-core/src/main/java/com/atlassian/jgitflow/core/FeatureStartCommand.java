@@ -4,71 +4,51 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.FeatureStartExtension;
-import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.util.StringUtils;
-
-import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
 
 /**
  * Start a feature.
  * <p>
  * This will create a new branch using the feature prefix and feature name from the tip of develop
  * </p>
- * <p>
+ * <p/>
  * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p>
+ * <p/>
  * Start a feature:
- *
+ * <p/>
  * <pre>
  * flow.featureStart(&quot;feature&quot;).call();
  * </pre>
- * <p>
+ * <p/>
  * Perform a fetch of develop before branching
- *
+ * <p/>
  * <pre>
- * flow.featureStart(&quot;feature&quot;).setFetchDevelop(true).call();
+ * flow.featureStart(&quot;feature&quot;).setFetch(true).call();
  * </pre>
  */
-public class FeatureStartCommand extends AbstractGitFlowCommand<FeatureStartCommand,Ref>
+public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureStartCommand, Ref>
 {
     private static final String SHORT_NAME = "feature-start";
-    
-    private final String branchName;
-    private boolean fetchDevelop;
-    private boolean push;
-    private RevCommit startCommit;
-    private String startCommitString;
 
     /**
      * Create a new feature start command instance.
      * <p></p>
      * An instance of this class is usually obtained by calling {@link com.atlassian.jgitflow.core.JGitFlow#featureStart(String)}
+     *
      * @param branchName The name of the feature
-     * @param git The git instance to use
-     * @param gfConfig The GitFlowConfiguration to use
+     * @param git        The git instance to use
+     * @param gfConfig   The GitFlowConfiguration to use
      * @param reporter
      */
-    public FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter) 
+    public FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
-        super(git,gfConfig, reporter);
-
-        checkState(!StringUtils.isEmptyOrNull(branchName));
-        this.branchName = branchName;
-        this.fetchDevelop = false;
-        this.push = false;
+        super(branchName, git, gfConfig, reporter);
     }
 
     /**
-     * 
      * @return A reference to the new feature branch
      * @throws com.atlassian.jgitflow.core.exception.NotInitializedException
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
@@ -77,84 +57,24 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<FeatureStartComm
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
      */
     @Override
-    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchExistsException, BranchOutOfDateException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
+    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchExistsException, BranchOutOfDateException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException, TagExistsException
     {
-        FeatureStartExtension extensions = getExtensionProvider().provideFeatureStartExtension();
-        
-        reporter.commandCall(SHORT_NAME);
-        
-        runExtensionCommands(extensions.before());
+        FeatureStartExtension extension = getExtensionProvider().provideFeatureStartExtension();
 
-        //TODO: we should test for remote feature and pull it if it exists
-        final String prefixedBranchName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.FEATURE.configKey()) + branchName;
-        requireGitFlowInitialized();
-        requireLocalBranchAbsent(prefixedBranchName);
-        
-        if(fetchDevelop)
-        {
-            runExtensionCommands(extensions.beforeFetch());
-            RefSpec spec = new RefSpec("+" + Constants.R_HEADS + gfConfig.getDevelop() + ":" + Constants.R_REMOTES + "origin/" + gfConfig.getDevelop());
-            try
-            {
-                git.fetch().setRefSpecs(spec).call();
-                runExtensionCommands(extensions.afterFetch());
-            }
-            catch (GitAPIException e)
-            {
-                throw new JGitFlowGitAPIException(e);
-            }
-        }
+        String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.FEATURE);
+
+        enforcer().requireGitFlowInitialized();
+        enforcer().requireLocalBranchAbsent(prefixedBranchName);
+
         try
         {
-            //ensure local develop isn't behind remote develop
-            if(GitHelper.remoteBranchExists(git,gfConfig.getDevelop(), reporter))
-            {
-                requireLocalBranchNotBehindRemote(gfConfig.getDevelop());
-            }
+            doFetchIfNeeded(extension);
 
-            runExtensionCommands(extensions.beforeCreateBranch());
-            RevCommit startPoint = null;
+            Ref newBranch = doCreateBranch(gfConfig.getDevelop(), prefixedBranchName, extension);
 
-            if(null != startCommit)
-            {
-                startPoint = startCommit;
-            }
-            else if(!StringUtils.isEmptyOrNull(startCommitString))
-            {
-                startPoint = GitHelper.getCommitForString(git,startCommitString);
-            }
-            else
-            {
-                startPoint = GitHelper.getLatestCommit(git, gfConfig.getDevelop());
-            }
+            doPushNewBranchIfNeeded(extension, prefixedBranchName);
 
-            requireCommitOnBranch(startPoint,gfConfig.getDevelop());
-            
-            Ref newBranch = git.checkout()
-               .setName(prefixedBranchName)
-                    .setCreateBranch(true)
-                    .setStartPoint(startPoint)
-                    .call();
-            
-            runExtensionCommands(extensions.afterCreateBranch());
-
-            if (push)
-            {
-                requireRemoteBranchAbsent(prefixedBranchName);
-                RefSpec branchSpec = new RefSpec(prefixedBranchName + ":" + Constants.R_HEADS + prefixedBranchName);
-                git.push().setRemote("origin").setRefSpecs(branchSpec).call();
-                git.fetch().setRemote("origin").call();
-
-                //setup tracking
-                StoredConfig config = git.getRepository().getConfig();
-                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedBranchName, ConfigConstants.CONFIG_KEY_REMOTE, "origin");
-                config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedBranchName, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + prefixedBranchName);
-                config.save();
-                
-                runExtensionCommands(extensions.afterPush());
-            }
-
-            runExtensionCommands(extensions.after());
+            runExtensionCommands(extension.after());
             return newBranch;
 
         }
@@ -166,46 +86,13 @@ public class FeatureStartCommand extends AbstractGitFlowCommand<FeatureStartComm
         {
             throw new JGitFlowIOException(e);
         }
+        finally
+        {
+            reporter.endCommand();
+            reporter.flush();
+        }
     }
 
-    /**
-     * Set whether to perform a git fetch of the remote develop branch before branching
-     * @param fetch
-     *              <code>true</code> to do the fetch, <code>false</code>(default) otherwise
-     * @return {@code this}
-     */
-    public FeatureStartCommand setFetchDevelop(boolean fetch)
-    {
-        this.fetchDevelop = fetch;
-        return this;
-    }
-
-    /**
-     * Set whether to push the changes to the remote repository
-     *
-     * @param push <code>true</code> to do the push, <code>false</code>(default) otherwise
-     * @return {@code this}
-     */
-    public FeatureStartCommand setPush(boolean push)
-    {
-        this.push = push;
-        return this;
-    }
-
-    public FeatureStartCommand setStartCommit(String commitId)
-    {
-        this.startCommitString = commitId;
-
-        return this;
-    }
-
-    public FeatureStartCommand setStartCommit(RevCommit commit)
-    {
-        this.startCommit = commit;
-
-        return this;
-    }
-    
     @Override
     protected String getCommandName()
     {
