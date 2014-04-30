@@ -6,12 +6,12 @@ import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 
 public class MergeProcessExtensionWrapper
 {
-    private final List<ExtensionCommand> beforeCheckout;
-    private final List<ExtensionCommand> afterCheckout;
-    private final List<ExtensionCommand> beforeMerge;
-    private final List<ExtensionCommand> afterMerge;
+    private final Iterable<ExtensionCommand> beforeCheckout;
+    private final Iterable<ExtensionCommand> afterCheckout;
+    private final Iterable<ExtensionCommand> beforeMerge;
+    private final Iterable<ExtensionCommand> afterMerge;
 
-    public MergeProcessExtensionWrapper(List<ExtensionCommand> beforeCheckout, List<ExtensionCommand> afterCheckout, List<ExtensionCommand> beforeMerge, List<ExtensionCommand> afterMerge)
+    public MergeProcessExtensionWrapper(Iterable<ExtensionCommand> beforeCheckout, Iterable<ExtensionCommand> afterCheckout, Iterable<ExtensionCommand> beforeMerge, Iterable<ExtensionCommand> afterMerge)
     {
         this.beforeCheckout = beforeCheckout;
         this.afterCheckout = afterCheckout;
@@ -19,11 +19,11 @@ public class MergeProcessExtensionWrapper
         this.afterMerge = afterMerge;
     }
 
-    public List<ExtensionCommand> beforeCheckout() {return this.beforeCheckout;}
+    public Iterable<ExtensionCommand> beforeCheckout() {return this.beforeCheckout;}
 
-    public List<ExtensionCommand> afterCheckout() {return this.afterCheckout;}
+    public Iterable<ExtensionCommand> afterCheckout() {return this.afterCheckout;}
 
-    public List<ExtensionCommand> beforeMerge() {return this.beforeMerge;}
+    public Iterable<ExtensionCommand> beforeMerge() {return this.beforeMerge;}
 
-    public List<ExtensionCommand> afterMerge() {return this.afterMerge;}
+    public Iterable<ExtensionCommand> afterMerge() {return this.afterMerge;}
 }

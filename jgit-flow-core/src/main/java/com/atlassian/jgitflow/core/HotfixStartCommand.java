@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.HotfixStartExtension;
+import com.atlassian.jgitflow.core.extension.impl.EmptyHotfixStartExtension;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -32,6 +33,7 @@ import org.eclipse.jgit.lib.Ref;
 public class HotfixStartCommand extends AbstractBranchCreatingCommand<HotfixStartCommand, Ref>
 {
     private static final String SHORT_NAME = "hotfix-start";
+    private HotfixStartExtension extension;
 
     /**
      * Create a new hotfix start command instance.
@@ -46,6 +48,7 @@ public class HotfixStartCommand extends AbstractBranchCreatingCommand<HotfixStar
     public HotfixStartCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
         super(hotfixName, git, gfConfig, reporter);
+        this.extension = new EmptyHotfixStartExtension();
 
     }
 
@@ -63,8 +66,6 @@ public class HotfixStartCommand extends AbstractBranchCreatingCommand<HotfixStar
     @Override
     public Ref call() throws NotInitializedException, JGitFlowGitAPIException, HotfixBranchExistsException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchExistsException, TagExistsException, BranchOutOfDateException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
     {
-        HotfixStartExtension extension = getExtensionProvider().provideHotfixStartExtension();
-
         String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.HOTFIX);
 
         enforcer().requireGitFlowInitialized();
@@ -102,5 +103,11 @@ public class HotfixStartCommand extends AbstractBranchCreatingCommand<HotfixStar
     protected String getCommandName()
     {
         return SHORT_NAME;
+    }
+
+    public HotfixStartCommand setExtension(HotfixStartExtension extension)
+    {
+        this.extension = extension;
+        return this;
     }
 }

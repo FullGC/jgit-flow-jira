@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.ReleaseStartExtension;
+import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseStartExtension;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -32,6 +33,7 @@ import org.eclipse.jgit.lib.Ref;
 public class ReleaseStartCommand extends AbstractBranchCreatingCommand<ReleaseStartCommand, Ref>
 {
     private static final String SHORT_NAME = "release-start";
+    private ReleaseStartExtension extension;
 
     /**
      * Create a new release start command instance.
@@ -46,6 +48,7 @@ public class ReleaseStartCommand extends AbstractBranchCreatingCommand<ReleaseSt
     public ReleaseStartCommand(String releaseName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
         super(releaseName, git, gfConfig, reporter);
+        this.extension = new EmptyReleaseStartExtension();
 
     }
 
@@ -63,8 +66,6 @@ public class ReleaseStartCommand extends AbstractBranchCreatingCommand<ReleaseSt
     @Override
     public Ref call() throws NotInitializedException, JGitFlowGitAPIException, ReleaseBranchExistsException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchExistsException, TagExistsException, BranchOutOfDateException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
     {
-        ReleaseStartExtension extension = getExtensionProvider().provideReleaseStartExtension();
-
         String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.RELEASE);
 
         enforcer().requireGitFlowInitialized();
@@ -103,5 +104,11 @@ public class ReleaseStartCommand extends AbstractBranchCreatingCommand<ReleaseSt
     protected String getCommandName()
     {
         return SHORT_NAME;
+    }
+
+    public ReleaseStartCommand setExtension(ReleaseStartExtension extension)
+    {
+        this.extension = extension;
+        return this;
     }
 }

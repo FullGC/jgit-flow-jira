@@ -10,79 +10,79 @@ public class EmptyReleaseFinishExtension implements ReleaseFinishExtension
 {
 
     @Override
-    public List<ExtensionCommand> beforeFetch()
+    public Iterable<ExtensionCommand> beforeFetch()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> afterFetch()
+    public Iterable<ExtensionCommand> afterFetch()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> beforeMasterCheckout()
+    public Iterable<ExtensionCommand> beforeMasterCheckout()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> afterMasterCheckout()
+    public Iterable<ExtensionCommand> afterMasterCheckout()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> beforeMasterMerge()
+    public Iterable<ExtensionCommand> beforeMasterMerge()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> afterMasterMerge()
+    public Iterable<ExtensionCommand> afterMasterMerge()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> beforeDevelopCheckout()
+    public Iterable<ExtensionCommand> beforeDevelopCheckout()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> afterDevelopCheckout()
+    public Iterable<ExtensionCommand> afterDevelopCheckout()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> beforeDevelopMerge()
+    public Iterable<ExtensionCommand> beforeDevelopMerge()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> afterDevelopMerge()
+    public Iterable<ExtensionCommand> afterDevelopMerge()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> afterPush()
+    public Iterable<ExtensionCommand> afterPush()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> before()
+    public Iterable<ExtensionCommand> before()
     {
         return Collections.EMPTY_LIST;
     }
 
     @Override
-    public List<ExtensionCommand> after()
+    public Iterable<ExtensionCommand> after()
     {
         return Collections.EMPTY_LIST;
     }

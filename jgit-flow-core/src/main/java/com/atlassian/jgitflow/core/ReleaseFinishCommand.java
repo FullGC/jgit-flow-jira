@@ -2,6 +2,7 @@ package com.atlassian.jgitflow.core;
 
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.ReleaseFinishExtension;
+import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.MergeProcessExtensionWrapper;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
@@ -58,6 +59,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
     private boolean noTag;
     private boolean squash;
     private boolean noMerge;
+    private ReleaseFinishExtension extension;
 
     /**
      * Create a new release finish command instance.
@@ -77,6 +79,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
         this.noTag = false;
         this.squash = false;
         this.noMerge = false;
+        this.extension = new EmptyReleaseFinishExtension();
     }
 
     /**
@@ -90,8 +93,6 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
     @Override
     public ReleaseMergeResult call() throws JGitFlowGitAPIException, LocalBranchMissingException, DirtyWorkingTreeException, JGitFlowIOException, BranchOutOfDateException, JGitFlowExtensionException, NotInitializedException
     {
-        ReleaseFinishExtension extension = getExtensionProvider().provideReleaseFinishExtension();
-
         String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.RELEASE);
 
         enforcer().requireGitFlowInitialized();
@@ -203,6 +204,12 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
     public ReleaseFinishCommand setNoMerge(boolean noMerge)
     {
         this.noMerge = noMerge;
+        return this;
+    }
+
+    public ReleaseFinishCommand setExtension(ReleaseFinishExtension extension)
+    {
+        this.extension = extension;
         return this;
     }
 

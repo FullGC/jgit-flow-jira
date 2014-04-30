@@ -1,24 +1,22 @@
 package com.atlassian.jgitflow.core.extension;
 
-import java.util.List;
-
 public interface ReleaseFinishExtension extends JGitFlowExtension
 {
-    List<ExtensionCommand> beforeMasterCheckout();
+    Iterable<ExtensionCommand> beforeMasterCheckout();
 
-    List<ExtensionCommand> afterMasterCheckout();
+    Iterable<ExtensionCommand> afterMasterCheckout();
 
-    List<ExtensionCommand> beforeMasterMerge();
+    Iterable<ExtensionCommand> beforeMasterMerge();
 
-    List<ExtensionCommand> afterMasterMerge();
+    Iterable<ExtensionCommand> afterMasterMerge();
 
-    List<ExtensionCommand> beforeDevelopCheckout();
+    Iterable<ExtensionCommand> beforeDevelopCheckout();
 
-    List<ExtensionCommand> afterDevelopCheckout();
+    Iterable<ExtensionCommand> afterDevelopCheckout();
 
-    List<ExtensionCommand> beforeDevelopMerge();
+    Iterable<ExtensionCommand> beforeDevelopMerge();
 
-    List<ExtensionCommand> afterDevelopMerge();
+    Iterable<ExtensionCommand> afterDevelopMerge();
 
 
 }

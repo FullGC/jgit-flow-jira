@@ -1,6 +1,5 @@
 package com.atlassian.jgitflow.core;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
@@ -9,9 +8,7 @@ import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.jgitflow.core.extension.ExtensionProvider;
 import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
-import com.atlassian.jgitflow.core.extension.impl.EmptyExtensionProvider;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.jgitflow.core.util.RequirementHelper;
 
@@ -43,7 +40,6 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
     private boolean allowUntracked;
     private String scmMessagePrefix;
     private String scmMessageSuffix;
-    private ExtensionProvider extensionProvider;
     private boolean fetch;
     private boolean push;
     private final String branchName;
@@ -63,7 +59,6 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
         this.allowUntracked = false;
         this.scmMessagePrefix = "";
         this.scmMessageSuffix = "";
-        this.extensionProvider = new EmptyExtensionProvider();
         this.fetch = false;
         this.push = false;
         this.branchName = branchName;
@@ -109,7 +104,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
         }
     }
 
-    protected String runBeforeAndGetPrefixedBranchName(List<ExtensionCommand> before, JGitFlowConstants.PREFIXES prefix) throws JGitFlowExtensionException
+    protected String runBeforeAndGetPrefixedBranchName(Iterable<ExtensionCommand> before, JGitFlowConstants.PREFIXES prefix) throws JGitFlowExtensionException
     {
         reporter.commandCall(getCommandName());
         runExtensionCommands(before);
@@ -125,17 +120,6 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
                 enforcer().requireLocalBranchNotBehindRemote(branchToTest);
             }
         }
-    }
-
-    public C setExtensionProvider(ExtensionProvider provider)
-    {
-        this.extensionProvider = provider;
-        return (C) this;
-    }
-
-    public ExtensionProvider getExtensionProvider()
-    {
-        return extensionProvider;
     }
 
     public C setAllowUntracked(boolean allow)
@@ -212,7 +196,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
 
     protected abstract String getCommandName();
 
-    protected void runExtensionCommands(List<ExtensionCommand> commands) throws JGitFlowExtensionException
+    protected void runExtensionCommands(Iterable<ExtensionCommand> commands) throws JGitFlowExtensionException
     {
         for (final ExtensionCommand command : commands)
         {

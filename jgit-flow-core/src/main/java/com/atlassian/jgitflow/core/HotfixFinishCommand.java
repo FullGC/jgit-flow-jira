@@ -2,6 +2,7 @@ package com.atlassian.jgitflow.core;
 
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.HotfixFinishExtension;
+import com.atlassian.jgitflow.core.extension.impl.EmptyHotfixFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.MergeProcessExtensionWrapper;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
@@ -56,6 +57,7 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
     private static final String SHORT_NAME = "hotfix-finish";
     private String message;
     private boolean noTag;
+    private HotfixFinishExtension extension;
 
     /**
      * Create a new hotfix finish command instance.
@@ -74,6 +76,7 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
         checkState(!StringUtils.isEmptyOrNull(hotfixName));
         this.message = "tagging hotfix " + hotfixName;
         this.noTag = false;
+        this.extension = new EmptyHotfixFinishExtension();
     }
 
     /**
@@ -87,8 +90,6 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
     @Override
     public ReleaseMergeResult call() throws JGitFlowGitAPIException, LocalBranchMissingException, DirtyWorkingTreeException, JGitFlowIOException, BranchOutOfDateException, JGitFlowExtensionException, NotInitializedException
     {
-        HotfixFinishExtension extension = getExtensionProvider().provideHotfixFinishExtension();
-
         String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.HOTFIX);
 
         enforcer().requireGitFlowInitialized();
@@ -172,6 +173,12 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
     public HotfixFinishCommand setNoTag(boolean noTag)
     {
         this.noTag = noTag;
+        return this;
+    }
+
+    public HotfixFinishCommand setExtension(HotfixFinishExtension extension)
+    {
+        this.extension = extension;
         return this;
     }
 

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.FeatureStartExtension;
+import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureStartExtension;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -32,6 +33,7 @@ import org.eclipse.jgit.lib.Ref;
 public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureStartCommand, Ref>
 {
     private static final String SHORT_NAME = "feature-start";
+    private FeatureStartExtension extension;
 
     /**
      * Create a new feature start command instance.
@@ -46,6 +48,7 @@ public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureSt
     public FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
         super(branchName, git, gfConfig, reporter);
+        this.extension = new EmptyFeatureStartExtension();
     }
 
     /**
@@ -59,8 +62,6 @@ public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureSt
     @Override
     public Ref call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchExistsException, BranchOutOfDateException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException, TagExistsException
     {
-        FeatureStartExtension extension = getExtensionProvider().provideFeatureStartExtension();
-
         String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.FEATURE);
 
         enforcer().requireGitFlowInitialized();
@@ -97,5 +98,11 @@ public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureSt
     protected String getCommandName()
     {
         return SHORT_NAME;
+    }
+
+    public FeatureStartCommand setExtension(FeatureStartExtension extension)
+    {
+        this.extension = extension;
+        return this;
     }
 }

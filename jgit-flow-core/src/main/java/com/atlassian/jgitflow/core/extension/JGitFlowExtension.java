@@ -1,16 +1,14 @@
 package com.atlassian.jgitflow.core.extension;
 
-import java.util.List;
-
 public interface JGitFlowExtension
 {
-    List<ExtensionCommand> before();
+    Iterable<ExtensionCommand> before();
 
-    List<ExtensionCommand> after();
+    Iterable<ExtensionCommand> after();
 
-    List<ExtensionCommand> beforeFetch();
+    Iterable<ExtensionCommand> beforeFetch();
 
-    List<ExtensionCommand> afterFetch();
+    Iterable<ExtensionCommand> afterFetch();
 
-    List<ExtensionCommand> afterPush();
+    Iterable<ExtensionCommand> afterPush();
 }

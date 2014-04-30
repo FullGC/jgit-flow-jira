@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.FeatureFinishExtension;
+import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.MergeProcessExtensionWrapper;
 import com.atlassian.jgitflow.core.util.FileHelper;
 import com.atlassian.jgitflow.core.util.GitHelper;
@@ -54,6 +55,7 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     private boolean rebase;
     private boolean squash;
     private boolean noMerge;
+    private FeatureFinishExtension extension;
 
     /**
      * Create a new feature finish command instance.
@@ -73,6 +75,7 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
         this.rebase = false;
         this.squash = false;
         this.noMerge = false;
+        this.extension = new EmptyFeatureFinishExtension();
     }
 
     /**
@@ -89,7 +92,6 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     public MergeResult call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchMissingException, JGitFlowIOException, DirtyWorkingTreeException, MergeConflictsNotResolvedException, BranchOutOfDateException, JGitFlowExtensionException, GitAPIException
     {
         MergeResult mergeResult = null;
-        FeatureFinishExtension extension = getExtensionProvider().provideFeatureFinishExtension();
 
         String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.FEATURE);
 
@@ -231,6 +233,12 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     public FeatureFinishCommand setNoMerge(boolean noMerge)
     {
         this.noMerge = noMerge;
+        return this;
+    }
+
+    public FeatureFinishCommand setExtension(FeatureFinishExtension extension)
+    {
+        this.extension = extension;
         return this;
     }
 
