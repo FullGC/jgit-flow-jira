@@ -1,7 +1,5 @@
 package com.atlassian.jgitflow.core.extension.impl;
 
-import java.util.List;
-
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 
 public class MergeProcessExtensionWrapper

@@ -42,22 +42,22 @@ public abstract class BaseExtensionForTests<T>
         return (T) this;
     }
 
-    public List<ExtensionCommand> beforeFetch()
+    public Iterable<ExtensionCommand> beforeFetch()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE_FETCH));
     }
 
-    public List<ExtensionCommand> afterFetch()
+    public Iterable<ExtensionCommand> afterFetch()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_FETCH));
     }
 
-    public List<ExtensionCommand> before()
+    public Iterable<ExtensionCommand> before()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE));
     }
 
-    public List<ExtensionCommand> after()
+    public Iterable<ExtensionCommand> after()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER));
     }

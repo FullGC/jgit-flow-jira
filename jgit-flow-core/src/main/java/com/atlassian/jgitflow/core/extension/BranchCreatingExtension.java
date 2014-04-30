@@ -1,10 +1,8 @@
 package com.atlassian.jgitflow.core.extension;
 
-import java.util.List;
-
 public interface BranchCreatingExtension extends JGitFlowExtension
 {
-    List<ExtensionCommand> beforeCreateBranch();
+    Iterable<ExtensionCommand> beforeCreateBranch();
 
-    List<ExtensionCommand> afterCreateBranch();
+    Iterable<ExtensionCommand> afterCreateBranch();
 }

@@ -10,43 +10,43 @@ import com.google.common.collect.Lists;
 public class FeatureFinishExtensionForTests extends BaseExtensionForTests<FeatureFinishExtensionForTests> implements FeatureFinishExtension
 {
     @Override
-    public List<ExtensionCommand> beforeRebase()
+    public Iterable<ExtensionCommand> beforeRebase()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE_REBASE));
     }
 
     @Override
-    public List<ExtensionCommand> afterRebase()
+    public Iterable<ExtensionCommand> afterRebase()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_REBASE));
     }
 
     @Override
-    public List<ExtensionCommand> beforeDevelopCheckout()
+    public Iterable<ExtensionCommand> beforeDevelopCheckout()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE_DEVELOP_CHECKOUT));
     }
 
     @Override
-    public List<ExtensionCommand> afterDevelopCheckout()
+    public Iterable<ExtensionCommand> afterDevelopCheckout()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_DEVELOP_CHECKOUT));
     }
 
     @Override
-    public List<ExtensionCommand> beforeDevelopMerge()
+    public Iterable<ExtensionCommand> beforeDevelopMerge()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE_DEVELOP_MERGE));
     }
 
     @Override
-    public List<ExtensionCommand> afterDevelopMerge()
+    public Iterable<ExtensionCommand> afterDevelopMerge()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_DEVELOP_MERGE));
     }
 
     @Override
-    public List<ExtensionCommand> afterPush()
+    public Iterable<ExtensionCommand> afterPush()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_PUSH));
     }

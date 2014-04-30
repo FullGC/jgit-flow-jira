@@ -97,12 +97,12 @@ public class JGitFlowReporter
     public JGitFlowReporter endCommand()
     {
         indent -= PAD;
-        
-        if(indent < 0)
+
+        if (indent < 0)
         {
             indent = 0;
         }
-        
+
         flush();
 
         return this;
@@ -112,11 +112,11 @@ public class JGitFlowReporter
     {
         indent -= PAD;
 
-        if(indent < 0)
+        if (indent < 0)
         {
             indent = 0;
         }
-        
+
         entries.add(new JGitFlowReportEntry("", Strings.repeat(" ", indent) + "_method END:_ ", true, false));
         flush();
 

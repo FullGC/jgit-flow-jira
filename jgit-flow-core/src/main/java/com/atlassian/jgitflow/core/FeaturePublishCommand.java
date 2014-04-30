@@ -65,9 +65,9 @@ public class FeaturePublishCommand extends AbstractGitFlowCommand<FeaturePublish
         try
         {
             setFetch(true);
-            
+
             doFetchIfNeeded(extension);
-            
+
             enforcer().requireRemoteBranchAbsent(prefixedBranchName);
 
             //create remote feature branch

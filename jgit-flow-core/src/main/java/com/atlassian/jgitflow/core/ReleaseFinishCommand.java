@@ -121,7 +121,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
                 {
                     doTag(gfConfig.getMaster(), message, masterResult);
                 }
-                
+
                 //IMPORTANT: we need to back-merge master into develop so that git describe works properly
                 MergeProcessExtensionWrapper developExtension = new MergeProcessExtensionWrapper(extension.beforeDevelopCheckout(), extension.afterDevelopCheckout(), extension.beforeDevelopMerge(), extension.afterDevelopMerge());
 
@@ -140,10 +140,10 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
             {
                 cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
             }
-            
+
             reporter.infoText(getCommandName(), "checking out '" + gfConfig.getDevelop() + "'");
             git.checkout().setName(gfConfig.getDevelop()).call();
-            
+
             runExtensionCommands(extension.after());
             return new ReleaseMergeResult(masterResult, developResult);
         }

@@ -48,7 +48,7 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
         git.checkout().setName(mergeTarget).call();
 
         runExtensionCommands(extension.afterCheckout());
-        
+
         if (!GitHelper.isMergedInto(git, branchToMerge, mergeTarget))
         {
             reporter.infoText(getCommandName(), "merging '" + branchToMerge + "' into '" + mergeTarget + "'...");
