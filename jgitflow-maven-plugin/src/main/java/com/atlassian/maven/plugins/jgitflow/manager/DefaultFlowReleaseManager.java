@@ -8,12 +8,14 @@ import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.*;
+import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseStartExtension;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
+import com.atlassian.maven.plugins.jgitflow.helper.ProjectCacheKey;
 
 import com.google.common.base.Joiner;
 
@@ -120,6 +122,8 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         
         try
         {
+            EmptyReleaseStartExtension extension = new EmptyReleaseStartExtension();
+            
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
@@ -131,7 +135,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
     
             if(!ctx.isAllowSnapshots())
             {
-                List<String> snapshots = projectHelper.checkForNonReactorSnapshots("develop", developProjects);
+                List<String> snapshots = projectHelper.checkForNonReactorSnapshots(ProjectCacheKey.DEVELOP_BRANCH, developProjects);
                 if(!snapshots.isEmpty())
                 {
                     String details = Joiner.on(ls).join(snapshots);
@@ -144,7 +148,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 projectHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
             }
 
-            releaseLabel = getReleaseLabel("releaseStartLabel", ctx, developProjects);
+            releaseLabel = getReleaseLabel(ProjectCacheKey.RELEASE_START_LABEL, ctx, developProjects);
     
             flow.releaseStart(releaseLabel)
                 .setAllowUntracked(ctx.isAllowUntracked())
@@ -285,7 +289,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             if(!ctx.isAllowSnapshots())
             {
-                List<String> snapshots = projectHelper.checkForNonReactorSnapshots("release", releaseProjects);
+                List<String> snapshots = projectHelper.checkForNonReactorSnapshots(ProjectCacheKey.RELEASE_BRANCH, releaseProjects);
                 if(!snapshots.isEmpty())
                 {
                     String details = Joiner.on(ls).join(snapshots);
@@ -311,7 +315,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 }
             }
 
-            Map<String, String> originalVersions = projectHelper.getOriginalVersions("release", releaseProjects);
+            Map<String, String> originalVersions = projectHelper.getOriginalVersions(ProjectCacheKey.RELEASE_BRANCH, releaseProjects);
 
             getLogger().info("running jgitflow release finish...");
             ReleaseMergeResult mergeResult = flow.releaseFinish(releaseLabel)
@@ -352,8 +356,8 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             MavenSession developSession = getSessionForBranch(flow, flow.getDevelopBranchName(), originalProjects, session);
             List<MavenProject> developProjects = developSession.getSortedProjects();
 
-            String developLabel = getDevelopmentLabel("develop", ctx, developProjects);
-            updatePomsWithDevelopmentVersion("develop", ctx, developProjects);
+            String developLabel = getDevelopmentLabel(ProjectCacheKey.DEVELOP_BRANCH, ctx, developProjects);
+            updatePomsWithDevelopmentVersion(ProjectCacheKey.DEVELOP_BRANCH, ctx, developProjects);
 
             projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for " + developLabel + " development" + ctx.getScmCommentSuffix());
 
@@ -394,7 +398,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             //reload the reactor projects for release
             MavenSession releaseSession = getSessionForBranch(flow, flow.getReleaseBranchPrefix() + releaseLabel, originalProjects, session);
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
-            updatePomsWithReleaseSnapshotVersion("releaseStartLabel", releaseLabel, ctx, releaseProjects);
+            updatePomsWithReleaseSnapshotVersion(ProjectCacheKey.RELEASE_START_LABEL, releaseLabel, ctx, releaseProjects);
 
             projectHelper.commitAllPoms(flow.git(), releaseProjects, ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release" + ctx.getScmCommentSuffix());
         }
@@ -419,7 +423,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             //reload the reactor projects for release
             MavenSession releaseSession = getSessionForBranch(flow, flow.getReleaseBranchPrefix() + releaseLabel, originalProjects, session);
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
-            updatePomsWithReleaseVersion("releaseFinishLabel", releaseLabel, ctx, releaseProjects);
+            updatePomsWithReleaseVersion(ProjectCacheKey.RELEASE_FINISH_LABEL, releaseLabel, ctx, releaseProjects);
 
             projectHelper.commitAllPoms(flow.git(), releaseProjects,ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release" + ctx.getScmCommentSuffix());
         }

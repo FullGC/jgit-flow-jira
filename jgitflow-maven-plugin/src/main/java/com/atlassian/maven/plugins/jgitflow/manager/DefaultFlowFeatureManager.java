@@ -13,6 +13,7 @@ import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
+import com.atlassian.maven.plugins.jgitflow.helper.ProjectCacheKey;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 import com.atlassian.maven.plugins.jgitflow.util.NamingUtil;
 
@@ -248,7 +249,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 featureVersion = featureVersion + "-SNAPSHOT";
             }
 
-            updatePomsWithFeatureVersionNoSnapshot("featureDeployLabel", featureVersion, ctx, featureProjects);
+            updatePomsWithFeatureVersionNoSnapshot(ProjectCacheKey.FEATURE_DEPLOY_LABEL, featureVersion, ctx, featureProjects);
 
             rootProject = ReleaseUtil.getRootProject(featureProjects);
             featureSession = mavenExecutionHelper.reloadReactor(rootProject,session);
@@ -353,7 +354,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureName);
             featureVersion = StringUtils.replace(featureVersion, "-", "_");
 
-            updatePomsWithFeatureVersion("featureStartLabel", featureVersion, ctx, featureProjects);
+            updatePomsWithFeatureVersion(ProjectCacheKey.FEATURE_START_LABEL, featureVersion, ctx, featureProjects);
 
             projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version" + ctx.getScmCommentSuffix());
         }
@@ -382,7 +383,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureLabel);
             featureVersion = StringUtils.replace(featureVersion, "-", "_");
 
-            updatePomsWithNonFeatureVersion("featureFinishLabel", featureVersion, ctx, featureProjects);
+            updatePomsWithNonFeatureVersion(ProjectCacheKey.FEATURE_FINISH_LABEL, featureVersion, ctx, featureProjects);
 
             projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version" + ctx.getScmCommentSuffix());
         }
@@ -400,7 +401,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
     }
 
-    private void updatePomsWithFeatureVersionNoSnapshot(String key, final String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    private void updatePomsWithFeatureVersionNoSnapshot(ProjectCacheKey cacheKey, final String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
         Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
         Map<String, String> featureVersions = projectHelper.getOriginalVersions(key, reactorProjects);

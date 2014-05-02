@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
+import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 
@@ -26,31 +27,17 @@ public interface ProjectHelper
     
     void fixCygwinIfNeeded(JGitFlow flow) throws JGitFlowReleaseException;
     
-    String getReleaseVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException;
-    
-    String getHotfixVersion(ReleaseContext ctx, MavenProject rootProject, String lastRelease) throws JGitFlowReleaseException;
-    
-    String getDevelopmentVersion(ReleaseContext ctx, MavenProject rootProject) throws JGitFlowReleaseException;
-
-    Map<String,String> getOriginalVersions(String key, List<MavenProject> reactorProjects);
-
-    Map<String,String> getReleaseVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
-
-    Map<String,String> getHotfixVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx, Map<String,String> lastReleaseVersions) throws JGitFlowReleaseException;
-
-    Map<String,String> getDevelopmentVersions(String key, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String,String> getOriginalVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects);
 
     void ensureOrigin(String defaultRemote, boolean alwaysUpdateOrigin, JGitFlow flow) throws JGitFlowReleaseException;
 
     void commitAllChanges(Git git, String message) throws JGitFlowReleaseException;
 
     void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws JGitFlowReleaseException;
-    
-    List<String> checkForNonReactorSnapshots(String key, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
-    String getFeatureStartName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException;
-    
-    String getFeatureFinishName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException;
+    void checkPomForVersionState(VersionState state, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+
+    List<String> checkForNonReactorSnapshots(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
     boolean setupUserPasswordCredentialsProvider(ReleaseContext ctx, JGitFlowReporter reporter);
 

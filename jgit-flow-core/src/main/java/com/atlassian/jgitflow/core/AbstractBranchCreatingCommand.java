@@ -31,6 +31,8 @@ public abstract class AbstractBranchCreatingCommand<C, T> extends AbstractGitFlo
 
     protected Ref doCreateBranch(String rootBranch, String newBranchName, BranchCreatingExtension extension) throws JGitFlowExtensionException, JGitFlowIOException, LocalBranchMissingException, JGitFlowGitAPIException, BranchOutOfDateException, LocalBranchExistsException, TagExistsException, GitAPIException
     {
+        git.checkout().setName(rootBranch).call();
+        
         runExtensionCommands(extension.beforeCreateBranch());
 
         RevCommit startPoint = getStartingPoint(rootBranch);
