@@ -1,4 +1,4 @@
-package com.atlassian.maven.plugins.jgitflow;
+package com.atlassian.maven.plugins.jgitflow.mojo;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.JGitFlowReporter;
+import com.atlassian.maven.plugins.jgitflow.FlowInitContext;
 
 import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSch;

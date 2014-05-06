@@ -1,4 +1,4 @@
-package com.atlassian.maven.plugins.jgitflow.helper;
+package com.atlassian.maven.plugins.jgitflow.provider;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,9 +8,9 @@ import java.util.Map;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.util.GitHelper;
-import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
+import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 
 import org.apache.maven.artifact.ArtifactUtils;
@@ -27,36 +27,13 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
     private VersionProvider versionProvider;
     private PrettyPrompter prompter;
 
-    public String getProductionBranchLabel(ProjectCacheKey cacheKey, ReleaseContext ctx, List<MavenProject> reactorProjects)
-    {
-
-    }
-    
     @Override
-    public String getReleaseLabel(ProjectCacheKey cacheKey, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public String getVersionLabel(VersionType versionType, ProjectCacheKey cacheKey, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
-        Map<String, String> releaseVersions = versionProvider.getReleaseVersions(key, reactorProjects, ctx);
+        Map<String, String> versions = versionProvider.getVersionsForType(versionType, cacheKey, reactorProjects, ctx);
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
-        return releaseVersions.get(rootProjectId);
-    }
-
-    @Override
-    public String getHotfixLabel(ProjectCacheKey cacheKey, ReleaseContext ctx, List<MavenProject> reactorProjects, MavenJGitFlowConfiguration config) throws JGitFlowReleaseException
-    {
-        Map<String, String> hotfixVersions = versionProvider.getHotfixVersions(key, reactorProjects, ctx, config.getLastReleaseVersions());
-        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-        String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
-        return hotfixVersions.get(rootProjectId);
-    }
-
-    @Override
-    public String getDevelopmentLabel(ProjectCacheKey cacheKey, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
-    {
-        Map<String, String> developmentVersions = versionProvider.getDevelopmentVersions(key, reactorProjects, ctx);
-        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-        String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
-        return developmentVersions.get(rootProjectId);
+        return versions.get(rootProjectId);
     }
 
     @Override

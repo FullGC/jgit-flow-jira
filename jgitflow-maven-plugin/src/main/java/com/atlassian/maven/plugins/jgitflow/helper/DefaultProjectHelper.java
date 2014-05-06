@@ -2,21 +2,16 @@ package com.atlassian.maven.plugins.jgitflow.helper;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
-import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
-import com.atlassian.jgitflow.core.util.GitHelper;
-import com.atlassian.maven.plugins.jgitflow.MavenJGitFlowConfiguration;
-import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
-import com.atlassian.maven.plugins.jgitflow.util.ConsoleCredentialsProvider;
-import com.atlassian.maven.plugins.jgitflow.util.SshCredentialsProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
+import com.atlassian.maven.plugins.jgitflow.provider.VersionProvider;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
@@ -28,18 +23,13 @@ import org.apache.maven.model.PluginManagement;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.InvalidDependencyVersionException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
-import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.ConfigInvalidException;
-import org.eclipse.jgit.lib.*;
-import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.SshSessionFactory;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.lib.Repository;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -49,140 +39,12 @@ import static com.google.common.collect.Lists.newArrayList;
 public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectHelper
 {
     private static final String ls = System.getProperty("line.separator");
+
     private static String OS = System.getProperty("os.name").toLowerCase();
     private static boolean isWindows = (OS.indexOf("win") >= 0);
 
-    private static boolean isCygwin = (isWindows && !Strings.isNullOrEmpty(System.getenv("TERM")));
-
-    //private PrettyPrompter prompter;
     private ArtifactFactory artifactFactory;
-    private final Map<String, Map<String, String>> originalVersions;
-
-
-    public DefaultProjectHelper()
-    {
-        this.originalVersions = new HashMap<String, Map<String, String>>();
-
-    }
-
-    @Override
-    public void fixCygwinIfNeeded(JGitFlow flow) throws JGitFlowReleaseException
-    {
-        if (isCygwin)
-        {
-            getLogger().info("detected cygwin:");
-            try
-            {
-                getLogger().info("    - turning off filemode...");
-
-                StoredConfig config = flow.git().getRepository().getConfig();
-                config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
-                config.save();
-                config.load();
-            }
-            catch (IOException e)
-            {
-                throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
-            }
-            catch (ConfigInvalidException e)
-            {
-                throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
-            }
-
-            getLogger().info("    - fixing maven prompter...");
-            prompter.setCygwinTerminal();
-        }
-    }
-
-    @Override
-    public Map<String, String> getOriginalVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects)
-    {
-        if (!originalVersions.containsKey(key))
-        {
-            Map<String, String> versions = new HashMap<String, String>();
-
-            for (MavenProject project : reactorProjects)
-            {
-                versions.put(ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId()), project.getVersion());
-            }
-
-            originalVersions.put(key, versions);
-        }
-
-        return ImmutableMap.copyOf(originalVersions.get(key));
-    }
-
-
-    @Override
-    public void ensureOrigin(String defaultRemote, boolean alwaysUpdateOrigin, JGitFlow flow) throws JGitFlowReleaseException
-    {
-        getLogger().info("ensuring origin exists...");
-        String newOriginUrl = defaultRemote;
-
-        try
-        {
-            StoredConfig config = flow.git().getRepository().getConfig();
-            String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url");
-            if ((Strings.isNullOrEmpty(originUrl) || alwaysUpdateOrigin) && !Strings.isNullOrEmpty(defaultRemote))
-            {
-                if (defaultRemote.startsWith("file://"))
-                {
-                    File originFile = new File(defaultRemote.substring(7));
-                    newOriginUrl = "file://" + originFile.getCanonicalPath();
-                }
-
-                getLogger().info("adding origin from default...");
-                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", newOriginUrl);
-                config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
-            }
-
-            if (!Strings.isNullOrEmpty(originUrl) || !Strings.isNullOrEmpty(newOriginUrl))
-            {
-                if (Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "remote")))
-                {
-                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "remote", Constants.DEFAULT_REMOTE_NAME);
-                }
-
-                if (Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "merge")))
-                {
-                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getMasterBranchName(), "merge", Constants.R_HEADS + flow.getMasterBranchName());
-                }
-
-                if (Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "remote")))
-                {
-                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "remote", Constants.DEFAULT_REMOTE_NAME);
-                }
-
-                if (Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "merge")))
-                {
-                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, flow.getDevelopBranchName(), "merge", Constants.R_HEADS + flow.getDevelopBranchName());
-                }
-
-                if (Strings.isNullOrEmpty(config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch")))
-                {
-                    config.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
-                }
-                config.save();
-
-                try
-                {
-                    config.load();
-                    flow.git().fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
-                }
-                catch (Exception e)
-                {
-                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + newOriginUrl, e);
-                }
-
-            }
-
-        }
-        catch (IOException e)
-        {
-            throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultRemote, e);
-        }
-    }
-
+    private VersionProvider versionProvider;
 
     @Override
     public void commitAllChanges(Git git, String message) throws JGitFlowReleaseException
@@ -338,7 +200,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         List<String> snapshots = newArrayList();
 
         getLogger().info("Checking dependencies and plugins for snapshots ...");
-        Map<String, String> originalReactorVersions = getOriginalVersions(key, reactorProjects);
+        Map<String, String> originalReactorVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         for (MavenProject project : reactorProjects)
         {
@@ -477,37 +339,6 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             checkArtifact = originalArtifact;
         }
         return checkArtifact;
-    }
-
-    @Override
-    public boolean setupUserPasswordCredentialsProvider(ReleaseContext ctx, JGitFlowReporter reporter)
-    {
-        if (!Strings.isNullOrEmpty(ctx.getPassword()) && !Strings.isNullOrEmpty(ctx.getUsername()))
-        {
-            reporter.debugText(getClass().getSimpleName(), "using provided username and password");
-            CredentialsProvider.setDefault(new UsernamePasswordCredentialsProvider(ctx.getUsername(), ctx.getPassword()));
-        }
-        else if (null != System.console())
-        {
-            reporter.debugText(getClass().getSimpleName(), "installing ssh console credentials provider");
-            CredentialsProvider.setDefault(new ConsoleCredentialsProvider(prompter));
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean setupSshCredentialsProvider(ReleaseContext ctx, JGitFlowReporter reporter)
-    {
-        if (ctx.isEnableSshAgent())
-        {
-            reporter.debugText(getClass().getSimpleName(), "installing ssh-agent credentials provider");
-            SshSessionFactory.setInstance(new SshCredentialsProvider());
-            return true;
-        }
-
-        return false;
     }
 
 }

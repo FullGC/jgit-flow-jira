@@ -1,5 +1,6 @@
-package com.atlassian.maven.plugins.jgitflow;
+package com.atlassian.maven.plugins.jgitflow.mojo;
 
+import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 

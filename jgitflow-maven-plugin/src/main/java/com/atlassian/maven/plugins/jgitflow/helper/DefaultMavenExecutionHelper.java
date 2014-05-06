@@ -1,28 +1,29 @@
 package com.atlassian.maven.plugins.jgitflow.helper;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
+import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 
 import com.google.common.base.Joiner;
 
-import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.model.Profile;
 import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.profiles.DefaultProfileManager;
-import org.apache.maven.profiles.ProfileManager;
 import org.apache.maven.project.*;
 import org.apache.maven.shared.release.ReleaseResult;
 import org.apache.maven.shared.release.env.DefaultReleaseEnvironment;
 import org.apache.maven.shared.release.env.ReleaseEnvironment;
 import org.apache.maven.shared.release.exec.MavenExecutor;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
-import org.codehaus.plexus.util.dag.CycleDetectedException;
+import org.eclipse.jgit.api.errors.GitAPIException;
 
 /**
  * @since version
@@ -34,6 +35,9 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
 
     @Component
     protected MavenProjectBuilder projectBuilder;
+    
+    @Component
+    protected JGitFlowProvider jGitFlowProvider;
     
     @Override
     public void execute(MavenProject project, ReleaseContext ctx, MavenSession session) throws MavenExecutorException
@@ -183,6 +187,22 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         
     }
 
+    @Override
+    public MavenSession getSessionForBranch(String branchName, MavenProject rootProject, MavenSession oldSession, ReleaseContext ctx) throws JGitFlowException, IOException, GitAPIException, ReactorReloadException
+    {
+        JGitFlow flow = jGitFlowProvider.gitFlow(ctx);
+        String originalBranch = flow.git().getRepository().getBranch();
+
+        flow.git().checkout().setName(branchName).call();
+
+        //reload the reactor projects
+        MavenSession newSession = reloadReactor(rootProject, oldSession);
+
+        flow.git().checkout().setName(originalBranch).call();
+
+        return newSession;
+    }
+    
     private List<String> getActiveProfileIds(MavenProject project, MavenSession session)
     {
         List<String> profiles = new ArrayList<String>();

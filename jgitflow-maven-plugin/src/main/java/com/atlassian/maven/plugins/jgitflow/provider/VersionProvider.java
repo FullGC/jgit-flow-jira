@@ -1,9 +1,10 @@
-package com.atlassian.maven.plugins.jgitflow.helper;
+package com.atlassian.maven.plugins.jgitflow.provider;
 
 import java.util.List;
 import java.util.Map;
 
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
+import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 
 import org.apache.maven.project.MavenProject;
@@ -14,6 +15,8 @@ import org.apache.maven.project.MavenProject;
  */
 public interface VersionProvider
 {
+    Map<String, String> getVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    
     /**
      * Returns the (next) release versions for all of the projects in the reactor.
      * If defaultReleaseVersion is defined, it will use that for the root project as well as all sub modules if autoVersionSubmodules is true.
@@ -26,7 +29,7 @@ public interface VersionProvider
      * @return A Map<String,String> where the key is the project/module key and the value is the release version
      * @throws JGitFlowReleaseException
      */
-    Map<String, String> getReleaseVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String, String> getNextReleaseVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
 
     /**
      * Returns the (next) hotfix versions for all of the projects in the reactor.
@@ -40,7 +43,7 @@ public interface VersionProvider
      * @return A Map<String,String> where the key is the project/module key and the value is the hotfix version
      * @throws JGitFlowReleaseException
      */
-    Map<String, String> getHotfixVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx, Map<String, String> lastReleaseVersions) throws JGitFlowReleaseException;
+    Map<String, String> getNextHotfixVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
 
     /**
      * Returns the (next) development versions for all of the projects in the reactor.
@@ -54,6 +57,35 @@ public interface VersionProvider
      * @return A Map<String,String> where the key is the project/module key and the value is the release version
      * @throws JGitFlowReleaseException
      */
-    Map<String, String> getDevelopmentVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String, String> getNextDevelopmentVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+
+    /**
+     * Returns the last release versions for all of the projects in the reactor.
+     * 
+     * @param cacheKey The cacheKey to use when looking for versions so we don't have to loop over the reactor everytime
+     * @param reactorProjects The set of reactorProjects to loop over
+     * @param ctx The ReleaseContext for JGitFlow
+     * @return A Map<String,String> where the key is the project/module key and the value is the release version
+     * @throws JGitFlowReleaseException
+     */
+    Map<String, String> getLastReleaseVersions(MavenProject rootProject, ReleaseContext ctx) throws JGitFlowReleaseException;
+
+    /**
+     * Returns the current versions for all of the projects in the reactor.
+     *
+     * @param cacheKey The cacheKey to use when looking for versions so we don't have to loop over the reactor everytime
+     * @param reactorProjects The set of reactorProjects to loop over
+     * @return A Map<String,String> where the key is the project/module key and the value is the version
+     */
+    Map<String,String> getOriginalVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects);
+
+    /**
+     * Returns the current versions for all of the projects in the reactor.
+     * This method never looks up from cache.
+     *
+     * @param reactorProjects The set of reactorProjects to loop over
+     * @return A Map<String,String> where the key is the project/module key and the value is the version
+     */
+    Map<String,String> getOriginalVersions(List<MavenProject> reactorProjects);
     
 }

@@ -11,6 +11,7 @@ import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
+import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
@@ -393,6 +394,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     public void startReleaseWithMasterOnly() throws Exception
     {
         ProjectHelper projectHelper = (ProjectHelper) lookup(ProjectHelper.class.getName());
+        JGitFlowSetupHelper setupHelper = (JGitFlowSetupHelper) lookup(JGitFlowSetupHelper.class.getName());
 
         Git git = null;
         Git remoteGit = null;
@@ -421,8 +423,8 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        
-        projectHelper.ensureOrigin("file://" + remoteGit.getRepository().getWorkTree().getPath(), ctx.isAlwaysUpdateOrigin(), flow);
+
+        setupHelper.ensureOrigin("file://" + remoteGit.getRepository().getWorkTree().getPath(), ctx.isAlwaysUpdateOrigin(), flow);
 
         flow.releaseStart("1.0").call();
 

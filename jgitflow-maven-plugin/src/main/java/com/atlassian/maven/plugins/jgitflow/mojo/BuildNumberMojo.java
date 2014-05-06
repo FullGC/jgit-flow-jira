@@ -1,10 +1,12 @@
-package com.atlassian.maven.plugins.jgitflow;
+package com.atlassian.maven.plugins.jgitflow.mojo;
 
 import java.util.List;
 import java.util.Map;
 
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
+import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
+import com.atlassian.maven.plugins.jgitflow.provider.VersionProvider;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectRewriter;
 
@@ -42,16 +44,16 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
     @Component
     protected ProjectRewriter projectRewriter;
 
+    protected VersionProvider versionProvider;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         List<MavenProject> reactorProjects = getReactorProjects();
-        String key = "buildNum";
 
-        Map<String, String> originalVersions = projectHelper.getOriginalVersions(key, reactorProjects);
-        Map<String, String> featureVersions = projectHelper.getOriginalVersions(key, reactorProjects);
+        Map<String, String> originalVersions = versionProvider.getOriginalVersions(ProjectCacheKey.BUILD_NUMBER, reactorProjects);
 
-        Map<String, String> featureSuffixedVersions = Maps.transformValues(featureVersions, new Function<String, String>()
+        Map<String, String> featureSuffixedVersions = Maps.transformValues(originalVersions, new Function<String, String>()
         {
             @Override
             public String apply(String input)
