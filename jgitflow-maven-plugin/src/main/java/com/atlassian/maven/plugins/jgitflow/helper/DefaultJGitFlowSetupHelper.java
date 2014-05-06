@@ -14,6 +14,8 @@ import com.atlassian.maven.plugins.jgitflow.util.SshCredentialsProvider;
 import com.google.common.base.Strings;
 
 import org.apache.maven.execution.RuntimeInformation;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.ConfigConstants;
@@ -23,6 +25,7 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
+@Component(role = JGitFlowSetupHelper.class)
 public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JGitFlowSetupHelper
 {
     private static String OS = System.getProperty("os.name").toLowerCase();
@@ -33,7 +36,10 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
     private boolean sshConsoleInstalled = false;
     private boolean headerWritten = false;
     
-    protected RuntimeInformation runtimeInformation;
+    @Requirement
+    private RuntimeInformation runtimeInformation;
+    
+    @Requirement
     private PrettyPrompter prompter;
 
     @Override

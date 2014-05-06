@@ -16,15 +16,21 @@ import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 
+@Component(role = BranchLabelProvider.class)
 public class DefaultBranchLabelProvider extends AbstractLogEnabled implements BranchLabelProvider
 {
+    @Requirement
     private VersionProvider versionProvider;
+    
+    @Requirement
     private PrettyPrompter prompter;
 
     @Override

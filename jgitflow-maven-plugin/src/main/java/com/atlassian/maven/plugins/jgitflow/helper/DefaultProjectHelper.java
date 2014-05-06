@@ -23,6 +23,8 @@ import org.apache.maven.model.PluginManagement;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.InvalidDependencyVersionException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.jgit.api.AddCommand;
@@ -36,6 +38,7 @@ import static com.google.common.collect.Lists.newArrayList;
 /**
  * @since version
  */
+@Component(role = ProjectHelper.class)
 public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectHelper
 {
     private static final String ls = System.getProperty("line.separator");
@@ -43,7 +46,10 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     private static String OS = System.getProperty("os.name").toLowerCase();
     private static boolean isWindows = (OS.indexOf("win") >= 0);
 
+    @Requirement
     private ArtifactFactory artifactFactory;
+
+    @Requirement
     private VersionProvider versionProvider;
 
     @Override

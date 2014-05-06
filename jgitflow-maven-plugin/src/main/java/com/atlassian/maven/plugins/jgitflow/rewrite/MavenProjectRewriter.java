@@ -9,6 +9,7 @@ import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
+import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.WriterFactory;
 import org.jdom2.*;
@@ -20,6 +21,7 @@ import org.jdom2.output.XMLOutputter;
 /**
  * @since version
  */
+@Component(role = ProjectRewriter.class)
 public class MavenProjectRewriter implements ProjectRewriter
 {
     private static final int POM_INDENTATION = 4;

@@ -9,38 +9,47 @@ import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 import com.atlassian.maven.plugins.jgitflow.provider.VersionProvider;
-import com.atlassian.maven.plugins.jgitflow.rewrite.MavenProjectRewriter;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
+import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectRewriter;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ArtifactReleaseVersionChange.artifactReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ParentReleaseVersionChange.parentReleaseVersionChange;
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectReleaseVersionChange.projectReleaseVersionChange;
 
+@Component(role = PomUpdater.class)
 public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
 {
+    public static final String VERSION_DELIMITER = "-";
+    @Requirement
     private VersionProvider versionProvider;
-    protected MavenProjectRewriter projectRewriter;
+
+    @Requirement
+    private ProjectRewriter projectRewriter;
 
     @Override
     public void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, final String versionLabel, final String versionSuffix, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
+        final String delimitedVersionSuffix = getDelimitedVersionSuffix(versionSuffix);
+        
         Map<String, String> finalVersions = Maps.transformValues(originalVersions, new Function<String, String>()
         {
             @Override
             public String apply(String input)
             {
-                if (input.equalsIgnoreCase(versionLabel + versionSuffix + "-SNAPSHOT"))
+                if (input.equalsIgnoreCase(versionLabel + delimitedVersionSuffix + "-SNAPSHOT"))
                 {
-                    return StringUtils.substringBeforeLast(input, versionSuffix + "-SNAPSHOT");
+                    return StringUtils.substringBeforeLast(input, delimitedVersionSuffix + "-SNAPSHOT");
                 }
                 else
                 {
@@ -59,6 +68,8 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
 
         Map<String, String> nonSnapshotVersions = versionProvider.getVersionsForType(versionType, cacheKey, reactorProjects, ctx);
 
+        final String delimitedVersionSuffix = getDelimitedVersionSuffix(versionSuffix);
+        
         Map<String, String> snapshotVersions = Maps.transformValues(nonSnapshotVersions, new Function<String, String>()
         {
             @Override
@@ -66,7 +77,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
             {
                 if (input.equalsIgnoreCase(versionLabel))
                 {
-                    return input + versionSuffix + "-SNAPSHOT";
+                    return input + delimitedVersionSuffix + "-SNAPSHOT";
                 }
                 else
                 {
@@ -215,5 +226,10 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
                 getLogger().debug("  " + desc);
             }
         }
+    }
+
+    private String getDelimitedVersionSuffix(String versionSuffix)
+    {
+        return (StringUtils.isNotBlank(versionSuffix) && !versionSuffix.startsWith(VERSION_DELIMITER)) ? VERSION_DELIMITER + versionSuffix : versionSuffix;
     }
 }

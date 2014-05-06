@@ -44,6 +44,7 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
     @Component
     protected ProjectRewriter projectRewriter;
 
+    @Component
     protected VersionProvider versionProvider;
 
     @Override

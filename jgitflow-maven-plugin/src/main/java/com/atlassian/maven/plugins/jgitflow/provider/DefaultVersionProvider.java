@@ -17,18 +17,20 @@ import com.google.common.collect.ImmutableMap;
 
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.apache.maven.shared.release.version.HotfixVersionInfo;
 import org.apache.maven.shared.release.versions.DefaultVersionInfo;
 import org.apache.maven.shared.release.versions.VersionParseException;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@Component(role = VersionProvider.class)
 public class DefaultVersionProvider extends AbstractLogEnabled implements VersionProvider
 {
     private final Map<ProjectCacheKey, Map<String, String>> nextReleaseVersions;
@@ -36,10 +38,16 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
     private final Map<ProjectCacheKey, Map<String, String>> nextHotfixVersions;
     private final Map<ProjectCacheKey, Map<String, String>> lastReleaseVersions;
     private final Map<ProjectCacheKey, Map<String, String>> originalVersions;
+    
+    @Requirement
     private PrettyPrompter prompter;
+    
+    @Requirement
     private MavenExecutionHelper mavenHelper;
+
+    @Requirement
     private JGitFlowProvider jGitFlowProvider;
-    @Component
+
     private MavenSession session;
 
     public DefaultVersionProvider()

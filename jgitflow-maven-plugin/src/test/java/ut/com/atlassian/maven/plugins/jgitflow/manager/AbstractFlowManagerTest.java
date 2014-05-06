@@ -12,6 +12,7 @@ import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import com.google.common.base.Strings;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -61,6 +62,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected File testFileBase;
     private static final SecureRandom random = new SecureRandom();
+    public static final String PROJECT_BASEDIR = "";
 
     private static final DefaultContext EMPTY_CONTEXT = new DefaultContext()
     {
@@ -75,7 +77,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     {
         projectBuilder = (MavenProjectBuilder) lookup(MavenProjectBuilder.ROLE);
         ArtifactRepositoryLayout layout = (ArtifactRepositoryLayout) lookup(ArtifactRepositoryLayout.ROLE, "default");
-        String localRepoPath = getTestFile("target/local-repository").getAbsolutePath().replace('\\', '/');
+        String localRepoPath = getTestFile(PROJECT_BASEDIR + "target/local-repository").getAbsolutePath().replace('\\', '/');
         localRepository = new DefaultArtifactRepository("local", "file://" + localRepoPath, layout);
         this.testFileBase = newTempDir();
     }
@@ -102,9 +104,15 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     @Override
     protected InputStream getCustomConfiguration() throws Exception
     {
-        return getClass().getResourceAsStream("/default-components.xml");
+        String configBase = System.getProperty("basedir","");
+        if(!configBase.endsWith("/"))
+        {
+            configBase = configBase + "/";
+        }
+        return org.apache.commons.io.FileUtils.openInputStream(new File(configBase + "target/components.xml"));
     }
 
+    
     protected void basicReleaseRewriteTest(String projectName) throws Exception
     {
         basicReleaseRewriteTest(projectName,"");
@@ -202,7 +210,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected String readTestProjectFile(String fileName) throws IOException
     {
-        return ReleaseUtil.readXmlFile(getTestFile("target/test-classes/projects/" + fileName));
+        return ReleaseUtil.readXmlFile(getTestFile(PROJECT_BASEDIR + "target/test-classes/projects/" + fileName));
     }
     
     protected List<MavenProject> createReactorProjects(String path, String subpath) throws Exception
@@ -268,7 +276,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
                 newFile.mkdirs();
                 FileUtils.cleanDirectory(newFile.getParentFile());
     
-                File srcDir = new File(getTestFile( "src/test/resources/"),filePath).getParentFile();
+                File srcDir = new File(getTestFile(PROJECT_BASEDIR + "src/test/resources/"),filePath).getParentFile();
                 FileUtils.copyDirectoryStructure(srcDir, newFile.getParentFile());
                 
                 cleaned = newFile.getParentFile().getName();
@@ -359,12 +367,12 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     private String getRemoteRepositoryURL() throws IOException
     {
-        File testFile = getTestFile( "src/test/remote-repository" );
+        File testFile = getTestFile(PROJECT_BASEDIR + "src/test/remote-repository" );
         if (testFile.getAbsolutePath().equals( testFile.getCanonicalPath() ) )
         {
-            return "file://" + getTestFile( "src/test/remote-repository" ).getAbsolutePath().replace( '\\', '/' );
+            return "file://" + getTestFile(PROJECT_BASEDIR + "src/test/remote-repository" ).getAbsolutePath().replace( '\\', '/' );
         }
-        return "file://" + getTestFile( "src/test/remote-repository" ).getCanonicalPath().replace( '\\', '/' );
+        return "file://" + getTestFile(PROJECT_BASEDIR + "src/test/remote-repository" ).getCanonicalPath().replace( '\\', '/' );
     }
 
     protected void comparePomFiles(List<MavenProject> reactorProjects)throws IOException
