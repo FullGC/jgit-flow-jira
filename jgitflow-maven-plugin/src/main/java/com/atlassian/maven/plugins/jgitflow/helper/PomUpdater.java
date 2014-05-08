@@ -13,18 +13,18 @@ import org.apache.maven.project.MavenProject;
 public interface PomUpdater
 {
 
-    void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, String versionLabel, String versionSuffix, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+    void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, String versionLabel, String versionSuffix, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
-    void addSnapshotToPomVersions(ProjectCacheKey cacheKey, VersionType versionType, String versionLabel, String versionSuffix, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+    void addSnapshotToPomVersions(ProjectCacheKey cacheKey, VersionType versionType, String versionLabel, String versionSuffix, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
-    void copyPomVersionsFromProject(ReleaseContext ctx, List<MavenProject> projectsToUpdate, List<MavenProject> projectsToCopy) throws JGitFlowReleaseException;
+    void copyPomVersionsFromProject(List<MavenProject> projectsToUpdate, List<MavenProject> projectsToCopy) throws JGitFlowReleaseException;
 
-    void copyPomVersionsFromMap(ReleaseContext ctx, List<MavenProject> projectsToUpdate, Map<String,String> versionsToCopy) throws JGitFlowReleaseException;
+    void copyPomVersionsFromMap(List<MavenProject> projectsToUpdate, Map<String,String> versionsToCopy) throws JGitFlowReleaseException;
 
-    void updatePomsWithNextDevelopmentVersion(ProjectCacheKey cacheKey, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+    void updatePomsWithNextDevelopmentVersion(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
-    void addFeatureVersionToSnapshotVersions(ProjectCacheKey cacheKey, String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+    void addFeatureVersionToSnapshotVersions(ProjectCacheKey cacheKey, String featureVersion, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
-    void removeFeatureVersionFromSnapshotVersions(ProjectCacheKey cacheKey, String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
-    void removeSnapshotFromFeatureVersions(ProjectCacheKey cacheKey, final String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+    void removeFeatureVersionFromSnapshotVersions(ProjectCacheKey cacheKey, String featureVersion, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+    void removeSnapshotFromFeatureVersions(ProjectCacheKey cacheKey, final String featureVersion, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 }

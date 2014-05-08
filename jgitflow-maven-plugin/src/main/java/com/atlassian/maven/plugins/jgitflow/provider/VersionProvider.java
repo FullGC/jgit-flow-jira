@@ -15,7 +15,7 @@ import org.apache.maven.project.MavenProject;
  */
 public interface VersionProvider
 {
-    Map<String, String> getVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String, String> getVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
     
     /**
      * Returns the (next) release versions for all of the projects in the reactor.
@@ -29,7 +29,7 @@ public interface VersionProvider
      * @return A Map<String,String> where the key is the project/module key and the value is the release version
      * @throws JGitFlowReleaseException
      */
-    Map<String, String> getNextReleaseVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String, String> getNextReleaseVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
     /**
      * Returns the (next) hotfix versions for all of the projects in the reactor.
@@ -43,7 +43,7 @@ public interface VersionProvider
      * @return A Map<String,String> where the key is the project/module key and the value is the hotfix version
      * @throws JGitFlowReleaseException
      */
-    Map<String, String> getNextHotfixVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String, String> getNextHotfixVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
     /**
      * Returns the (next) development versions for all of the projects in the reactor.
@@ -57,7 +57,7 @@ public interface VersionProvider
      * @return A Map<String,String> where the key is the project/module key and the value is the release version
      * @throws JGitFlowReleaseException
      */
-    Map<String, String> getNextDevelopmentVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String, String> getNextDevelopmentVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
     /**
      * Returns the last release versions for all of the projects in the reactor.
@@ -68,7 +68,7 @@ public interface VersionProvider
      * @return A Map<String,String> where the key is the project/module key and the value is the release version
      * @throws JGitFlowReleaseException
      */
-    Map<String, String> getLastReleaseVersions(MavenProject rootProject, ReleaseContext ctx) throws JGitFlowReleaseException;
+    Map<String, String> getLastReleaseVersions(MavenProject rootProject) throws JGitFlowReleaseException;
 
     /**
      * Returns the current versions for all of the projects in the reactor.

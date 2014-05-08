@@ -9,6 +9,7 @@ import java.util.*;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 
 import com.google.common.base.Strings;
 
@@ -99,6 +100,8 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
                 //ignore
             }
         }
+        
+        getContextProvider().setContext(null);
     }
 
     @Override
@@ -123,7 +126,17 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectName);
         File projectRoot = projects.get(0).getBasedir();
         
-        ReleaseContext ctx = new ReleaseContext(projectRoot);
+        ContextProvider ctxProvider = getContextProvider();
+        ContextProvider ctxProvider1 = getContextProvider();
+        ContextProvider ctxProvider2 = getContextProvider();
+        ContextProvider ctxProvider3 = getContextProvider();
+        
+        ReleaseContext ctx = ctxProvider.getContext();
+        
+        if(null == ctx)
+        {
+            ctx = new ReleaseContext(projectRoot);
+        }
         
         if(!Strings.isNullOrEmpty(releaseVersion))
         {
@@ -132,13 +145,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
         ctx.setInteractive(false).setNoTag(true);
 
-        basicReleaseRewriteTest(projectName, ctx);
-    }
-
-    protected void basicReleaseRewriteTest(String projectName, ReleaseContext ctx) throws Exception
-    {
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectName);
-        File projectRoot = ctx.getBaseDir();
+        ctxProvider.setContext(ctx);
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
@@ -149,14 +156,15 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
         MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
 
-        relman.start(ctx,projects,session);
+        relman.start(projects,session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
         compareSnapPomFiles(projects);
-        
+
         assertTrue(flow.git().status().call().isClean());
     }
+
     
     protected void initialCommitAll(JGitFlow flow) throws Exception
     {
@@ -173,6 +181,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     {
         if(Strings.isNullOrEmpty(version))
         {
+            System.out.println(flow.git().getRepository().getBranch());
             assertTrue(flow.git().getRepository().getBranch().startsWith(flow.getReleaseBranchPrefix()));
         }
         else
@@ -196,6 +205,16 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     protected void assertOnHotfix(JGitFlow flow, String version) throws Exception
     {
         assertEquals(flow.getHotfixBranchPrefix() + version, flow.git().getRepository().getBranch());
+    }
+
+    protected void setContext(ReleaseContext ctx) throws Exception
+    {
+        getContextProvider().setContext(ctx);
+    }
+
+    protected ContextProvider getContextProvider() throws Exception
+    {
+        return (ContextProvider) lookup(ContextProvider.class.getName());
     }
     
     protected FlowReleaseManager getReleaseManager() throws Exception

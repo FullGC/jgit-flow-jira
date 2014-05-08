@@ -3,6 +3,7 @@ package com.atlassian.maven.plugins.jgitflow.mojo;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -16,74 +17,73 @@ import org.apache.maven.plugins.annotations.Parameter;
 @Mojo(name = "release-start", aggregator = true)
 public class ReleaseStartMojo extends AbstractJGitFlowMojo
 {
-    
+
     /**
      * Whether to automatically assign submodules the parent version. If set to false, the user will be prompted for the
      * version of each submodules.
-     *
      */
-    @Parameter( defaultValue = "false", property = "autoVersionSubmodules" )
+    @Parameter(defaultValue = "false", property = "autoVersionSubmodules")
     private boolean autoVersionSubmodules = false;
 
     /**
      * Whether to allow SNAPSHOT dependencies. Default is to fail when finding any SNAPSHOT.
-     *
      */
-    @Parameter( defaultValue = "false", property = "allowSnapshots" )
+    @Parameter(defaultValue = "false", property = "allowSnapshots")
     private boolean allowSnapshots = false;
 
     /**
      * Default version to use when preparing a release
-     *
      */
-    @Parameter( property = "releaseVersion", defaultValue = "")
+    @Parameter(property = "releaseVersion", defaultValue = "")
     private String releaseVersion = "";
 
-    @Parameter( property = "releaseBranchVersionSuffix", defaultValue = "")
+    @Parameter(property = "releaseBranchVersionSuffix", defaultValue = "")
     private String releaseBranchVersionSuffix = "";
 
-    @Parameter( defaultValue = "true", property = "updateDependencies" )
+    @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies = true;
 
-    @Parameter( defaultValue = "false", property = "pushReleases" )
+    @Parameter(defaultValue = "false", property = "pushReleases")
     private boolean pushReleases = false;
 
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
 
-    @Parameter( property = "startCommit", defaultValue = "")
+    @Parameter(property = "startCommit", defaultValue = "")
     private String startCommit = "";
-    
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setAutoVersionSubmodules(autoVersionSubmodules)
-                .setInteractive(getSettings().isInteractiveMode())
-                .setDefaultReleaseVersion(releaseVersion)
-                .setReleaseBranchVersionSuffix(releaseBranchVersionSuffix)
-                .setAllowSnapshots(allowSnapshots)
-                .setUpdateDependencies(updateDependencies)
-                .setEnableSshAgent(enableSshAgent)
-                .setAllowUntracked(allowUntracked)
-                .setPushReleases(pushReleases)
-                .setStartCommit(startCommit)
-                .setAllowRemote(isRemoteAllowed())
-                .setDefaultOriginUrl(defaultOriginUrl)
-                .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
-                .setScmCommentPrefix(scmCommentPrefix)
-                .setScmCommentSuffix(scmCommentSuffix)
-                .setUsername(username)
-                .setPassword(password)
-                .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
+           .setInteractive(getSettings().isInteractiveMode())
+           .setDefaultReleaseVersion(releaseVersion)
+           .setReleaseBranchVersionSuffix(releaseBranchVersionSuffix)
+           .setAllowSnapshots(allowSnapshots)
+           .setUpdateDependencies(updateDependencies)
+           .setEnableSshAgent(enableSshAgent)
+           .setAllowUntracked(allowUntracked)
+           .setPushReleases(pushReleases)
+           .setStartCommit(startCommit)
+           .setAllowRemote(isRemoteAllowed())
+           .setDefaultOriginUrl(defaultOriginUrl)
+           .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
+           .setScmCommentPrefix(scmCommentPrefix)
+           .setScmCommentSuffix(scmCommentSuffix)
+           .setUsername(username)
+           .setPassword(password)
+           .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
+
+        contextProvider.setContext(ctx);
 
         try
         {
-            releaseManager.start(ctx,getReactorProjects(),session);
+            releaseManager.start(getReactorProjects(), session);
         }
         catch (JGitFlowReleaseException e)
         {
-            throw new MojoExecutionException("Error starting release: " + e.getMessage(),e);
+            throw new MojoExecutionException("Error starting release: " + e.getMessage(), e);
         }
     }
 }

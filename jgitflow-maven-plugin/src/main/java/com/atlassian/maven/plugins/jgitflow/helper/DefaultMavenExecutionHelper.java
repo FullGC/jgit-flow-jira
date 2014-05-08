@@ -9,6 +9,7 @@ import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 
 import com.google.common.base.Joiner;
@@ -42,9 +43,14 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     @Requirement
     protected JGitFlowProvider jGitFlowProvider;
 
+    @Requirement
+    private ContextProvider contextProvider;
+
     @Override
-    public void execute(MavenProject project, ReleaseContext ctx, MavenSession session) throws MavenExecutorException
+    public void execute(MavenProject project, MavenSession session) throws MavenExecutorException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         String goal = "clean deploy";
 
         if (ctx.isNoDeploy())
@@ -52,12 +58,14 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
             goal = "clean install";
         }
 
-        execute(project, ctx, session, goal);
+        execute(project, session, goal);
     }
 
     @Override
-    public void execute(MavenProject project, ReleaseContext ctx, MavenSession session, String goals) throws MavenExecutorException
+    public void execute(MavenProject project, MavenSession session, String goals) throws MavenExecutorException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         List<String> argList = new ArrayList<String>();
 
         Properties userProps = session.getUserProperties();
@@ -194,9 +202,9 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     }
 
     @Override
-    public MavenSession getSessionForBranch(String branchName, MavenProject rootProject, MavenSession oldSession, ReleaseContext ctx) throws JGitFlowException, IOException, GitAPIException, ReactorReloadException
+    public MavenSession getSessionForBranch(String branchName, MavenProject rootProject, MavenSession oldSession) throws JGitFlowException, IOException, GitAPIException, ReactorReloadException
     {
-        JGitFlow flow = jGitFlowProvider.gitFlow(ctx);
+        JGitFlow flow = jGitFlowProvider.gitFlow();
         String originalBranch = flow.git().getRepository().getBranch();
 
         flow.git().checkout().setName(branchName).call();

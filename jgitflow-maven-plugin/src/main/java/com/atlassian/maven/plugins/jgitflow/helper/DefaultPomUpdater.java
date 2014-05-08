@@ -7,6 +7,7 @@ import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 import com.atlassian.maven.plugins.jgitflow.provider.VersionProvider;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
@@ -35,9 +36,14 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     @Requirement
     private ProjectRewriter projectRewriter;
 
+    @Requirement
+    private ContextProvider contextProvider;
+
     @Override
-    public void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, final String versionLabel, final String versionSuffix, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, final String versionLabel, final String versionSuffix, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         final String delimitedVersionSuffix = getDelimitedVersionSuffix(versionSuffix);
@@ -62,11 +68,13 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     }
 
     @Override
-    public void addSnapshotToPomVersions(ProjectCacheKey cacheKey, final VersionType versionType, final String versionLabel, final String versionSuffix, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public void addSnapshotToPomVersions(ProjectCacheKey cacheKey, final VersionType versionType, final String versionLabel, final String versionSuffix, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
-        Map<String, String> nonSnapshotVersions = versionProvider.getVersionsForType(versionType, cacheKey, reactorProjects, ctx);
+        Map<String, String> nonSnapshotVersions = versionProvider.getVersionsForType(versionType, cacheKey, reactorProjects);
 
         final String delimitedVersionSuffix = getDelimitedVersionSuffix(versionSuffix);
         
@@ -90,8 +98,10 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     }
 
     @Override
-    public void copyPomVersionsFromProject(ReleaseContext ctx, List<MavenProject> projectsToUpdate, List<MavenProject> projectsToCopy) throws JGitFlowReleaseException
+    public void copyPomVersionsFromProject(List<MavenProject> projectsToUpdate, List<MavenProject> projectsToCopy) throws JGitFlowReleaseException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(projectsToUpdate);
         Map<String, String> versionsToCopy = versionProvider.getOriginalVersions(projectsToCopy);
 
@@ -99,25 +109,29 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     }
 
     @Override
-    public void copyPomVersionsFromMap(ReleaseContext ctx, List<MavenProject> projectsToUpdate, Map<String, String> versionsToCopy) throws JGitFlowReleaseException
+    public void copyPomVersionsFromMap(List<MavenProject> projectsToUpdate, Map<String, String> versionsToCopy) throws JGitFlowReleaseException
     {
+        ReleaseContext ctx = contextProvider.getContext();
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(projectsToUpdate);
 
         doUpdate(projectsToUpdate, originalVersions, versionsToCopy, ctx.isUpdateDependencies());
     }
 
     @Override
-    public void updatePomsWithNextDevelopmentVersion(ProjectCacheKey cacheKey, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public void updatePomsWithNextDevelopmentVersion(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
+        ReleaseContext ctx = contextProvider.getContext();
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
-        Map<String, String> developmentVersions = versionProvider.getNextDevelopmentVersions(cacheKey, reactorProjects, ctx);
+        Map<String, String> developmentVersions = versionProvider.getNextDevelopmentVersions(cacheKey, reactorProjects);
 
         doUpdate(reactorProjects, originalVersions, developmentVersions, ctx.isUpdateDependencies());
     }
 
     @Override
-    public void addFeatureVersionToSnapshotVersions(ProjectCacheKey cacheKey, final String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public void addFeatureVersionToSnapshotVersions(ProjectCacheKey cacheKey, final String featureVersion, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         Map<String, String> featureSuffixedVersions = Maps.transformValues(originalVersions, new Function<String, String>()
@@ -140,8 +154,10 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     }
 
     @Override
-    public void removeFeatureVersionFromSnapshotVersions(ProjectCacheKey cacheKey, final String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public void removeFeatureVersionFromSnapshotVersions(ProjectCacheKey cacheKey, final String featureVersion, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         final String featureSuffix = "-" + featureVersion + "-SNAPSHOT";
@@ -166,8 +182,10 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     }
 
     @Override
-    public void removeSnapshotFromFeatureVersions(ProjectCacheKey cacheKey, final String featureVersion, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public void removeSnapshotFromFeatureVersions(ProjectCacheKey cacheKey, final String featureVersion, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         Map<String, String> featureVersions = Maps.transformValues(originalVersions, new Function<String, String>()

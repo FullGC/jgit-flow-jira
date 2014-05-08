@@ -21,6 +21,8 @@ import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 
 import com.google.common.base.Joiner;
@@ -60,19 +62,26 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
     @Requirement
     private PomUpdater pomUpdater;
 
+    @Requirement
+    private JGitFlowProvider jGitFlowProvider;
+
+    @Requirement
+    private ContextProvider contextProvider;
+
     @Override
-    public void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
+    public void start(List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
         JGitFlow flow = null;
+        ReleaseContext ctx = contextProvider.getContext();
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
+            flow = jGitFlowProvider.gitFlow();
 
-            setupHelper.runCommonSetup(flow, ctx);
+            setupHelper.runCommonSetup();
 
-            String releaseLabel = startRelease(flow, ctx, reactorProjects, session);
+            String releaseLabel = startRelease(reactorProjects, session);
 
-            updateReleasePomsWithSnapshot(releaseLabel, flow, ctx, reactorProjects, session);
+            updateReleasePomsWithSnapshot(releaseLabel, reactorProjects, session);
 
             if (ctx.isPushReleases())
             {
@@ -100,21 +109,23 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
 
     @Override
-    public void finish(ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    public void finish(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
         JGitFlow flow = null;
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
+            ReleaseContext ctx = contextProvider.getContext();
 
-            setupHelper.runCommonSetup(flow, ctx);
+            flow = jGitFlowProvider.gitFlow();
+
+            setupHelper.runCommonSetup();
 
             if (ctx.isPushReleases() || !ctx.isNoTag())
             {
-                setupHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
+                setupHelper.ensureOrigin();
             }
 
-            finishRelease(flow, ctx, originalProjects, session);
+            finishRelease(originalProjects, session);
         }
         catch (JGitFlowException e)
         {
@@ -129,17 +140,20 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
     }
 
-    private String startRelease(JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private String startRelease(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
         String releaseLabel = "";
 
         try
         {
+            ReleaseContext ctx = contextProvider.getContext();
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
             //reload the reactor projects for develop
-            MavenSession developSession = mavenExecutionHelper.getSessionForBranch(flow.getDevelopBranchName(), ReleaseUtil.getRootProject(originalProjects), session, ctx);
+            MavenSession developSession = mavenExecutionHelper.getSessionForBranch(flow.getDevelopBranchName(), ReleaseUtil.getRootProject(originalProjects), session);
             List<MavenProject> developProjects = developSession.getSortedProjects();
 
             projectHelper.checkPomForVersionState(VersionState.SNAPSHOT, developProjects);
@@ -156,10 +170,10 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             if (ctx.isRemoteAllowed())
             {
-                setupHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
+                setupHelper.ensureOrigin();
             }
 
-            releaseLabel = labelProvider.getVersionLabel(VersionType.RELEASE, ProjectCacheKey.RELEASE_START_LABEL, ctx, developProjects);
+            releaseLabel = labelProvider.getVersionLabel(VersionType.RELEASE, ProjectCacheKey.RELEASE_START_LABEL, developProjects);
 
             flow.releaseStart(releaseLabel)
                 .setAllowUntracked(ctx.isAllowUntracked())
@@ -193,12 +207,14 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         return releaseLabel;
     }
 
-    private void finishRelease(JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void finishRelease(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
         String releaseLabel = "";
 
         try
         {
+            ReleaseContext ctx = contextProvider.getContext();
+            JGitFlow flow = jGitFlowProvider.gitFlow();
             JGitFlowReporter reporter = flow.getReporter();
             MavenProject originalRootProject = ReleaseUtil.getRootProject(originalProjects);
 
@@ -283,18 +299,18 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             }
 
             //get the reactor projects for release
-            MavenSession releaseSession = mavenExecutionHelper.getSessionForBranch(prefixedBranchName, originalRootProject, session, ctx);
+            MavenSession releaseSession = mavenExecutionHelper.getSessionForBranch(prefixedBranchName, originalRootProject, session);
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
 
             if (getLogger().isDebugEnabled())
             {
                 getLogger().debug("updating release poms with release...");
             }
-            updateReleasePomsWithRelease(releaseLabel, flow, ctx, originalProjects, session);
+            updateReleasePomsWithRelease(releaseLabel, originalProjects, session);
             projectHelper.commitAllPoms(flow.git(), originalProjects, ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release" + ctx.getScmCommentSuffix());
 
             //reload the reactor projects for release
-            releaseSession = mavenExecutionHelper.getSessionForBranch(prefixedBranchName, originalRootProject, session, ctx);
+            releaseSession = mavenExecutionHelper.getSessionForBranch(prefixedBranchName, originalRootProject, session);
             releaseProjects = releaseSession.getSortedProjects();
 
             projectHelper.checkPomForVersionState(VersionState.RELEASE, releaseProjects);
@@ -319,7 +335,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 }
                 try
                 {
-                    mavenExecutionHelper.execute(rootProject, ctx, releaseSession);
+                    mavenExecutionHelper.execute(rootProject, releaseSession);
                 }
                 catch (MavenExecutorException e)
                 {
@@ -363,12 +379,12 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
             //reload the reactor projects for develop
-            MavenSession developSession = mavenExecutionHelper.getSessionForBranch(flow.getDevelopBranchName(), originalRootProject, session, ctx);
+            MavenSession developSession = mavenExecutionHelper.getSessionForBranch(flow.getDevelopBranchName(), originalRootProject, session);
             List<MavenProject> developProjects = developSession.getSortedProjects();
 
-            String developLabel = labelProvider.getVersionLabel(VersionType.DEVELOPMENT, ProjectCacheKey.DEVELOP_BRANCH, ctx, developProjects);
+            String developLabel = labelProvider.getVersionLabel(VersionType.DEVELOPMENT, ProjectCacheKey.DEVELOP_BRANCH, developProjects);
 
-            pomUpdater.updatePomsWithNextDevelopmentVersion(ProjectCacheKey.DEVELOP_BRANCH, ctx, developProjects);
+            pomUpdater.updatePomsWithNextDevelopmentVersion(ProjectCacheKey.DEVELOP_BRANCH, developProjects);
 
             projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for " + developLabel + " development" + ctx.getScmCommentSuffix());
 
@@ -400,16 +416,18 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
     }
 
-    private void updateReleasePomsWithSnapshot(String releaseLabel, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateReleasePomsWithSnapshot(String releaseLabel, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
         try
         {
+            ReleaseContext ctx = contextProvider.getContext();
+            JGitFlow flow = jGitFlowProvider.gitFlow();
             //reload the reactor projects for release
-            MavenSession releaseSession = mavenExecutionHelper.getSessionForBranch(flow.getReleaseBranchPrefix() + releaseLabel, ReleaseUtil.getRootProject(originalProjects), session, ctx);
+            MavenSession releaseSession = mavenExecutionHelper.getSessionForBranch(flow.getReleaseBranchPrefix() + releaseLabel, ReleaseUtil.getRootProject(originalProjects), session);
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
 
             // updatePomsWithReleaseSnapshotVersion(ProjectCacheKey.RELEASE_START_LABEL, releaseLabel, ctx, releaseProjects);
-            pomUpdater.addSnapshotToPomVersions(ProjectCacheKey.RELEASE_START_LABEL, VersionType.RELEASE, releaseLabel, ctx.getReleaseBranchVersionSuffix(), ctx, releaseProjects);
+            pomUpdater.addSnapshotToPomVersions(ProjectCacheKey.RELEASE_START_LABEL, VersionType.RELEASE, releaseLabel, ctx.getReleaseBranchVersionSuffix(), releaseProjects);
 
             projectHelper.commitAllPoms(flow.git(), releaseProjects, ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release" + ctx.getScmCommentSuffix());
         }
@@ -431,15 +449,17 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
     }
 
-    private void updateReleasePomsWithRelease(String releaseLabel, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateReleasePomsWithRelease(String releaseLabel, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
         try
         {
+            ReleaseContext ctx = contextProvider.getContext();
+            JGitFlow flow = jGitFlowProvider.gitFlow();
             //reload the reactor projects for release
-            MavenSession releaseSession = mavenExecutionHelper.getSessionForBranch(flow.getReleaseBranchPrefix() + releaseLabel, ReleaseUtil.getRootProject(originalProjects), session, ctx);
+            MavenSession releaseSession = mavenExecutionHelper.getSessionForBranch(flow.getReleaseBranchPrefix() + releaseLabel, ReleaseUtil.getRootProject(originalProjects), session);
             List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
 
-            pomUpdater.removeSnapshotFromPomVersions(ProjectCacheKey.RELEASE_FINISH_LABEL, releaseLabel, ctx.getReleaseBranchVersionSuffix(), ctx, releaseProjects);
+            pomUpdater.removeSnapshotFromPomVersions(ProjectCacheKey.RELEASE_FINISH_LABEL, releaseLabel, ctx.getReleaseBranchVersionSuffix(), releaseProjects);
 
             projectHelper.commitAllPoms(flow.git(), releaseProjects, ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release" + ctx.getScmCommentSuffix());
         }

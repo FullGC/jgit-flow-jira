@@ -81,9 +81,11 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setPullDevelop(pullDevelop)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
+        contextProvider.setContext(ctx);
+        
         try
         {
-            releaseManager.finish(ctx, getReactorProjects(), session);
+            releaseManager.finish(getReactorProjects(), session);
         }
         catch (JGitFlowReleaseException e)
         {

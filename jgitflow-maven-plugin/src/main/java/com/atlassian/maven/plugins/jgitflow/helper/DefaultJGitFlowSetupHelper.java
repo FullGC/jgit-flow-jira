@@ -5,9 +5,12 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
+import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.util.ConsoleCredentialsProvider;
 import com.atlassian.maven.plugins.jgitflow.util.SshCredentialsProvider;
 
@@ -42,16 +45,29 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
     @Requirement
     private PrettyPrompter prompter;
 
+    @Requirement
+    private ContextProvider contextProvider;
+
+    @Requirement
+    private JGitFlowProvider jGitFlowProvider;
+
     @Override
-    public void runCommonSetup(JGitFlow flow, ReleaseContext ctx) throws JGitFlowReleaseException
+    public void runCommonSetup() throws JGitFlowReleaseException
     {
-        fixCygwinIfNeeded(flow);
-        writeReportHeader(ctx,flow.getReporter());
-        setupCredentialProviders(ctx,flow.getReporter());
+        try
+        {
+            fixCygwinIfNeeded();
+            writeReportHeader();
+            setupCredentialProviders();
+        }
+        catch (Exception e)
+        {
+            throw new JGitFlowReleaseException("Error running common setup tasks", e);
+        }
     }
     
     @Override
-    public void fixCygwinIfNeeded(JGitFlow flow) throws JGitFlowReleaseException
+    public void fixCygwinIfNeeded() throws JGitFlowReleaseException
     {
         if (isCygwin)
         {
@@ -60,7 +76,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
             {
                 getLogger().info("    - turning off filemode...");
 
-                StoredConfig config = flow.git().getRepository().getConfig();
+                StoredConfig config = jGitFlowProvider.gitFlow().git().getRepository().getConfig();
                 config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
                 config.save();
                 config.load();
@@ -73,6 +89,10 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
             {
                 throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
             }
+            catch (JGitFlowException e)
+            {
+                throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
+            }
 
             getLogger().info("    - fixing maven prompter...");
             prompter.setCygwinTerminal();
@@ -80,20 +100,25 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
     }
 
     @Override
-    public void ensureOrigin(String defaultRemoteUrl, boolean alwaysUpdateOrigin, JGitFlow flow) throws JGitFlowReleaseException
+    public void ensureOrigin() throws JGitFlowReleaseException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         getLogger().info("ensuring origin exists...");
-        String newOriginUrl = defaultRemoteUrl;
+        String newOriginUrl = ctx.getDefaultOriginUrl();
+        String defaultOriginUrl = ctx.getDefaultOriginUrl();
 
         try
         {
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+            
             StoredConfig config = flow.git().getRepository().getConfig();
             String originUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url");
-            if ((Strings.isNullOrEmpty(originUrl) || alwaysUpdateOrigin) && !Strings.isNullOrEmpty(defaultRemoteUrl))
+            if ((Strings.isNullOrEmpty(originUrl) || ctx.isAlwaysUpdateOrigin()) && !Strings.isNullOrEmpty(defaultOriginUrl))
             {
-                if (defaultRemoteUrl.startsWith("file://"))
+                if (defaultOriginUrl.startsWith("file://"))
                 {
-                    File originFile = new File(defaultRemoteUrl.substring(7));
+                    File originFile = new File(defaultOriginUrl.substring(7));
                     newOriginUrl = "file://" + originFile.getCanonicalPath();
                 }
 
@@ -133,7 +158,6 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
                 try
                 {
                     config.load();
-                    flow.git().fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
                 }
                 catch (Exception e)
                 {
@@ -145,13 +169,19 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultRemoteUrl, e);
+            throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultOriginUrl, e);
+        }
+        catch (JGitFlowException e)
+        {
+            throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultOriginUrl, e);
         }
     }
 
     @Override
-    public void setupCredentialProviders(ReleaseContext ctx, JGitFlowReporter reporter)
+    public void setupCredentialProviders() throws JGitFlowException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         if (!ctx.isRemoteAllowed())
         {
             return;
@@ -159,17 +189,20 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
 
         if (!sshConsoleInstalled)
         {
-            sshConsoleInstalled = setupUserPasswordCredentialsProvider(ctx, reporter);
+            sshConsoleInstalled = setupUserPasswordCredentialsProvider();
         }
 
         if (!sshAgentConfigured)
         {
-            sshAgentConfigured = setupSshCredentialsProvider(ctx, reporter);
+            sshAgentConfigured = setupSshCredentialsProvider();
         }
     }
 
-    protected void writeReportHeader(ReleaseContext ctx, JGitFlowReporter reporter)
+    protected void writeReportHeader() throws JGitFlowException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        JGitFlow flow = jGitFlowProvider.gitFlow();
+        
         if (!headerWritten)
         {
             String mvnVersion = runtimeInformation.getApplicationVersion().toString();
@@ -178,7 +211,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
 
             String shortName = getClass().getSimpleName();
 
-            reporter.debugText(shortName, "# Maven JGitFlow Plugin")
+            flow.getReporter().debugText(shortName, "# Maven JGitFlow Plugin")
                     .debugText(shortName, JGitFlowReporter.P)
                     .debugText(shortName, "  ## Configuration")
                     .debugText(shortName, JGitFlowReporter.EOL)
@@ -211,21 +244,24 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
                     .debugText(shortName, "    use release profile: " + ctx.isUseReleaseProfile())
                     .debugText(shortName, JGitFlowReporter.HR);
 
-            reporter.flush();
+            flow.getReporter().flush();
             this.headerWritten = true;
         }
     }
         
-    private boolean setupUserPasswordCredentialsProvider(ReleaseContext ctx, JGitFlowReporter reporter)
+    private boolean setupUserPasswordCredentialsProvider() throws JGitFlowException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        JGitFlow flow = jGitFlowProvider.gitFlow();
+        
         if (!Strings.isNullOrEmpty(ctx.getPassword()) && !Strings.isNullOrEmpty(ctx.getUsername()))
         {
-            reporter.debugText(getClass().getSimpleName(), "using provided username and password");
+            flow.getReporter().debugText(getClass().getSimpleName(), "using provided username and password");
             CredentialsProvider.setDefault(new UsernamePasswordCredentialsProvider(ctx.getUsername(), ctx.getPassword()));
         }
         else if (null != System.console())
         {
-            reporter.debugText(getClass().getSimpleName(), "installing ssh console credentials provider");
+            flow.getReporter().debugText(getClass().getSimpleName(), "installing ssh console credentials provider");
             CredentialsProvider.setDefault(new ConsoleCredentialsProvider(prompter));
             return true;
         }
@@ -233,11 +269,14 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
         return false;
     }
 
-    private boolean setupSshCredentialsProvider(ReleaseContext ctx, JGitFlowReporter reporter)
+    private boolean setupSshCredentialsProvider() throws JGitFlowException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        JGitFlow flow = jGitFlowProvider.gitFlow();
+        
         if (ctx.isEnableSshAgent())
         {
-            reporter.debugText(getClass().getSimpleName(), "installing ssh-agent credentials provider");
+            flow.getReporter().debugText(getClass().getSimpleName(), "installing ssh-agent credentials provider");
             SshSessionFactory.setInstance(new SshCredentialsProvider());
             return true;
         }

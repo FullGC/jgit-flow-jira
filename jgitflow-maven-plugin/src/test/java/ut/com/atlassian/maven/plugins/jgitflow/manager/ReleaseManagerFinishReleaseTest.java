@@ -58,6 +58,8 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         ctx.setInteractive(false);
         ctx.setNoBuild(true).setScmCommentPrefix(commentPrefix).setScmCommentSuffix(commentSuffix);
 
+        setContext(ctx);
+
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
@@ -66,14 +68,14 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         initialCommitAll(flow);
         FlowReleaseManager relman = getReleaseManager();
 
-        relman.start(ctx, projects, session);
+        relman.start(projects, session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
         //reload the projects
         projects = createReactorProjectsNoClean("release-projects", projectName);
 
-        relman.finish(ctx, projects, session);
+        relman.finish(projects, session);
         
         String fullMessage = GitHelper.getLatestCommit(flow.git(),flow.git().getRepository().getBranch()).getFullMessage();
         
@@ -94,7 +96,9 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true).setReleaseBranchVersionSuffix("RC");
 
-        basicReleaseRewriteTest(projectName, ctx);
+        setContext(ctx);
+
+        basicReleaseRewriteTest(projectName);
     }
 
 }

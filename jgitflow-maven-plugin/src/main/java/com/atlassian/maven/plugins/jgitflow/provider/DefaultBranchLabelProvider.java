@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
@@ -29,42 +30,73 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
 {
     @Requirement
     private VersionProvider versionProvider;
-    
+
     @Requirement
     private PrettyPrompter prompter;
 
+    @Requirement
+    private ContextProvider contextProvider;
+
+    @Requirement
+    private JGitFlowProvider jGitFlowProvider;
+
+
     @Override
-    public String getVersionLabel(VersionType versionType, ProjectCacheKey cacheKey, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public String getVersionLabel(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
     {
-        Map<String, String> versions = versionProvider.getVersionsForType(versionType, cacheKey, reactorProjects, ctx);
+        Map<String, String> versions = versionProvider.getVersionsForType(versionType, cacheKey, reactorProjects);
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
         return versions.get(rootProjectId);
     }
 
     @Override
-    public String getFeatureStartName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException
+    public String getFeatureStartName() throws JGitFlowReleaseException
     {
-        String featureName = StringUtils.defaultString(ctx.getDefaultFeatureName());
+        try
+        {
+            ReleaseContext ctx = contextProvider.getContext();
+            JGitFlow flow = jGitFlowProvider.gitFlow();
 
-        if (ctx.isInteractive())
-        {
-            featureName = promptForFeatureName(flow.getFeatureBranchPrefix(), featureName);
-        }
-        else
-        {
-            if (StringUtils.isBlank(featureName))
+            String featureName = StringUtils.defaultString(ctx.getDefaultFeatureName());
+
+            if (ctx.isInteractive())
             {
-                throw new JGitFlowReleaseException("Missing featureName mojo option.");
+                featureName = promptForFeatureName(flow.getFeatureBranchPrefix(), featureName);
             }
+            else
+            {
+                if (StringUtils.isBlank(featureName))
+                {
+                    throw new JGitFlowReleaseException("Missing featureName mojo option.");
+                }
+            }
+
+            return featureName;
+        }
+        catch (JGitFlowException e)
+        {
+            throw new JGitFlowReleaseException("Error getting feature start name", e);
         }
 
-        return featureName;
     }
 
     @Override
-    public String getFeatureFinishName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException
+    public String getFeatureFinishName() throws JGitFlowReleaseException
     {
+        JGitFlow flow;
+
+        try
+        {
+            flow = jGitFlowProvider.gitFlow();
+        }
+        catch (JGitFlowException e)
+        {
+            throw new JGitFlowReleaseException(e);
+        }
+
+        ReleaseContext ctx = contextProvider.getContext();
+
         String featureName = StringUtils.defaultString(ctx.getDefaultFeatureName());
 
         if (StringUtils.isBlank(featureName))

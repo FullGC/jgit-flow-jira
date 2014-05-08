@@ -72,9 +72,10 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
            .setPassword(password)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
+        contextProvider.setContext(ctx);
         try
         {
-            releaseManager.start(ctx,getReactorProjects(),session);
+            releaseManager.start(getReactorProjects(),session);
         }
         catch (JGitFlowReleaseException e)
         {

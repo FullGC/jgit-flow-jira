@@ -56,11 +56,13 @@ public class FeatureManagerStartFeatureTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setDefaultFeatureName(FEATURE_NAME);
 
+        setContext(ctx);
+
         try
         {
             MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-            relman.start(ctx, projects, session);
+            relman.start(projects, session);
         }
         catch (JGitFlowReleaseException e)
         {
@@ -91,9 +93,11 @@ public class FeatureManagerStartFeatureTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setDefaultFeatureName(FEATURE_NAME).setEnableFeatureVersions(true);
 
+        setContext(ctx);
+
         MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-        relman.start(ctx, projects, session);
+        relman.start(projects, session);
 
         //reload the projects
         projects = createReactorProjectsNoClean("rewrite-for-release", projectSubdir);

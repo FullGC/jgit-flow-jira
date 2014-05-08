@@ -17,7 +17,7 @@ import org.codehaus.plexus.logging.AbstractLogEnabled;
 public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled implements FlowReleaseManager
 {
     @Override
-    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws JGitFlowReleaseException
+    public void deploy(List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws JGitFlowReleaseException
     {
         //do nothing. override if you need to
     }

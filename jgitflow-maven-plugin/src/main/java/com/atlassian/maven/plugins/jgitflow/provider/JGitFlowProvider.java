@@ -6,5 +6,5 @@ import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 
 public interface JGitFlowProvider
 {
-    JGitFlow gitFlow(ReleaseContext ctx) throws JGitFlowException;
+    JGitFlow gitFlow() throws JGitFlowException;
 }

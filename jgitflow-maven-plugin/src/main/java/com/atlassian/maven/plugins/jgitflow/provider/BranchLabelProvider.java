@@ -11,9 +11,9 @@ import org.apache.maven.project.MavenProject;
 
 public interface BranchLabelProvider
 {
-    String getVersionLabel(VersionType versionType, ProjectCacheKey cacheKey, ReleaseContext ctx, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
+    String getVersionLabel(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException;
 
-    String getFeatureStartName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException;
+    String getFeatureStartName() throws JGitFlowReleaseException;
 
-    String getFeatureFinishName(ReleaseContext ctx, JGitFlow flow) throws JGitFlowReleaseException;
+    String getFeatureFinishName() throws JGitFlowReleaseException;
 }

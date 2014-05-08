@@ -16,6 +16,8 @@ import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 import com.atlassian.maven.plugins.jgitflow.util.NamingUtil;
 
@@ -52,22 +54,29 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
     @Requirement
     private PomUpdater pomUpdater;
+    
+    @Requirement
+    private JGitFlowProvider jGitFlowProvider;
+
+    @Requirement
+    private ContextProvider contextProvider;
 
     @Override
-    public void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
+    public void start(List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
         JGitFlow flow = null;
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
+            ReleaseContext ctx = contextProvider.getContext();
+            flow = jGitFlowProvider.gitFlow();
 
-            setupHelper.runCommonSetup(flow, ctx);
+            setupHelper.runCommonSetup();
 
-            String featureName = startFeature(flow, ctx);
+            String featureName = startFeature();
 
             if (ctx.isEnableFeatureVersions())
             {
-                updateFeaturePomsWithFeatureVersion(featureName, flow, ctx, reactorProjects, session);
+                updateFeaturePomsWithFeatureVersion(featureName,reactorProjects, session);
             }
 
             if (ctx.isPushFeatures())
@@ -96,7 +105,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     }
 
     @Override
-    public void finish(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
+    public void finish(List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
     {
         JGitFlow flow = null;
 
@@ -105,15 +114,16 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
+            ReleaseContext ctx = contextProvider.getContext();
+            flow = jGitFlowProvider.gitFlow();
 
             JGitFlowReporter reporter = flow.getReporter();
 
-            setupHelper.runCommonSetup(flow, ctx);
+            setupHelper.runCommonSetup();
 
             if (ctx.isPushFeatures() || ctx.isPullDevelop())
             {
-                setupHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
+                setupHelper.ensureOrigin();
             }
 
             //do a pull if needed
@@ -136,7 +146,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 }
             }
 
-            String featureLabel = labelProvider.getFeatureFinishName(ctx, flow);
+            String featureLabel = labelProvider.getFeatureFinishName();
 
             String prefixedBranchName = flow.getFeatureBranchPrefix() + featureLabel;
 
@@ -156,10 +166,10 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             if (ctx.isEnableFeatureVersions())
             {
-                updateFeaturePomsWithNonFeatureVersion(featureLabel, flow, ctx, reactorProjects, session);
+                updateFeaturePomsWithNonFeatureVersion(featureLabel, reactorProjects, session);
 
                 //reload the reactor projects
-                MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(prefixedBranchName, ReleaseUtil.getRootProject(reactorProjects), session, ctx);
+                MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(prefixedBranchName, ReleaseUtil.getRootProject(reactorProjects), session);
                 List<MavenProject> featureProjects = featureSession.getSortedProjects();
 
                 currentSession = featureSession;
@@ -171,7 +181,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             {
                 try
                 {
-                    mavenExecutionHelper.execute(rootProject, ctx, currentSession);
+                    mavenExecutionHelper.execute(rootProject, currentSession);
                 }
                 catch (MavenExecutorException e)
                 {
@@ -221,7 +231,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     }
 
     @Override
-    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws JGitFlowReleaseException
+    public void deploy(List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws JGitFlowReleaseException
     {
         JGitFlow flow = null;
 
@@ -230,16 +240,18 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
         try
         {
-            flow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
-            setupHelper.runCommonSetup(flow, ctx);
+            ReleaseContext ctx = contextProvider.getContext();
+            flow = jGitFlowProvider.gitFlow();
+            
+            setupHelper.runCommonSetup();
 
-            String featureLabel = labelProvider.getFeatureFinishName(ctx, flow);
+            String featureLabel = labelProvider.getFeatureFinishName();
 
             // make sure we are on specific feature branch
             flow.git().checkout().setName(flow.getFeatureBranchPrefix() + featureLabel).call();
 
             //update poms with feature name version
-            MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(flow.getFeatureBranchPrefix() + featureLabel, ReleaseUtil.getRootProject(reactorProjects), session, ctx);
+            MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(flow.getFeatureBranchPrefix() + featureLabel, ReleaseUtil.getRootProject(reactorProjects), session);
             List<MavenProject> featureProjects = featureSession.getSortedProjects();
 
             String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureLabel);
@@ -254,7 +266,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 featureVersion = featureVersion + "-SNAPSHOT";
             }
 
-            pomUpdater.removeSnapshotFromFeatureVersions(ProjectCacheKey.FEATURE_DEPLOY_LABEL, featureVersion, ctx, reactorProjects);
+            pomUpdater.removeSnapshotFromFeatureVersions(ProjectCacheKey.FEATURE_DEPLOY_LABEL, featureVersion, reactorProjects);
 
             rootProject = ReleaseUtil.getRootProject(featureProjects);
             featureSession = mavenExecutionHelper.reloadReactor(rootProject, session);
@@ -274,7 +286,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 {
                     for (String goal : Splitter.on(" ").trimResults().omitEmptyStrings().split(mvnGoals))
                     {
-                        mavenExecutionHelper.execute(rootProject, ctx, featureSession, goal);
+                        mavenExecutionHelper.execute(rootProject, featureSession, goal);
                     }
                 }
                 catch (MavenExecutorException e)
@@ -312,20 +324,23 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
     }
 
-    private String startFeature(JGitFlow flow, ReleaseContext ctx) throws JGitFlowReleaseException
+    private String startFeature() throws JGitFlowReleaseException
     {
         String featureName = "";
 
         try
         {
+            ReleaseContext ctx = contextProvider.getContext();
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+            
             //make sure we're on develop
             flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
-            featureName = labelProvider.getFeatureStartName(ctx, flow);
+            featureName = labelProvider.getFeatureStartName();
 
             if (ctx.isPushFeatures())
             {
-                setupHelper.ensureOrigin(ctx.getDefaultOriginUrl(), ctx.isAlwaysUpdateOrigin(), flow);
+                setupHelper.ensureOrigin();
             }
 
             flow.featureStart(featureName)
@@ -348,18 +363,20 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         return featureName;
     }
 
-    private void updateFeaturePomsWithFeatureVersion(String featureName, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateFeaturePomsWithFeatureVersion(String featureName, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
         try
         {
+            ReleaseContext ctx = contextProvider.getContext();
+            JGitFlow flow = jGitFlowProvider.gitFlow();
             //reload the reactor projects
-            MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(flow.getFeatureBranchPrefix() + featureName, ReleaseUtil.getRootProject(originalProjects), session, ctx);
+            MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(flow.getFeatureBranchPrefix() + featureName, ReleaseUtil.getRootProject(originalProjects), session);
             List<MavenProject> featureProjects = featureSession.getSortedProjects();
 
             String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureName);
             featureVersion = StringUtils.replace(featureVersion, "-", "_");
 
-            pomUpdater.addFeatureVersionToSnapshotVersions(ProjectCacheKey.FEATURE_START_LABEL, featureVersion, ctx, featureProjects);
+            pomUpdater.addFeatureVersionToSnapshotVersions(ProjectCacheKey.FEATURE_START_LABEL, featureVersion, featureProjects);
 
             projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version" + ctx.getScmCommentSuffix());
         }
@@ -381,18 +398,20 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
     }
 
-    private void updateFeaturePomsWithNonFeatureVersion(String featureLabel, JGitFlow flow, ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateFeaturePomsWithNonFeatureVersion(String featureLabel, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
     {
         try
         {
+            ReleaseContext ctx = contextProvider.getContext();
+            JGitFlow flow = jGitFlowProvider.gitFlow();
             //reload the reactor projects
-            MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(flow.getFeatureBranchPrefix() + featureLabel, ReleaseUtil.getRootProject(originalProjects), session, ctx);
+            MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(flow.getFeatureBranchPrefix() + featureLabel, ReleaseUtil.getRootProject(originalProjects), session);
             List<MavenProject> featureProjects = featureSession.getSortedProjects();
 
             String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureLabel);
             featureVersion = StringUtils.replace(featureVersion, "-", "_");
 
-            pomUpdater.removeFeatureVersionFromSnapshotVersions(ProjectCacheKey.FEATURE_FINISH_LABEL, featureVersion, ctx, featureProjects);
+            pomUpdater.removeFeatureVersionFromSnapshotVersions(ProjectCacheKey.FEATURE_FINISH_LABEL, featureVersion, featureProjects);
 
             projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version" + ctx.getScmCommentSuffix());
         }

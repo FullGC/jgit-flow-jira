@@ -43,9 +43,11 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
                 .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
+        contextProvider.setContext(ctx);
+        
         try
         {
-            releaseManager.deploy(ctx, getReactorProjects(), session, buildNumber, goals);
+            releaseManager.deploy(getReactorProjects(), session, buildNumber, goals);
         }
         catch (JGitFlowReleaseException e)
         {

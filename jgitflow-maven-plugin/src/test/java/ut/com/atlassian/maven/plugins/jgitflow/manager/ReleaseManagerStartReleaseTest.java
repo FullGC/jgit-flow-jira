@@ -45,11 +45,12 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ctx.setDefaultReleaseVersion("1.0");
         ctx.setInteractive(false).setNoTag(true);
 
+        setContext(ctx);
         try
         {
             MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
 
-            relman.start(ctx, projects,session);
+            relman.start(projects,session);
         }
         catch (JGitFlowReleaseException e)
         {
@@ -86,9 +87,11 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true);
 
+        setContext(ctx);
+
         MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
 
-        relman.start(ctx, projects,session);
+        relman.start(projects,session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
@@ -123,9 +126,11 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true);
 
+        setContext(ctx);
+
         MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
 
-        relman.start(ctx, projects,session);
+        relman.start(projects,session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
@@ -175,7 +180,9 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
-        basicReleaseRewriteTest(projectName, ctx);
+        setContext(ctx);
+
+        basicReleaseRewriteTest(projectName);
     }
 
     @Test(expected = JGitFlowReleaseException.class)
@@ -202,8 +209,9 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
 
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
-
-        basicReleaseRewriteTest(projectName, ctx);
+        setContext(ctx);
+        
+        basicReleaseRewriteTest(projectName);
     }
 
     @Test(expected = JGitFlowReleaseException.class)
@@ -231,7 +239,9 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
-        basicReleaseRewriteTest(projectName, ctx);
+        setContext(ctx);
+
+        basicReleaseRewriteTest(projectName);
     }
 
     @Test(expected = JGitFlowReleaseException.class)
@@ -259,7 +269,9 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
-        basicReleaseRewriteTest(projectName, ctx);
+        setContext(ctx);
+
+        basicReleaseRewriteTest(projectName);
     }
 
     @Test
@@ -369,9 +381,11 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true);
 
+        setContext(ctx);
+
         MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
 
-        relman.start(ctx, projects,session);
+        relman.start(projects,session);
 
         assertOnRelease(flow, "1.0");
 
@@ -423,8 +437,11 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
+        ctx.setDefaultOriginUrl("file://" + remoteGit.getRepository().getWorkTree().getPath());
 
-        setupHelper.ensureOrigin("file://" + remoteGit.getRepository().getWorkTree().getPath(), ctx.isAlwaysUpdateOrigin(), flow);
+        setContext(ctx);
+
+        setupHelper.ensureOrigin();
 
         flow.releaseStart("1.0").call();
 
