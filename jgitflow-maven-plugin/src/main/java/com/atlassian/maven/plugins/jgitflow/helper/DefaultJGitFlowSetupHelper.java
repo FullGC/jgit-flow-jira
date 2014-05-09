@@ -8,7 +8,7 @@ import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.util.ConsoleCredentialsProvider;
@@ -52,7 +52,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
     private JGitFlowProvider jGitFlowProvider;
 
     @Override
-    public void runCommonSetup() throws JGitFlowReleaseException
+    public void runCommonSetup() throws MavenJGitFlowException
     {
         try
         {
@@ -62,12 +62,12 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
         }
         catch (Exception e)
         {
-            throw new JGitFlowReleaseException("Error running common setup tasks", e);
+            throw new MavenJGitFlowException("Error running common setup tasks", e);
         }
     }
     
     @Override
-    public void fixCygwinIfNeeded() throws JGitFlowReleaseException
+    public void fixCygwinIfNeeded() throws MavenJGitFlowException
     {
         if (isCygwin)
         {
@@ -83,15 +83,15 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
             }
             catch (IOException e)
             {
-                throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
+                throw new MavenJGitFlowException("error configuring filemode for cygwin", e);
             }
             catch (ConfigInvalidException e)
             {
-                throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
+                throw new MavenJGitFlowException("error configuring filemode for cygwin", e);
             }
             catch (JGitFlowException e)
             {
-                throw new JGitFlowReleaseException("error configuring filemode for cygwin", e);
+                throw new MavenJGitFlowException("error configuring filemode for cygwin", e);
             }
 
             getLogger().info("    - fixing maven prompter...");
@@ -100,7 +100,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
     }
 
     @Override
-    public void ensureOrigin() throws JGitFlowReleaseException
+    public void ensureOrigin() throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
         
@@ -161,7 +161,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
                 }
                 catch (Exception e)
                 {
-                    throw new JGitFlowReleaseException("error configuring remote git repo with url: " + newOriginUrl, e);
+                    throw new MavenJGitFlowException("error configuring remote git repo with url: " + newOriginUrl, e);
                 }
 
             }
@@ -169,11 +169,11 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultOriginUrl, e);
+            throw new MavenJGitFlowException("error configuring remote git repo with url: " + defaultOriginUrl, e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("error configuring remote git repo with url: " + defaultOriginUrl, e);
+            throw new MavenJGitFlowException("error configuring remote git repo with url: " + defaultOriginUrl, e);
         }
     }
 

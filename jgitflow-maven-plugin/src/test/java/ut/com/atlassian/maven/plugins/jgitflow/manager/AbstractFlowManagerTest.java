@@ -9,7 +9,6 @@ import java.util.*;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
-import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 
 import com.google.common.base.Strings;
 
@@ -100,8 +99,6 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
                 //ignore
             }
         }
-        
-        getContextProvider().setContext(null);
     }
 
     @Override
@@ -115,7 +112,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         return org.apache.commons.io.FileUtils.openInputStream(new File(configBase + "target/components.xml"));
     }
 
-    
+
     protected void basicReleaseRewriteTest(String projectName) throws Exception
     {
         basicReleaseRewriteTest(projectName,"");
@@ -125,19 +122,9 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     {
         List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectName);
         File projectRoot = projects.get(0).getBasedir();
-        
-        ContextProvider ctxProvider = getContextProvider();
-        ContextProvider ctxProvider1 = getContextProvider();
-        ContextProvider ctxProvider2 = getContextProvider();
-        ContextProvider ctxProvider3 = getContextProvider();
-        
-        ReleaseContext ctx = ctxProvider.getContext();
-        
-        if(null == ctx)
-        {
-            ctx = new ReleaseContext(projectRoot);
-        }
-        
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+
         if(!Strings.isNullOrEmpty(releaseVersion))
         {
             ctx.setDefaultReleaseVersion(releaseVersion);
@@ -145,7 +132,13 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
         ctx.setInteractive(false).setNoTag(true);
 
-        ctxProvider.setContext(ctx);
+        basicReleaseRewriteTest(projectName, ctx);
+    }
+
+    protected void basicReleaseRewriteTest(String projectName, ReleaseContext ctx) throws Exception
+    {
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectName);
+        File projectRoot = ctx.getBaseDir();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
@@ -156,7 +149,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
         MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
 
-        relman.start(projects,session);
+        relman.start(ctx,projects,session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
@@ -165,23 +158,21 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         assertTrue(flow.git().status().call().isClean());
     }
 
-    
     protected void initialCommitAll(JGitFlow flow) throws Exception
     {
         flow.git().add().addFilepattern(".").call();
         flow.git().commit().setMessage("initial commit").call();
     }
-    
+
     protected void assertOnDevelop(JGitFlow flow) throws Exception
     {
-        assertEquals(flow.getDevelopBranchName(), flow.git().getRepository().getBranch());    
+        assertEquals(flow.getDevelopBranchName(), flow.git().getRepository().getBranch());
     }
 
     protected void assertOnRelease(JGitFlow flow, String version) throws Exception
     {
         if(Strings.isNullOrEmpty(version))
         {
-            System.out.println(flow.git().getRepository().getBranch());
             assertTrue(flow.git().getRepository().getBranch().startsWith(flow.getReleaseBranchPrefix()));
         }
         else
@@ -207,19 +198,9 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         assertEquals(flow.getHotfixBranchPrefix() + version, flow.git().getRepository().getBranch());
     }
 
-    protected void setContext(ReleaseContext ctx) throws Exception
-    {
-        getContextProvider().setContext(ctx);
-    }
-
-    protected ContextProvider getContextProvider() throws Exception
-    {
-        return (ContextProvider) lookup(ContextProvider.class.getName());
-    }
-    
     protected FlowReleaseManager getReleaseManager() throws Exception
     {
-        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"release");    
+        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"release");
     }
 
     protected FlowReleaseManager getFeatureManager() throws Exception
@@ -231,7 +212,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     {
         return ReleaseUtil.readXmlFile(getTestFile(PROJECT_BASEDIR + "target/test-classes/projects/" + fileName));
     }
-    
+
     protected List<MavenProject> createReactorProjects(String path, String subpath) throws Exception
     {
         return createReactorProjects(path, path, subpath, true);
@@ -241,12 +222,12 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     {
         return createReactorProjects(path, path, subpath, false);
     }
-    
+
     protected List<MavenProject> createReactorProjects( String path, String targetPath, String subpath, boolean clean )
             throws Exception
     {
         File testFile = null;
-     
+
         if(Strings.isNullOrEmpty(subpath))
         {
             testFile = new File( testFileBase, "projects/" + path + "/pom.xml" );
@@ -255,7 +236,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         {
             testFile = new File( testFileBase, "projects/" + path + "/" + subpath + "/pom.xml" );
         }
-        
+
         Stack<File> projectFiles = new Stack<File>();
         projectFiles.push( testFile );
 
@@ -275,13 +256,13 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
         List<MavenProject> reactorProjects = new ArrayList<MavenProject>();
         String cleaned = "";
-        
+
         while ( !projectFiles.isEmpty() )
         {
             File file = (File) projectFiles.pop();
-            
+
             // Recopy the test resources since they are modified in some tests
-            
+
             //FileUtils.copyDirectory(srcDir,file.getParentFile());
             String filePath = file.getPath();
             int index = filePath.indexOf( "projects" );
@@ -294,10 +275,10 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
                 //clean the parent dir
                 newFile.mkdirs();
                 FileUtils.cleanDirectory(newFile.getParentFile());
-    
+
                 File srcDir = new File(getTestFile(PROJECT_BASEDIR + "src/test/resources/"),filePath).getParentFile();
                 FileUtils.copyDirectoryStructure(srcDir, newFile.getParentFile());
-                
+
                 cleaned = newFile.getParentFile().getName();
             }
 
@@ -305,13 +286,13 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
             for ( Iterator i = project.getModules().iterator(); i.hasNext(); )
             {
-            	 String module = (String) i.next();
-                 File moduleFile = new File( file.getParentFile(), module);
-                 if(moduleFile.isFile()){
-                 	projectFiles.push( moduleFile );
-                 }else{
-                 	projectFiles.push( new File( moduleFile, "/pom.xml" ) );
-                 }
+                String module = (String) i.next();
+                File moduleFile = new File( file.getParentFile(), module);
+                if(moduleFile.isFile()){
+                    projectFiles.push( moduleFile );
+                }else{
+                    projectFiles.push( new File( moduleFile, "/pom.xml" ) );
+                }
             }
 
             reactorProjects.add( project );

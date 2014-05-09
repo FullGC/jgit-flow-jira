@@ -1,0 +1,58 @@
+package com.atlassian.maven.plugins.jgitflow.manager.tasks;
+
+import java.util.List;
+
+import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
+import com.atlassian.maven.plugins.jgitflow.VersionState;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
+import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.MavenSessionProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
+
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.release.util.ReleaseUtil;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@Component(role = CheckoutAndGetProjects.class)
+public class CheckoutAndGetProjects
+{
+    @Requirement
+    private MavenExecutionHelper mavenExecutionHelper;
+
+    @Requirement
+    private JGitFlowProvider jGitFlowProvider;
+
+    @Requirement
+    private MavenSessionProvider sessionProvider;
+
+    @Requirement
+    private ContextProvider contextProvider;
+    
+    public List<MavenProject> run(String branchName, List<MavenProject> originalProjects) throws MavenJGitFlowException
+    {
+        try
+        {
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+            ReleaseContext ctx = contextProvider.getContext();
+
+            flow.git().checkout().setName(branchName).call();
+            
+            //reload the reactor projects for develop
+            MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(branchName, ReleaseUtil.getRootProject(originalProjects), sessionProvider.getSession());
+            
+            return branchSession.getSortedProjects();
+        }
+        catch (Exception e)
+        {
+            throw new MavenJGitFlowException("Error checking out branch and loading projects", e);
+        }
+    }
+}

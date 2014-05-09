@@ -1,7 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow.mojo;
 
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -104,12 +104,11 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setPullDevelop(pullDevelop)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
-        contextProvider.setContext(ctx);
         try
         {
-            releaseManager.finish(getReactorProjects(),session);
+            releaseManager.finish(ctx, getReactorProjects(),session);
         }
-        catch (JGitFlowReleaseException e)
+        catch (MavenJGitFlowException e)
         {
             throw new MojoExecutionException("Error finishing hotfix: " + e.getMessage(),e);
         }

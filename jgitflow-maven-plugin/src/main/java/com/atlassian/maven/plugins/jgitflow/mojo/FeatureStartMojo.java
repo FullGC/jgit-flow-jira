@@ -1,7 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow.mojo;
 
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -56,13 +56,11 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
                 .setPassword(password)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
-        contextProvider.setContext(ctx);
-        
         try
         {
-            releaseManager.start(getReactorProjects(),session);
+            releaseManager.start(ctx, getReactorProjects(),session);
         }
-        catch (JGitFlowReleaseException e)
+        catch (MavenJGitFlowException e)
         {
             throw new MojoExecutionException("Error starting feature: " + e.getMessage(),e);
         }

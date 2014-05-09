@@ -196,7 +196,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         }
         catch (Exception e)
         {
-            throw new ReactorReloadException("Error reloading Maven reacotr projects", e);
+            throw new ReactorReloadException("Error reloading Maven reactor projects", e);
         }
 
     }

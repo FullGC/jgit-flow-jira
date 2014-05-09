@@ -535,6 +535,11 @@ public class JGitFlow
     {
         return gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.VERSIONTAG.configKey());
     }
+    
+    public String getPrefixForBranch(String branchName)
+    {
+        return gfConfig.getPrefixForBranch(branchName);
+    }
 
     public JGitFlowReporter getReporter()
     {

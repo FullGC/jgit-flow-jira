@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.atlassian.maven.plugins.jgitflow.FlowInitContext;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.MavenSessionProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.ReactorProjectsProvider;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -26,9 +28,6 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
 
     @Component
     private Settings settings;
-
-    @Component
-    protected ContextProvider contextProvider;
 
     @Parameter(defaultValue = "${basedir}", readonly = true, required = true)
     private File basedir;

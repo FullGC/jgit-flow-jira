@@ -192,4 +192,25 @@ public class GitFlowConfiguration
         }
 
     }
+
+    public String getPrefixForBranch(String branchName)
+    {
+        String branchPrefix = "";
+
+        for (String prefixName : getPrefixNames())
+        {
+            if (hasPrefixConfigured(prefixName))
+            {
+                String prefix = getPrefixValue(prefixName);
+                
+                if(branchName.startsWith(prefix))
+                {
+                    branchPrefix = prefix;
+                    break;
+                }
+            }
+        }
+        
+        return branchPrefix;
+    }
 }

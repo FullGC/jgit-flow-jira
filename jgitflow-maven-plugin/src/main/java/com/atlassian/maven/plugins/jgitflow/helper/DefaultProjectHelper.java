@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.atlassian.maven.plugins.jgitflow.VersionState;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 import com.atlassian.maven.plugins.jgitflow.provider.VersionProvider;
 
@@ -53,7 +53,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     private VersionProvider versionProvider;
 
     @Override
-    public void commitAllChanges(Git git, String message) throws JGitFlowReleaseException
+    public void commitAllChanges(Git git, String message) throws MavenJGitFlowException
     {
         try
         {
@@ -66,13 +66,13 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("error committing changes: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("error committing changes: " + e.getMessage(), e);
         }
 
     }
 
     @Override
-    public void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws JGitFlowReleaseException
+    public void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws MavenJGitFlowException
     {
         try
         {
@@ -92,7 +92,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
                 catch (IOException e)
                 {
                     throw
-                            new JGitFlowReleaseException(
+                            new MavenJGitFlowException(
                                     "Cannot get canonical name for repository directory <" +
                                             repoDir + ">",
                                     e
@@ -128,11 +128,11 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("error committing pom changes: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("error committing pom changes: " + e.getMessage(), e);
         }
     }
 
-    private String relativePath(File canonicalBasedir, File file) throws JGitFlowReleaseException
+    private String relativePath(File canonicalBasedir, File file) throws MavenJGitFlowException
     {
         final String basePath = canonicalBasedir.getPath();
 
@@ -146,7 +146,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         catch (IOException e)
         {
             throw
-                    new JGitFlowReleaseException(
+                    new MavenJGitFlowException(
                             "Cannot get canonical name for pom file <" + file + ">",
                             e
                     );
@@ -169,7 +169,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     }
 
     @Override
-    public void checkPomForVersionState(VersionState state, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public void checkPomForVersionState(VersionState state, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         getLogger().info("Checking for " + state.name() + " version in projects...");
         boolean hasSnapshotProject = false;
@@ -185,7 +185,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         if (!isStateValid(state, hasSnapshotProject))
         {
             String message = (VersionState.SNAPSHOT.equals(state)) ? "Unable to find SNAPSHOT version in reactor projects!" : "Some reactor projects contain SNAPSHOT versions!";
-            throw new JGitFlowReleaseException(message);
+            throw new MavenJGitFlowException(message);
         }
     }
 
@@ -201,7 +201,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     }
 
     @Override
-    public List<String> checkForNonReactorSnapshots(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public List<String> checkForNonReactorSnapshots(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         List<String> snapshots = newArrayList();
 
@@ -216,7 +216,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         return snapshots;
     }
 
-    private List<String> checkProjectForNonReactorSnapshots(MavenProject project, Map<String, String> originalReactorVersions) throws JGitFlowReleaseException
+    private List<String> checkProjectForNonReactorSnapshots(MavenProject project, Map<String, String> originalReactorVersions) throws MavenJGitFlowException
     {
         List<String> snapshots = newArrayList();
 
@@ -238,7 +238,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         }
         catch (InvalidDependencyVersionException e)
         {
-            throw new JGitFlowReleaseException("Failed to create dependency artifacts", e);
+            throw new MavenJGitFlowException("Failed to create dependency artifacts", e);
         }
 
         //Dependency Management

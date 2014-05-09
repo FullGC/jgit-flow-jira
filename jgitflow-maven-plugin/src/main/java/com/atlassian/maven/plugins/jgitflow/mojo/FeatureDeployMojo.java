@@ -1,7 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow.mojo;
 
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -42,14 +42,12 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
                 .setEnableFeatureVersions(true)
                 .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
-
-        contextProvider.setContext(ctx);
         
         try
         {
-            releaseManager.deploy(getReactorProjects(), session, buildNumber, goals);
+            releaseManager.deploy(ctx, getReactorProjects(), session, buildNumber, goals);
         }
-        catch (JGitFlowReleaseException e)
+        catch (MavenJGitFlowException e)
         {
             throw new MojoExecutionException("Error finishing feature: " + e.getMessage(),e);
         }

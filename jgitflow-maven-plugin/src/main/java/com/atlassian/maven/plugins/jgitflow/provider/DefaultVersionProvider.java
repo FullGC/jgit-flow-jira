@@ -10,7 +10,7 @@ import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 
 import com.google.common.collect.ImmutableMap;
@@ -94,7 +94,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
     }
 
     @Override
-    public Map<String, String> getVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public Map<String, String> getVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         Map<String, String> versions = new HashMap<String, String>();
         switch (versionType)
@@ -117,7 +117,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
      * {@inheritDoc}
      */
     @Override
-    public Map<String, String> getNextReleaseVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public Map<String, String> getNextReleaseVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
@@ -129,7 +129,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
      * {@inheritDoc}
      */
     @Override
-    public Map<String, String> getNextDevelopmentVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public Map<String, String> getNextDevelopmentVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
@@ -141,7 +141,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
      * {@inheritDoc}
      */
     @Override
-    public Map<String, String> getNextHotfixVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public Map<String, String> getNextHotfixVersions(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
@@ -149,7 +149,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
         return getNextVersions(VersionType.HOTFIX, cacheKey, reactorProjects, rootProject, ctx.getDefaultReleaseVersion());
     }
 
-    private Map<String, String> getNextVersions(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, MavenProject rootProject, String contextVersion) throws JGitFlowReleaseException
+    private Map<String, String> getNextVersions(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects, MavenProject rootProject, String contextVersion) throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
         String promptLabel = versionType.name().toLowerCase();
@@ -217,7 +217,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
     }
 
     @Override
-    public Map<String, String> getLastReleaseVersions(MavenProject rootProject) throws JGitFlowReleaseException
+    public Map<String, String> getLastReleaseVersions(MavenProject rootProject) throws MavenJGitFlowException
     {
         if (!lastReleaseVersions.containsKey(ProjectCacheKey.MASTER_BRANCH))
         {
@@ -240,14 +240,14 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
             }
             catch (Exception e)
             {
-                throw new JGitFlowReleaseException("Error getting release versions from master", e);
+                throw new MavenJGitFlowException("Error getting release versions from master", e);
             }
         }
 
         return lastReleaseVersions.get(ProjectCacheKey.MASTER_BRANCH);
     }
 
-    protected String getNextVersion(VersionState state, VersionType versionType, MavenProject rootProject, MavenProject project, String contextVersion, String promptLabel) throws JGitFlowReleaseException
+    protected String getNextVersion(VersionState state, VersionType versionType, MavenProject rootProject, MavenProject project, String contextVersion, String promptLabel) throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
         String defaultVersion = null;
@@ -282,7 +282,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
                 }
                 catch (PrompterException e)
                 {
-                    throw new JGitFlowReleaseException("Error reading version from command line " + e.getMessage(), e);
+                    throw new MavenJGitFlowException("Error reading version from command line " + e.getMessage(), e);
                 }
             }
             else
@@ -295,7 +295,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
         return finalVersion;
     }
 
-    private String getSuggestedVersion(VersionType versionType, MavenProject rootProject) throws JGitFlowReleaseException
+    private String getSuggestedVersion(VersionType versionType, MavenProject rootProject) throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
         String suggestedVersion = "unknown";
@@ -314,12 +314,12 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
                 }
                 catch (VersionParseException e1)
                 {
-                    throw new JGitFlowReleaseException("error parsing 1.0 version!!!", e1);
+                    throw new MavenJGitFlowException("error parsing 1.0 version!!!", e1);
                 }
             }
             else
             {
-                throw new JGitFlowReleaseException("error parsing version: " + e.getMessage(), e);
+                throw new MavenJGitFlowException("error parsing version: " + e.getMessage(), e);
             }
         }
 
@@ -335,7 +335,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
         return suggestedVersion;
     }
 
-    private String getSuggestedHotfixVersion(MavenProject rootProject, String lastRelease) throws JGitFlowReleaseException
+    private String getSuggestedHotfixVersion(MavenProject rootProject, String lastRelease) throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
         String suggestedVersion = "unknown";
@@ -403,12 +403,12 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
                     }
                     catch (VersionParseException e1)
                     {
-                        throw new JGitFlowReleaseException("error parsing 2.0 version!!!", e1);
+                        throw new MavenJGitFlowException("error parsing 2.0 version!!!", e1);
                     }
                 }
                 else
                 {
-                    throw new JGitFlowReleaseException("error parsing release version: " + e.getMessage(), e);
+                    throw new MavenJGitFlowException("error parsing release version: " + e.getMessage(), e);
                 }
             }
 

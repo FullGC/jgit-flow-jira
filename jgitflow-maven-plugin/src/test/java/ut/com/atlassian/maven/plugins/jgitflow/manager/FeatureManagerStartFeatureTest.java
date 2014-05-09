@@ -8,7 +8,7 @@ import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.LocalBranchExistsException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import org.apache.commons.io.FileUtils;
@@ -28,7 +28,7 @@ public class FeatureManagerStartFeatureTest extends AbstractFlowManagerTest
     public static final String FEATURE_NAME = "my-feature";
     public static final String UNDERSCORED_FEATURE_NAME = "my_feature";
 
-    @Test(expected = JGitFlowReleaseException.class)
+    @Test(expected = MavenJGitFlowException.class)
     public void existingSameFeatureThrowsException() throws Exception
     {
         String projectSubdir = "basic-pom";
@@ -56,15 +56,13 @@ public class FeatureManagerStartFeatureTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setDefaultFeatureName(FEATURE_NAME);
 
-        setContext(ctx);
-
         try
         {
             MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-            relman.start(projects, session);
+            relman.start(ctx, projects, session);
         }
-        catch (JGitFlowReleaseException e)
+        catch (MavenJGitFlowException e)
         {
             assertEquals(LocalBranchExistsException.class, e.getCause().getClass());
             throw e;
@@ -93,11 +91,9 @@ public class FeatureManagerStartFeatureTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setDefaultFeatureName(FEATURE_NAME).setEnableFeatureVersions(true);
 
-        setContext(ctx);
-
         MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-        relman.start(projects, session);
+        relman.start(ctx, projects, session);
 
         //reload the projects
         projects = createReactorProjectsNoClean("rewrite-for-release", projectSubdir);

@@ -12,7 +12,7 @@ import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.project.MavenProject;
@@ -42,7 +42,7 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
 
 
     @Override
-    public String getVersionLabel(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws JGitFlowReleaseException
+    public String getVersionLabel(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         Map<String, String> versions = versionProvider.getVersionsForType(versionType, cacheKey, reactorProjects);
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
@@ -51,7 +51,7 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
     }
 
     @Override
-    public String getFeatureStartName() throws JGitFlowReleaseException
+    public String getFeatureStartName() throws MavenJGitFlowException
     {
         try
         {
@@ -68,7 +68,7 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
             {
                 if (StringUtils.isBlank(featureName))
                 {
-                    throw new JGitFlowReleaseException("Missing featureName mojo option.");
+                    throw new MavenJGitFlowException("Missing featureName mojo option.");
                 }
             }
 
@@ -76,13 +76,13 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error getting feature start name", e);
+            throw new MavenJGitFlowException("Error getting feature start name", e);
         }
 
     }
 
     @Override
-    public String getFeatureFinishName() throws JGitFlowReleaseException
+    public String getFeatureFinishName() throws MavenJGitFlowException
     {
         JGitFlow flow;
 
@@ -92,7 +92,7 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException(e);
+            throw new MavenJGitFlowException(e);
         }
 
         ReleaseContext ctx = contextProvider.getContext();
@@ -110,7 +110,7 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
             }
             catch (IOException e)
             {
-                throw new JGitFlowReleaseException(e);
+                throw new MavenJGitFlowException(e);
             }
 
             getLogger().debug("Feature Prefix is: " + flow.getFeatureBranchPrefix());
@@ -144,21 +144,21 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
             }
             catch (JGitFlowGitAPIException e)
             {
-                throw new JGitFlowReleaseException("Unable to determine feature names", e);
+                throw new MavenJGitFlowException("Unable to determine feature names", e);
             }
         }
         else
         {
             if (StringUtils.isBlank(featureName))
             {
-                throw new JGitFlowReleaseException("Missing featureName mojo option.");
+                throw new MavenJGitFlowException("Missing featureName mojo option.");
             }
         }
 
         return featureName;
     }
 
-    private String promptForFeatureName(String prefix, String defaultFeatureName) throws JGitFlowReleaseException
+    private String promptForFeatureName(String prefix, String defaultFeatureName) throws MavenJGitFlowException
     {
         String message = "What is the feature branch name? " + prefix;
         String name = "";
@@ -169,13 +169,13 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
         }
         catch (PrompterException e)
         {
-            throw new JGitFlowReleaseException("Error reading feature name from command line " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error reading feature name from command line " + e.getMessage(), e);
         }
 
         return name;
     }
 
-    private String promptForExistingFeatureName(String prefix, String defaultFeatureName, List<String> featureBranches) throws JGitFlowReleaseException
+    private String promptForExistingFeatureName(String prefix, String defaultFeatureName, List<String> featureBranches) throws MavenJGitFlowException
     {
         String message = "What is the feature branch name? " + prefix;
 
@@ -186,7 +186,7 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
         }
         catch (PrompterException e)
         {
-            throw new JGitFlowReleaseException("Error reading feature name from command line " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error reading feature name from command line " + e.getMessage(), e);
         }
 
         return name;

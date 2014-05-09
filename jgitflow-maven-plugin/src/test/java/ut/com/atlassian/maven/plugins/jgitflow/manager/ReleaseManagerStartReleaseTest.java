@@ -9,7 +9,7 @@ import com.atlassian.jgitflow.core.JGitFlowInitCommand;
 import com.atlassian.jgitflow.core.exception.DirtyWorkingTreeException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
 import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 {
-    @Test(expected = JGitFlowReleaseException.class)
+    @Test(expected = MavenJGitFlowException.class)
     public void uncommittedChangesFails() throws Exception
     {
         String projectSubdir = "basic-pom";
@@ -45,21 +45,20 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ctx.setDefaultReleaseVersion("1.0");
         ctx.setInteractive(false).setNoTag(true);
 
-        setContext(ctx);
         try
         {
-            MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+            MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-            relman.start(projects,session);
+            relman.start(ctx, projects, session);
         }
-        catch (JGitFlowReleaseException e)
+        catch (MavenJGitFlowException e)
         {
             assertEquals(DirtyWorkingTreeException.class, e.getCause().getClass());
             throw e;
         }
     }
 
-    @Test(expected = JGitFlowReleaseException.class)
+    @Test(expected = MavenJGitFlowException.class)
     public void existingSameReleaseIsThrown() throws Exception
     {
         String projectSubdir = "basic-pom";
@@ -87,18 +86,16 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true);
 
-        setContext(ctx);
+        MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
-
-        relman.start(projects,session);
+        relman.start(ctx, projects, session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
         compareSnapPomFiles(projects);
     }
 
-    @Test(expected = JGitFlowReleaseException.class)
+    @Test(expected = MavenJGitFlowException.class)
     public void existingDifferentReleaseThrows() throws Exception
     {
         String projectSubdir = "basic-pom";
@@ -126,11 +123,9 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true);
 
-        setContext(ctx);
+        MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
-
-        relman.start(projects,session);
+        relman.start(ctx, projects, session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
@@ -155,16 +150,16 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         basicReleaseRewriteTest("basic-pom-with-tag-base");
     }
 
-    @Test(expected = JGitFlowReleaseException.class)
+    @Test(expected = MavenJGitFlowException.class)
     public void releaseWithInternalDifferingSnapshotDeps() throws Exception
     {
         try
         {
             basicReleaseRewriteTest("internal-differing-snapshot-dependencies");
         }
-        catch (JGitFlowReleaseException e)
+        catch (MavenJGitFlowException e)
         {
-            assertEquals(UnresolvedSnapshotsException.class, e.getClass());
+            assertEquals(UnresolvedSnapshotsException.class, e.getCause().getClass());
             throw e;
         }
     }
@@ -180,21 +175,19 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
-        setContext(ctx);
-
-        basicReleaseRewriteTest(projectName);
+        basicReleaseRewriteTest(projectName, ctx);
     }
 
-    @Test(expected = JGitFlowReleaseException.class)
+    @Test(expected = MavenJGitFlowException.class)
     public void releaseWithInternalDifferingSnapshotExtension() throws Exception
     {
         try
         {
             basicReleaseRewriteTest("internal-differing-snapshot-extension");
         }
-        catch (JGitFlowReleaseException e)
+        catch (MavenJGitFlowException e)
         {
-            assertEquals(UnresolvedSnapshotsException.class, e.getClass());
+            assertEquals(UnresolvedSnapshotsException.class, e.getCause().getClass());
             throw e;
         }
     }
@@ -209,21 +202,20 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
 
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
-        setContext(ctx);
-        
-        basicReleaseRewriteTest(projectName);
+
+        basicReleaseRewriteTest(projectName, ctx);
     }
 
-    @Test(expected = JGitFlowReleaseException.class)
+    @Test(expected = MavenJGitFlowException.class)
     public void releaseWithInternalDifferingSnapshotPlugins() throws Exception
     {
         try
         {
             basicReleaseRewriteTest("internal-differing-snapshot-plugins");
         }
-        catch (JGitFlowReleaseException e)
+        catch (MavenJGitFlowException e)
         {
-            assertEquals(UnresolvedSnapshotsException.class, e.getClass());
+            assertEquals(UnresolvedSnapshotsException.class, e.getCause().getClass());
             throw e;
         }
     }
@@ -239,21 +231,19 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
-        setContext(ctx);
-
-        basicReleaseRewriteTest(projectName);
+        basicReleaseRewriteTest(projectName, ctx);
     }
 
-    @Test(expected = JGitFlowReleaseException.class)
+    @Test(expected = MavenJGitFlowException.class)
     public void releaseWithInternalDifferingSnapshotReportPlugins() throws Exception
     {
         try
         {
             basicReleaseRewriteTest("internal-differing-snapshot-report-plugins");
         }
-        catch (JGitFlowReleaseException e)
+        catch (MavenJGitFlowException e)
         {
-            assertEquals(UnresolvedSnapshotsException.class, e.getClass());
+            assertEquals(UnresolvedSnapshotsException.class, e.getCause().getClass());
             throw e;
         }
     }
@@ -269,9 +259,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true);
 
-        setContext(ctx);
-
-        basicReleaseRewriteTest(projectName);
+        basicReleaseRewriteTest(projectName, ctx);
     }
 
     @Test
@@ -339,7 +327,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     {
         basicReleaseRewriteTest("multimodule-with-deep-subprojects");
     }
-    
+
     @Test
     public void releaseWithMultimoduleAlternatePom() throws Exception
     {
@@ -381,11 +369,9 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true);
 
-        setContext(ctx);
+        MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
-
-        relman.start(projects,session);
+        relman.start(ctx, projects, session);
 
         assertOnRelease(flow, "1.0");
 
@@ -437,9 +423,6 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        ctx.setDefaultOriginUrl("file://" + remoteGit.getRepository().getWorkTree().getPath());
-
-        setContext(ctx);
 
         setupHelper.ensureOrigin();
 

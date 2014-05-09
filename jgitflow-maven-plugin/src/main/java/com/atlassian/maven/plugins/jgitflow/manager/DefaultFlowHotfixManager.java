@@ -14,7 +14,7 @@ import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
 import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
@@ -70,12 +70,14 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
     private ContextProvider contextProvider;
 
     @Override
-    public void start(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    public void start(ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         JGitFlow flow = null;
+
+        setupProviders(ctx, session, originalProjects);
+
         try
         {
-            ReleaseContext ctx = contextProvider.getContext();
             flow = jGitFlowProvider.gitFlow();
 
             setupHelper.runCommonSetup();
@@ -92,11 +94,11 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         finally
         {
@@ -108,13 +110,14 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
     }
 
     @Override
-    public void finish(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    public void finish(ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         JGitFlow flow = null;
 
+        setupProviders(ctx, session, originalProjects);
+
         try
         {
-            ReleaseContext ctx = contextProvider.getContext();
             flow = jGitFlowProvider.gitFlow();
 
             setupHelper.runCommonSetup();
@@ -123,7 +126,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error finishing hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finishing hotfix: " + e.getMessage(), e);
         }
         finally
         {
@@ -134,7 +137,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         }
     }
 
-    private String startHotfix(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private String startHotfix(List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         String hotfixLabel = "";
         try
@@ -176,29 +179,29 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (HotfixBranchExistsException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
 
         return hotfixLabel;
     }
 
-    private void finishHotfix(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void finishHotfix(List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         String hotfixLabel = "";
 
@@ -233,7 +236,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
 
             if (hotfixBranches.isEmpty())
             {
-                throw new JGitFlowReleaseException("Could not find hotfix branch!");
+                throw new MavenJGitFlowException("Could not find hotfix branch!");
             }
 
             //there can be only one
@@ -310,7 +313,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
                 }
                 catch (MavenExecutorException e)
                 {
-                    throw new JGitFlowReleaseException("Error building: " + e.getMessage(), e);
+                    throw new MavenJGitFlowException("Error building: " + e.getMessage(), e);
                 }
             }
 
@@ -364,7 +367,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
                     getLogger().error("see .git/jgitflow.log for more info");
                 }
 
-                throw new JGitFlowReleaseException("Error while merging hotfix!");
+                throw new MavenJGitFlowException("Error while merging hotfix!");
             }
 
             //make sure we're on develop
@@ -385,27 +388,27 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
         catch (ReleaseExecutionException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
     }
 
-    private void updateHotfixPomsWithRelease(String hotfixLabel, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateHotfixPomsWithRelease(String hotfixLabel, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         try
         {
@@ -421,23 +424,23 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
     }
 
-    private void updateHotfixPomsWithSnapshot(String hotfixLabel, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateHotfixPomsWithSnapshot(String hotfixLabel, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         try
         {
@@ -448,25 +451,25 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
             List<MavenProject> hotfixProjects = hotfixSession.getSortedProjects();
 
             //updatePomsWithHotfixSnapshotVersion(ProjectCacheKey.HOTFIX_LABEL, hotfixLabel, ctx, hotfixProjects, config);
-            pomUpdater.removeSnapshotFromPomVersions(ProjectCacheKey.HOTFIX_LABEL, hotfixLabel, "", hotfixProjects);
+            pomUpdater.addSnapshotToPomVersions(ProjectCacheKey.HOTFIX_LABEL, VersionType.HOTFIX, hotfixLabel, "", hotfixProjects);
 
             projectHelper.commitAllPoms(flow.git(), hotfixProjects, ctx.getScmCommentPrefix() + "updating poms for " + hotfixLabel + " hotfix" + ctx.getScmCommentSuffix());
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting hotfix: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting hotfix: " + e.getMessage(), e);
         }
     }
 

@@ -9,7 +9,7 @@ import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
@@ -58,16 +58,14 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     @Requirement
     private JGitFlowProvider jGitFlowProvider;
 
-    @Requirement
-    private ContextProvider contextProvider;
-
     @Override
-    public void start(List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
+    public void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws MavenJGitFlowException
     {
         JGitFlow flow = null;
+        setupProviders(ctx,session,reactorProjects);
+        
         try
         {
-            ReleaseContext ctx = contextProvider.getContext();
             flow = jGitFlowProvider.gitFlow();
 
             setupHelper.runCommonSetup();
@@ -88,11 +86,11 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
         }
         finally
         {
@@ -105,16 +103,17 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     }
 
     @Override
-    public void finish(List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
+    public void finish(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws MavenJGitFlowException
     {
         JGitFlow flow = null;
 
+        setupProviders(ctx,session,reactorProjects);
+        
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         MavenSession currentSession = session;
 
         try
         {
-            ReleaseContext ctx = contextProvider.getContext();
             flow = jGitFlowProvider.gitFlow();
 
             JGitFlowReporter reporter = flow.getReporter();
@@ -185,7 +184,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 }
                 catch (MavenExecutorException e)
                 {
-                    throw new JGitFlowReleaseException("Error building: " + e.getMessage(), e);
+                    throw new MavenJGitFlowException("Error building: " + e.getMessage(), e);
                 }
             }
 
@@ -207,19 +206,19 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
         finally
         {
@@ -231,16 +230,17 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     }
 
     @Override
-    public void deploy(List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws JGitFlowReleaseException
+    public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws MavenJGitFlowException
     {
         JGitFlow flow = null;
 
+        setupProviders(ctx,session,reactorProjects);
+        
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         MavenSession currentSession = session;
 
         try
         {
-            ReleaseContext ctx = contextProvider.getContext();
             flow = jGitFlowProvider.gitFlow();
             
             setupHelper.runCommonSetup();
@@ -291,7 +291,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 }
                 catch (MavenExecutorException e)
                 {
-                    throw new JGitFlowReleaseException("Error building: " + e.getMessage(), e);
+                    throw new MavenJGitFlowException("Error building: " + e.getMessage(), e);
                 }
             }
 
@@ -301,19 +301,19 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error finish feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
         finally
         {
@@ -324,7 +324,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
     }
 
-    private String startFeature() throws JGitFlowReleaseException
+    private String startFeature() throws MavenJGitFlowException
     {
         String featureName = "";
 
@@ -353,17 +353,17 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
         }
 
         return featureName;
     }
 
-    private void updateFeaturePomsWithFeatureVersion(String featureName, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateFeaturePomsWithFeatureVersion(String featureName, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         try
         {
@@ -382,23 +382,23 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
         }
     }
 
-    private void updateFeaturePomsWithNonFeatureVersion(String featureLabel, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateFeaturePomsWithNonFeatureVersion(String featureLabel, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         try
         {
@@ -417,19 +417,19 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error finishing feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finishing feature: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error finishing feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finishing feature: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error finishing feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finishing feature: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error finishing feature: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finishing feature: " + e.getMessage(), e);
         }
     }
 

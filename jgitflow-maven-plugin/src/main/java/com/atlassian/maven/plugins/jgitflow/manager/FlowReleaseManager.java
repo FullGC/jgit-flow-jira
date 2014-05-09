@@ -3,7 +3,7 @@ package com.atlassian.maven.plugins.jgitflow.manager;
 import java.util.List;
 
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
@@ -13,7 +13,7 @@ import org.apache.maven.project.MavenProject;
  */
 public interface FlowReleaseManager
 {
-    void start(List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException;
-    void finish(List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException;
-    void deploy(List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws JGitFlowReleaseException;
+    void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws MavenJGitFlowException;
+    void finish(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws MavenJGitFlowException;
+    void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws MavenJGitFlowException;
 }

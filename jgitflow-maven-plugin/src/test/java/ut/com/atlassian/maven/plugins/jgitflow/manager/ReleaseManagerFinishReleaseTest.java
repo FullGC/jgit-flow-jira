@@ -30,7 +30,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
     {
         String commentPrefix = "woot!";
         String commentSuffix = "+review CR-XYZ @reviewer1 @reviewer2";
-        
+
         String projectName = "basic-pom";
         Git git = null;
         Git remoteGit = null;
@@ -58,8 +58,6 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         ctx.setInteractive(false);
         ctx.setNoBuild(true).setScmCommentPrefix(commentPrefix).setScmCommentSuffix(commentSuffix);
 
-        setContext(ctx);
-
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
@@ -68,17 +66,17 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         initialCommitAll(flow);
         FlowReleaseManager relman = getReleaseManager();
 
-        relman.start(projects, session);
+        relman.start(ctx, projects, session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
         //reload the projects
         projects = createReactorProjectsNoClean("release-projects", projectName);
 
-        relman.finish(projects, session);
-        
+        relman.finish(ctx, projects, session);
+
         String fullMessage = GitHelper.getLatestCommit(flow.git(),flow.git().getRepository().getBranch()).getFullMessage();
-        
+
         assertTrue(fullMessage.startsWith(commentPrefix));
         assertTrue(fullMessage.endsWith(commentSuffix));
     }
@@ -96,9 +94,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true).setReleaseBranchVersionSuffix("RC");
 
-        setContext(ctx);
-
-        basicReleaseRewriteTest(projectName);
+        basicReleaseRewriteTest(projectName, ctx);
     }
 
 }

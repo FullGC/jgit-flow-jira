@@ -8,20 +8,23 @@ import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.jgitflow.core.exception.ReleaseBranchExistsException;
 import com.atlassian.jgitflow.core.util.GitHelper;
+import com.atlassian.maven.plugins.jgitflow.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
-import com.atlassian.maven.plugins.jgitflow.exception.JGitFlowReleaseException;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
+import com.atlassian.maven.plugins.jgitflow.extension.ReleaseStartPluginExtension;
 import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
+import com.atlassian.maven.plugins.jgitflow.manager.tasks.CheckoutAndGetProjects;
+import com.atlassian.maven.plugins.jgitflow.manager.tasks.SetupOriginAndFetchIfNeeded;
+import com.atlassian.maven.plugins.jgitflow.manager.tasks.VerifyInitialVersionState;
 import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 
@@ -43,60 +46,41 @@ import org.eclipse.jgit.transport.RefSpec;
  * @since version
  */
 @Component(role = FlowReleaseManager.class, hint = "release")
-public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
+public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
 {
-    public static final String ls = System.getProperty("line.separator");
-
     @Requirement
-    private JGitFlowSetupHelper setupHelper;
+    private ReleaseStartPluginExtension extension;
 
-    @Requirement
-    private MavenExecutionHelper mavenExecutionHelper;
-
-    @Requirement
-    private ProjectHelper projectHelper;
-
-    @Requirement
-    private BranchLabelProvider labelProvider;
-
-    @Requirement
-    private PomUpdater pomUpdater;
-
-    @Requirement
-    private JGitFlowProvider jGitFlowProvider;
-
-    @Requirement
-    private ContextProvider contextProvider;
+    public DefaultFlowReleaseManager()
+    {
+        super(BranchType.RELEASE);
+    }
 
     @Override
-    public void start(List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowReleaseException
+    public void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws MavenJGitFlowException
     {
         JGitFlow flow = null;
-        ReleaseContext ctx = contextProvider.getContext();
+
         try
         {
+            String releaseLabel = preflight(ctx, reactorProjects, session);
+
             flow = jGitFlowProvider.gitFlow();
+            
+            extension.init();
 
-            setupHelper.runCommonSetup();
-
-            String releaseLabel = startRelease(reactorProjects, session);
-
-            updateReleasePomsWithSnapshot(releaseLabel, reactorProjects, session);
-
-            if (ctx.isPushReleases())
-            {
-                final String prefixedBranchName = flow.getReleaseBranchPrefix() + releaseLabel;
-                RefSpec branchSpec = new RefSpec(prefixedBranchName);
-                flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
-            }
+            flow.releaseStart(releaseLabel)
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushReleases())
+                .setStartCommit(ctx.getStartCommit())
+                .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                .setScmMessageSuffix(ctx.getScmCommentSuffix())
+                .setExtension(extension)
+                .call();
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
         finally
         {
@@ -109,13 +93,14 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
 
     @Override
-    public void finish(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    public void finish(ReleaseContext ctx, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         JGitFlow flow = null;
+
+        setupProviders(ctx, session, originalProjects);
+
         try
         {
-            ReleaseContext ctx = contextProvider.getContext();
-
             flow = jGitFlowProvider.gitFlow();
 
             setupHelper.runCommonSetup();
@@ -129,7 +114,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error finishing release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finishing release: " + e.getMessage(), e);
         }
         finally
         {
@@ -140,74 +125,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
     }
 
-    private String startRelease(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
-    {
-        String releaseLabel = "";
-
-        try
-        {
-            ReleaseContext ctx = contextProvider.getContext();
-            JGitFlow flow = jGitFlowProvider.gitFlow();
-
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-
-            //reload the reactor projects for develop
-            MavenSession developSession = mavenExecutionHelper.getSessionForBranch(flow.getDevelopBranchName(), ReleaseUtil.getRootProject(originalProjects), session);
-            List<MavenProject> developProjects = developSession.getSortedProjects();
-
-            projectHelper.checkPomForVersionState(VersionState.SNAPSHOT, developProjects);
-
-            if (!ctx.isAllowSnapshots())
-            {
-                List<String> snapshots = projectHelper.checkForNonReactorSnapshots(ProjectCacheKey.DEVELOP_BRANCH, developProjects);
-                if (!snapshots.isEmpty())
-                {
-                    String details = Joiner.on(ls).join(snapshots);
-                    throw new UnresolvedSnapshotsException("Cannot start a release due to snapshot dependencies:" + ls + details);
-                }
-            }
-
-            if (ctx.isRemoteAllowed())
-            {
-                setupHelper.ensureOrigin();
-            }
-
-            releaseLabel = labelProvider.getVersionLabel(VersionType.RELEASE, ProjectCacheKey.RELEASE_START_LABEL, developProjects);
-
-            flow.releaseStart(releaseLabel)
-                .setAllowUntracked(ctx.isAllowUntracked())
-                .setPush(ctx.isPushReleases())
-                .setStartCommit(ctx.getStartCommit())
-                .setScmMessagePrefix(ctx.getScmCommentPrefix())
-                .setScmMessageSuffix(ctx.getScmCommentSuffix())
-                .call();
-        }
-        catch (GitAPIException e)
-        {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (ReleaseBranchExistsException e)
-        {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (JGitFlowException e)
-        {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (ReactorReloadException e)
-        {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (IOException e)
-        {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
-        }
-
-        return releaseLabel;
-    }
-
-    private void finishRelease(List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void finishRelease(List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         String releaseLabel = "";
 
@@ -243,7 +161,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             if (releaseBranches.isEmpty())
             {
-                throw new JGitFlowReleaseException("Could not find release branch!");
+                throw new MavenJGitFlowException("Could not find release branch!");
             }
 
             //there can be only one
@@ -252,7 +170,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
 
             if (null == releaseBranch)
             {
-                throw new JGitFlowReleaseException("Could not find release branch!");
+                throw new MavenJGitFlowException("Could not find release branch!");
             }
 
             releaseLabel = releaseBranch.getName().substring(releaseBranch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
@@ -339,7 +257,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                 }
                 catch (MavenExecutorException e)
                 {
-                    throw new JGitFlowReleaseException("Error building: " + e.getMessage(), e);
+                    throw new MavenJGitFlowException("Error building: " + e.getMessage(), e);
                 }
             }
 
@@ -372,7 +290,7 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
                     getLogger().error("see .git/jgitflow.log for more info");
                 }
 
-                throw new JGitFlowReleaseException("Error while merging release!");
+                throw new MavenJGitFlowException("Error while merging release!");
             }
 
             //make sure we're on develop
@@ -396,27 +314,27 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
         catch (ReleaseExecutionException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error releasing: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
     }
 
-    private void updateReleasePomsWithSnapshot(String releaseLabel, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateReleasePomsWithSnapshot(String releaseLabel, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         try
         {
@@ -433,23 +351,23 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
     }
 
-    private void updateReleasePomsWithRelease(String releaseLabel, List<MavenProject> originalProjects, MavenSession session) throws JGitFlowReleaseException
+    private void updateReleasePomsWithRelease(String releaseLabel, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         try
         {
@@ -465,19 +383,19 @@ public class DefaultFlowReleaseManager extends AbstractFlowReleaseManager
         }
         catch (GitAPIException e)
         {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
         catch (ReactorReloadException e)
         {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
         catch (JGitFlowException e)
         {
-            throw new JGitFlowReleaseException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
     }
 
