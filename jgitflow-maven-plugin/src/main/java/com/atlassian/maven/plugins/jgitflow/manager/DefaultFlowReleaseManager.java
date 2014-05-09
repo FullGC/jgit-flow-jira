@@ -17,15 +17,6 @@ import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
 import com.atlassian.maven.plugins.jgitflow.extension.ReleaseStartPluginExtension;
-import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
-import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
-import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
-import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
-import com.atlassian.maven.plugins.jgitflow.manager.tasks.CheckoutAndGetProjects;
-import com.atlassian.maven.plugins.jgitflow.manager.tasks.SetupOriginAndFetchIfNeeded;
-import com.atlassian.maven.plugins.jgitflow.manager.tasks.VerifyInitialVersionState;
-import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 
 import com.google.common.base.Joiner;
@@ -63,7 +54,7 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
 
         try
         {
-            String releaseLabel = preflight(ctx, reactorProjects, session);
+            String releaseLabel = getStartLabelAndRunPreflight(ctx, reactorProjects, session);
 
             flow = jGitFlowProvider.gitFlow();
             
@@ -331,39 +322,6 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
         catch (IOException e)
         {
             throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
-        }
-    }
-
-    private void updateReleasePomsWithSnapshot(String releaseLabel, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
-    {
-        try
-        {
-            ReleaseContext ctx = contextProvider.getContext();
-            JGitFlow flow = jGitFlowProvider.gitFlow();
-            //reload the reactor projects for release
-            MavenSession releaseSession = mavenExecutionHelper.getSessionForBranch(flow.getReleaseBranchPrefix() + releaseLabel, ReleaseUtil.getRootProject(originalProjects), session);
-            List<MavenProject> releaseProjects = releaseSession.getSortedProjects();
-
-            // updatePomsWithReleaseSnapshotVersion(ProjectCacheKey.RELEASE_START_LABEL, releaseLabel, ctx, releaseProjects);
-            pomUpdater.addSnapshotToPomVersions(ProjectCacheKey.RELEASE_START_LABEL, VersionType.RELEASE, releaseLabel, ctx.getReleaseBranchVersionSuffix(), releaseProjects);
-
-            projectHelper.commitAllPoms(flow.git(), releaseProjects, ctx.getScmCommentPrefix() + "updating poms for " + releaseLabel + " release" + ctx.getScmCommentSuffix());
-        }
-        catch (GitAPIException e)
-        {
-            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (ReactorReloadException e)
-        {
-            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (IOException e)
-        {
-            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (JGitFlowException e)
-        {
-            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
         }
     }
 

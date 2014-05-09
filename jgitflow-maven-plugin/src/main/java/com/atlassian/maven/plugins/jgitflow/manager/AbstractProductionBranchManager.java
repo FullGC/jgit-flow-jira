@@ -24,6 +24,8 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.annotations.Requirement;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public abstract class AbstractProductionBranchManager extends AbstractFlowReleaseManager
 {
     private final BranchType branchType;
@@ -65,7 +67,7 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
         this.branchType = branchType;
     }
 
-    public String preflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
+    public String getStartLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
     {
         JGitFlow flow = null;
 
@@ -74,6 +76,25 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
         String branchName = null;
         VersionType versionType = null;
         ProjectCacheKey cacheKey = null;
+        
+        switch(branchType)
+        {
+            case RELEASE:
+                branchName = flow.getDevelopBranchName();
+                versionType = VersionType.RELEASE;
+                cacheKey = ProjectCacheKey.RELEASE_START_LABEL;
+                break;
+            
+            case HOTFIX:
+                branchName = flow.getMasterBranchName();
+                versionType = VersionType.HOTFIX;
+                cacheKey = ProjectCacheKey.HOTFIX_LABEL;
+                break;
+        }
+        
+        checkNotNull(branchName);
+        checkNotNull(versionType);
+        checkNotNull(cacheKey);
 
         flow = jGitFlowProvider.gitFlow();
 
@@ -81,11 +102,11 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
 
         setupOriginAndFetchIfNeeded.run();
 
-        List<MavenProject> developProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName(), reactorProjects);
+        List<MavenProject> branchProjects = checkoutAndGetProjects.run(branchName, reactorProjects);
 
-        verifyInitialVersionState.run(BranchType.RELEASE, developProjects);
+        verifyInitialVersionState.run(branchType, branchProjects);
 
-        return labelProvider.getVersionLabel(VersionType.RELEASE, ProjectCacheKey.RELEASE_START_LABEL, developProjects);
+        return labelProvider.getVersionLabel(versionType, cacheKey, branchProjects);
 
     }
 }
