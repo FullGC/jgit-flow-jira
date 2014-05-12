@@ -28,6 +28,9 @@ public abstract class BaseExtensionForTests<T>
     public static final String AFTER_MASTER_CHECKOUT = "afterMasterCheckout";
     public static final String BEFORE_MASTER_MERGE = "beforeMasterMerge";
     public static final String AFTER_MASTER_MERGE = "afterMasterMerge";
+    public static final String AFTER_TOPIC_CHECKOUT = "afterTopicCheckout";
+    public static final String BEFORE_TAG = "beforeTag";
+    public static final String AFTER_TAG = "afterTag";
     
     private final Map<String,WasCalledExtension> methodMap;
 

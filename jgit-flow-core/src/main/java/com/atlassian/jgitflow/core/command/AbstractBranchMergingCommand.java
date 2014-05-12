@@ -1,5 +1,8 @@
-package com.atlassian.jgitflow.core;
+package com.atlassian.jgitflow.core.command;
 
+import com.atlassian.jgitflow.core.GitFlowConfiguration;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
@@ -21,27 +24,28 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
 {
     private boolean keepBranch;
     private boolean forceDeleteBranch;
+    private String message;
 
     protected AbstractBranchMergingCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
         super(branchName, git, gfConfig, reporter);
         this.forceDeleteBranch = true;
+        this.message = "tagging release " + branchName;
     }
 
-    protected MergeResult doMerge(Ref localBranchRef, String mergeTarget, MergeProcessExtensionWrapper extension) throws LocalBranchMissingException, JGitFlowGitAPIException, JGitFlowIOException, GitAPIException, JGitFlowExtensionException
+    protected MergeResult doMerge(String branchToMerge, String mergeTarget, MergeProcessExtensionWrapper extension) throws LocalBranchMissingException, JGitFlowGitAPIException, JGitFlowIOException, GitAPIException, JGitFlowExtensionException
     {
-        return doMerge(localBranchRef, mergeTarget, extension, false);
+        return doMerge(branchToMerge, mergeTarget, extension, false);
     }
 
-    protected MergeResult doMerge(Ref localBranchRef, String mergeTarget, MergeProcessExtensionWrapper extension, boolean squash) throws LocalBranchMissingException, JGitFlowGitAPIException, JGitFlowIOException, GitAPIException, JGitFlowExtensionException
+    protected MergeResult doMerge(String branchToMerge, String mergeTarget, MergeProcessExtensionWrapper extension, boolean squash) throws LocalBranchMissingException, JGitFlowGitAPIException, JGitFlowIOException, GitAPIException, JGitFlowExtensionException
     {
-        return doMerge(localBranchRef, mergeTarget, extension, squash, MergeCommand.FastForwardMode.NO_FF);
+        return doMerge(branchToMerge, mergeTarget, extension, squash, MergeCommand.FastForwardMode.NO_FF);
     }
 
-    protected MergeResult doMerge(Ref localBranchRef, String mergeTarget, MergeProcessExtensionWrapper extension, boolean squash, MergeCommand.FastForwardMode ffMode) throws LocalBranchMissingException, JGitFlowGitAPIException, JGitFlowIOException, GitAPIException, JGitFlowExtensionException
+    protected MergeResult doMerge(String branchToMerge, String mergeTarget, MergeProcessExtensionWrapper extension, boolean squash, MergeCommand.FastForwardMode ffMode) throws LocalBranchMissingException, JGitFlowGitAPIException, JGitFlowIOException, GitAPIException, JGitFlowExtensionException
     {
         MergeResult mergeResult = createEmptyMergeResult();
-        String branchToMerge = localBranchRef.getName();
 
         runExtensionCommands(extension.beforeCheckout());
 
@@ -54,6 +58,8 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
             reporter.infoText(getCommandName(), "merging '" + branchToMerge + "' into '" + mergeTarget + "'...");
 
             runExtensionCommands(extension.beforeMerge());
+            
+            Ref localBranchRef = GitHelper.getLocalBranch(git, branchToMerge);
             if (squash)
             {
                 reporter.infoText(getCommandName(), "squashing merge");
@@ -177,6 +183,18 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
         return (C) this;
     }
 
+    /**
+     * Set the commit message for the tag creation
+     *
+     * @param message
+     * @return {@code this}
+     */
+    public C setMessage(String message)
+    {
+        this.message = message;
+        return (C) this;
+    }
+
     public boolean isForceDeleteBranch()
     {
         return forceDeleteBranch;
@@ -187,4 +205,8 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
         return keepBranch;
     }
 
+    public String getMessage()
+    {
+        return message;
+    }
 }

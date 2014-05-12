@@ -1,5 +1,9 @@
-package com.atlassian.jgitflow.core;
+package com.atlassian.jgitflow.core.command;
 
+import com.atlassian.jgitflow.core.GitFlowConfiguration;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
+import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.ReleaseFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseFinishExtension;
@@ -11,6 +15,8 @@ import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
 
@@ -54,8 +60,9 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  */
 public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFinishCommand, ReleaseMergeResult>
 {
+    private static final Logger log = LoggerFactory.getLogger(ReleaseFinishCommand.class);
+    
     private static final String SHORT_NAME = "release-finish";
-    private String message;
     private boolean noTag;
     private boolean squash;
     private boolean noMerge;
@@ -75,7 +82,6 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
     {
         super(releaseName, git, gfConfig, reporter);
         checkState(!StringUtils.isEmptyOrNull(releaseName));
-        this.message = "tagging release " + releaseName;
         this.noTag = false;
         this.squash = false;
         this.noMerge = false;
@@ -107,26 +113,44 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
 
             ensureLocalBranchesNotBehindRemotes(prefixedBranchName, gfConfig.getMaster(), gfConfig.getDevelop());
 
-            Ref localBranchRef = GitHelper.getLocalBranch(git, prefixedBranchName);
+            //checkout the branch to merge just so we can run any extensions that need to be on this branch
+            if(log.isDebugEnabled())
+            {
+                log.debug("checking out topic branch '" + prefixedBranchName + "'...");    
+            }
+            
+            git.checkout().setName(prefixedBranchName).call();
+            runExtensionCommands(extension.afterTopicCheckout());
 
             boolean mergeSuccess = false;
             if (!noMerge)
             {
+                if(log.isDebugEnabled())
+                {
+                    log.debug("merging topic branch to master...");
+                }
                 //first merge master
                 MergeProcessExtensionWrapper masterExtension = new MergeProcessExtensionWrapper(extension.beforeMasterCheckout(), extension.afterMasterCheckout(), extension.beforeMasterMerge(), extension.afterMasterMerge());
-                masterResult = doMerge(localBranchRef, gfConfig.getMaster(), masterExtension, squash);
+                
+                masterResult = doMerge(prefixedBranchName, gfConfig.getMaster(), masterExtension, squash);
 
                 //now, tag master
                 if (!noTag && masterResult.getMergeStatus().isSuccessful())
                 {
-                    doTag(gfConfig.getMaster(), message, masterResult);
+                    runExtensionCommands(extension.beforeTag());
+                    doTag(gfConfig.getMaster(), getMessage(), masterResult);
+                    runExtensionCommands(extension.afterTag());
                 }
 
                 //IMPORTANT: we need to back-merge master into develop so that git describe works properly
                 MergeProcessExtensionWrapper developExtension = new MergeProcessExtensionWrapper(extension.beforeDevelopCheckout(), extension.afterDevelopCheckout(), extension.beforeDevelopMerge(), extension.afterDevelopMerge());
 
-                Ref masterBranchRef = GitHelper.getLocalBranch(git, gfConfig.getMaster());
-                developResult = doMerge(masterBranchRef, gfConfig.getDevelop(), developExtension, squash);
+                if(log.isDebugEnabled())
+                {
+                    log.debug("back merging master to develop...");
+                }
+                
+                developResult = doMerge(gfConfig.getMaster(), gfConfig.getDevelop(), developExtension, squash);
 
                 mergeSuccess = checkMergeResults(masterResult, developResult);
 
@@ -141,6 +165,11 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
                 cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
             }
 
+            if(log.isDebugEnabled())
+            {
+                log.debug("checking out develop...");
+            }
+            
             reporter.infoText(getCommandName(), "checking out '" + gfConfig.getDevelop() + "'");
             git.checkout().setName(gfConfig.getDevelop()).call();
 
@@ -159,17 +188,6 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
         }
     }
 
-    /**
-     * Set the commit message for the tag creation
-     *
-     * @param message
-     * @return {@code this}
-     */
-    public ReleaseFinishCommand setMessage(String message)
-    {
-        this.message = message;
-        return this;
-    }
 
     /**
      * Set whether to turn off tagging

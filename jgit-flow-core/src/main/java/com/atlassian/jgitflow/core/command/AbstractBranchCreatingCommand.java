@@ -1,7 +1,10 @@
-package com.atlassian.jgitflow.core;
+package com.atlassian.jgitflow.core.command;
 
 import java.io.IOException;
 
+import com.atlassian.jgitflow.core.GitFlowConfiguration;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.BranchCreatingExtension;
 import com.atlassian.jgitflow.core.extension.JGitFlowExtension;

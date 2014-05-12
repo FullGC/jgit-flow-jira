@@ -1,10 +1,13 @@
-package com.atlassian.jgitflow.core;
+package com.atlassian.jgitflow.core.command;
 
 import java.io.IOException;
 
+import com.atlassian.jgitflow.core.GitFlowConfiguration;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
-import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureStartExtension;
+import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseStartExtension;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -14,31 +17,31 @@ import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.RefSpec;
 
 /**
- * Publishes feature branch to the remote repository
+ * Publishes release branch to the remote repository
  * <p/>
  * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
  * <p/>
- * Publish a feature:
+ * Publish a hotfix:
  * <p/>
  * <pre>
- * flow.featurePublish(&quot;feature&quot;).call();
+ * flow.releasePublish(&quot;release&quot;).call();
  * </pre>
  */
-public class FeaturePublishCommand extends AbstractGitFlowCommand<FeaturePublishCommand, Void>
+public class ReleasePublishCommand extends AbstractGitFlowCommand<ReleasePublishCommand, Void>
 {
-    private static final String SHORT_NAME = "feature-publish";
+    private static final String SHORT_NAME = "release-publish";
 
     /**
-     * Create a new feature publish command instance.
+     * Create a new release publish command instance.
      * <p></p>
-     * An instance of this class is usually obtained by calling {@link com.atlassian.jgitflow.core.JGitFlow#featurePublish(String)}
+     * An instance of this class is usually obtained by calling
+     * {@link com.atlassian.jgitflow.core.JGitFlow#hotfixPublish(String)}
      *
      * @param name     The name of the feature
      * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
-     * @param reporter
      */
-    public FeaturePublishCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public ReleasePublishCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
     {
         super(branchName, git, gfConfig, reporter);
     }
@@ -55,17 +58,15 @@ public class FeaturePublishCommand extends AbstractGitFlowCommand<FeaturePublish
     @Override
     public Void call() throws NotInitializedException, JGitFlowGitAPIException, DirtyWorkingTreeException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException
     {
-        JGitFlowExtension extension = new EmptyFeatureStartExtension();
+        JGitFlowExtension extension = new EmptyReleaseStartExtension();
 
-        String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.FEATURE);
+        String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.RELEASE);
         enforcer().requireGitFlowInitialized();
         enforcer().requireCleanWorkingTree(isAllowUntracked());
         enforcer().requireLocalBranchExists(prefixedBranchName);
 
         try
         {
-            setFetch(true);
-
             doFetchIfNeeded(extension);
 
             enforcer().requireRemoteBranchAbsent(prefixedBranchName);

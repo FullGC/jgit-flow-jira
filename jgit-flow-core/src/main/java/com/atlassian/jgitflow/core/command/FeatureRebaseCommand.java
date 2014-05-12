@@ -1,5 +1,8 @@
-package com.atlassian.jgitflow.core;
+package com.atlassian.jgitflow.core.command;
 
+import com.atlassian.jgitflow.core.GitFlowConfiguration;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 
 import org.eclipse.jgit.api.Git;
@@ -23,7 +26,7 @@ public class FeatureRebaseCommand extends AbstractGitFlowCommand<FeatureRebaseCo
     /**
      * Create a new feature rebase command instance.
      * <p></p>
-     * This command is usually run as part of a release finish by calling {@link com.atlassian.jgitflow.core.FeatureFinishCommand#setRebase(boolean)}
+     * This command is usually run as part of a release finish by calling {@link FeatureFinishCommand#setRebase(boolean)}
      *
      * @param name     The name of the feature
      * @param git      The git instance to use

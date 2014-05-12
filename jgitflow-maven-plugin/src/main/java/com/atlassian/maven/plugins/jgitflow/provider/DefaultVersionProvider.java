@@ -94,7 +94,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
     }
 
     @Override
-    public Map<String, String> getVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
+    public Map<String, String> getNextVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         Map<String, String> versions = new HashMap<String, String>();
         switch (versionType)

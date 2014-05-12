@@ -69,9 +69,9 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
 
     public String getStartLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
     {
-        JGitFlow flow = null;
+        runPreflight(ctx,reactorProjects,session);
 
-        setupProviders(ctx, session, reactorProjects);
+        JGitFlow flow = jGitFlowProvider.gitFlow();
 
         String branchName = null;
         VersionType versionType = null;
@@ -95,18 +95,32 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
         checkNotNull(branchName);
         checkNotNull(versionType);
         checkNotNull(cacheKey);
-
-        flow = jGitFlowProvider.gitFlow();
-
-        setupHelper.runCommonSetup();
-
-        setupOriginAndFetchIfNeeded.run();
-
+        
         List<MavenProject> branchProjects = checkoutAndGetProjects.run(branchName, reactorProjects);
 
         verifyInitialVersionState.run(branchType, branchProjects);
 
-        return labelProvider.getVersionLabel(versionType, cacheKey, branchProjects);
+        return labelProvider.getNextVersionLabel(versionType, cacheKey, branchProjects);
+
+    }
+
+    public String getFinishLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
+    {
+        runPreflight(ctx,reactorProjects,session);
+
+        return labelProvider.getCurrentProductionVersionLabel(branchType);
+
+    }
+
+    public void runPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
+    {
+        setupProviders(ctx, session, reactorProjects);
+
+        JGitFlow flow = jGitFlowProvider.gitFlow();
+
+        setupHelper.runCommonSetup();
+
+        setupOriginAndFetchIfNeeded.run();
 
     }
 }

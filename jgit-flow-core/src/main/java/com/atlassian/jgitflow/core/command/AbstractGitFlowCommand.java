@@ -1,7 +1,10 @@
-package com.atlassian.jgitflow.core;
+package com.atlassian.jgitflow.core.command;
 
 import java.util.concurrent.Callable;
 
+import com.atlassian.jgitflow.core.GitFlowConfiguration;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
@@ -30,7 +33,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkNotNull;
  *
  * @param <T> The return type of the call() method
  */
-public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
+public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitFlowCommand
 {
     private static final Logger log = LoggerFactory.getLogger(AbstractGitFlowCommand.class);
     protected final Git git;
@@ -122,33 +125,39 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
         }
     }
 
+    @Override
     public C setAllowUntracked(boolean allow)
     {
         this.allowUntracked = allow;
         return (C) this;
     }
 
+    @Override
     public boolean isAllowUntracked()
     {
         return allowUntracked;
     }
 
+    @Override
     public String getScmMessagePrefix()
     {
         return scmMessagePrefix;
     }
 
+    @Override
     public C setScmMessagePrefix(String scmMessagePrefix)
     {
         this.scmMessagePrefix = scmMessagePrefix;
         return (C) this;
     }
 
+    @Override
     public String getScmMessageSuffix()
     {
         return scmMessageSuffix;
     }
 
+    @Override
     public C setScmMessageSuffix(String scmMessageSuffix)
     {
         this.scmMessageSuffix = scmMessageSuffix;
@@ -161,12 +170,14 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
      * @param fetch <code>true</code> to do the fetch, <code>false</code>(default) otherwise
      * @return {@code this}
      */
+    @Override
     public C setFetch(boolean fetch)
     {
         this.fetch = fetch;
         return (C) this;
     }
 
+    @Override
     public boolean isFetch()
     {
         return fetch;
@@ -178,17 +189,20 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
      * @param push <code>true</code> to do the push, <code>false</code>(default) otherwise
      * @return {@code this}
      */
+    @Override
     public C setPush(boolean push)
     {
         this.push = push;
         return (C) this;
     }
 
+    @Override
     public boolean isPush()
     {
         return push;
     }
 
+    @Override
     public String getBranchName()
     {
         return branchName;
@@ -202,7 +216,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>
         {
             try
             {
-                command.execute(gfConfig, git, reporter);
+                command.execute(gfConfig, git,this, reporter);
             }
             catch (JGitFlowExtensionException e)
             {

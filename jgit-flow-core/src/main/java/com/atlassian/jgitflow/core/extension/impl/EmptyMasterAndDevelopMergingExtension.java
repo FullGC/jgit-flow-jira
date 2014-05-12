@@ -17,6 +17,7 @@ public abstract class EmptyMasterAndDevelopMergingExtension extends EmptyDevelop
     private final List<ExtensionCommand> beforeMasterMerge;
     private final List<ExtensionCommand> afterMasterMerge;
     
+    
     protected EmptyMasterAndDevelopMergingExtension()
     {
         this.beforeMasterCheckout = newArrayList();
@@ -68,4 +69,5 @@ public abstract class EmptyMasterAndDevelopMergingExtension extends EmptyDevelop
     {
         return Iterables.unmodifiableIterable(afterMasterMerge);
     }
+
 }

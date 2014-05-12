@@ -1,5 +1,9 @@
-package com.atlassian.jgitflow.core;
+package com.atlassian.jgitflow.core.command;
 
+import com.atlassian.jgitflow.core.GitFlowConfiguration;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
+import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.HotfixFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyHotfixFinishExtension;
@@ -104,11 +108,9 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
 
             ensureLocalBranchesNotBehindRemotes(prefixedBranchName, gfConfig.getMaster(), gfConfig.getDevelop());
 
-            Ref localBranchRef = GitHelper.getLocalBranch(git, prefixedBranchName);
-
             //first merge master
             MergeProcessExtensionWrapper masterExtension = new MergeProcessExtensionWrapper(extension.beforeMasterCheckout(), extension.afterMasterCheckout(), extension.beforeMasterMerge(), extension.afterMasterMerge());
-            masterResult = doMerge(localBranchRef, gfConfig.getMaster(), masterExtension);
+            masterResult = doMerge(prefixedBranchName, gfConfig.getMaster(), masterExtension);
 
             //now, tag master
             if (!noTag && masterResult.getMergeStatus().isSuccessful())
@@ -119,8 +121,7 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
             //IMPORTANT: we need to back-merge master into develop so that git describe works properly
             MergeProcessExtensionWrapper developExtension = new MergeProcessExtensionWrapper(extension.beforeDevelopCheckout(), extension.afterDevelopCheckout(), extension.beforeDevelopMerge(), extension.afterDevelopMerge());
 
-            Ref masterBranchRef = GitHelper.getLocalBranch(git, gfConfig.getMaster());
-            developResult = doMerge(masterBranchRef, gfConfig.getDevelop(), developExtension);
+            developResult = doMerge(gfConfig.getMaster(), gfConfig.getDevelop(), developExtension);
 
             boolean mergeSuccess = checkMergeResults(masterResult, developResult);
 

@@ -1,9 +1,12 @@
-package com.atlassian.jgitflow.core;
+package com.atlassian.jgitflow.core.command;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import com.atlassian.jgitflow.core.GitFlowConfiguration;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.FeatureFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureFinishExtension;
@@ -148,7 +151,6 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
 
             if (!noMerge)
             {
-                Ref localBranchRef = GitHelper.getLocalBranch(git, prefixedBranchName);
 
                 RevCommit developCommit = GitHelper.getLatestCommit(git, gfConfig.getDevelop());
                 RevCommit featureCommit = GitHelper.getLatestCommit(git, prefixedBranchName);
@@ -158,11 +160,11 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
                 MergeProcessExtensionWrapper developExtension = new MergeProcessExtensionWrapper(extension.beforeDevelopCheckout(), extension.afterDevelopCheckout(), extension.beforeDevelopMerge(), extension.afterDevelopMerge());
                 if (commitList.size() < 2)
                 {
-                    mergeResult = doMerge(localBranchRef, gfConfig.getDevelop(), developExtension, false, MergeCommand.FastForwardMode.FF);
+                    mergeResult = doMerge(prefixedBranchName, gfConfig.getDevelop(), developExtension, false, MergeCommand.FastForwardMode.FF);
                 }
                 else
                 {
-                    mergeResult = doMerge(localBranchRef, gfConfig.getDevelop(), developExtension, squash);
+                    mergeResult = doMerge(prefixedBranchName, gfConfig.getDevelop(), developExtension, squash);
                 }
 
                 if (null == mergeResult || mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.FAILED) || mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING))

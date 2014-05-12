@@ -50,4 +50,22 @@ public class FeatureFinishExtensionForTests extends BaseExtensionForTests<Featur
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_PUSH));
     }
+
+    @Override
+    public Iterable<ExtensionCommand> afterTopicCheckout()
+    {
+        return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_TOPIC_CHECKOUT));
+    }
+
+    @Override
+    public Iterable<ExtensionCommand> beforeTag()
+    {
+        return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE_TAG));
+    }
+
+    @Override
+    public Iterable<ExtensionCommand> afterTag()
+    {
+        return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_TAG));
+    }
 }

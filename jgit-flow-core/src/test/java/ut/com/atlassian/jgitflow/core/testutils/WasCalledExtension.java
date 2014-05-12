@@ -1,14 +1,11 @@
 package ut.com.atlassian.jgitflow.core.testutils;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
+import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
 
 import org.eclipse.jgit.api.Git;
 
@@ -31,7 +28,7 @@ public class WasCalledExtension implements ExtensionCommand
     }
 
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
     {
         this.methodCalled = true;
         if(withException)

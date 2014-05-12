@@ -9,6 +9,7 @@ import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.util.GitHelper;
+import com.atlassian.maven.plugins.jgitflow.BranchType;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
@@ -42,9 +43,9 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
 
 
     @Override
-    public String getVersionLabel(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
+    public String getNextVersionLabel(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
-        Map<String, String> versions = versionProvider.getVersionsForType(versionType, cacheKey, reactorProjects);
+        Map<String, String> versions = versionProvider.getNextVersionsForType(versionType, cacheKey, reactorProjects);
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
         String rootProjectId = ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId());
         return versions.get(rootProjectId);
@@ -156,6 +157,46 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
         }
 
         return featureName;
+    }
+
+    @Override
+    public String getCurrentProductionVersionLabel(BranchType branchType) throws MavenJGitFlowException
+    {
+        String branchLabel = "";
+        try
+        {
+            String branchPrefix = "";
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+            switch (branchType)
+            {
+                case RELEASE:
+                    branchPrefix = flow.getReleaseBranchPrefix();
+                    break;
+
+                case HOTFIX:
+                    branchPrefix = flow.getHotfixBranchPrefix();
+                    break;
+
+                default:
+                    throw new MavenJGitFlowException("Unsupported branch type '" + branchType.name() + "' while trying to get the current production branch label");
+            }
+
+            List<Ref> productionBranches = GitHelper.listBranchesWithPrefix(flow.git(), branchPrefix, flow.getReporter());
+
+            if (productionBranches.isEmpty())
+            {
+                throw new MavenJGitFlowException("Could not find current production branch of type " + branchType.name());
+            }
+            
+            String rheadPrefix = Constants.R_HEADS + branchPrefix;
+            Ref productionBranch = productionBranches.get(0);
+
+            return productionBranch.getName().substring(productionBranch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
+        }
+        catch (JGitFlowException e)
+        {
+            throw new MavenJGitFlowException("Error looking up current production branch label", e);
+        }
     }
 
     private String promptForFeatureName(String prefix, String defaultFeatureName) throws MavenJGitFlowException

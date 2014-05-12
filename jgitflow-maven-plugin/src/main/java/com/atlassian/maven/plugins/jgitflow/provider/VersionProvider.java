@@ -14,7 +14,7 @@ import org.apache.maven.project.MavenProject;
  */
 public interface VersionProvider
 {
-    Map<String, String> getVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException;
+    Map<String, String> getNextVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException;
     
     /**
      * Returns the (next) release versions for all of the projects in the reactor.

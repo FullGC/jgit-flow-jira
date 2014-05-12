@@ -16,6 +16,9 @@ public abstract class EmptyDevelopMergingExtension extends EmptyJGitFlowExtensio
     private final List<ExtensionCommand> afterDevelopCheckout;
     private final List<ExtensionCommand> beforeDevelopMerge;
     private final List<ExtensionCommand> afterDevelopMerge;
+    private final List<ExtensionCommand> afterTopicCheckout;
+    private final List<ExtensionCommand> beforeTag;
+    private final List<ExtensionCommand> afterTag;
 
     protected EmptyDevelopMergingExtension()
     {
@@ -23,6 +26,9 @@ public abstract class EmptyDevelopMergingExtension extends EmptyJGitFlowExtensio
         this.afterDevelopCheckout = newArrayList();
         this.beforeDevelopMerge = newArrayList();
         this.afterDevelopMerge = newArrayList();
+        this.afterTopicCheckout = newArrayList();
+        this.beforeTag = newArrayList();
+        this.afterTag = newArrayList();
     }
 
     public void addBeforeDevelopCheckoutCommands(ExtensionCommand ... commands)
@@ -43,6 +49,21 @@ public abstract class EmptyDevelopMergingExtension extends EmptyJGitFlowExtensio
     public void addAfterDevelopMergeCommands(ExtensionCommand ... commands)
     {
         afterDevelopMerge.addAll(Arrays.asList(commands));
+    }
+    
+    public void addAfterTopicCheckoutCommands(ExtensionCommand ... commands)
+    {
+        afterTopicCheckout.addAll(Arrays.asList(commands));
+    }
+
+    public void addBeforeTagCommands(ExtensionCommand ... commands)
+    {
+        beforeTag.addAll(Arrays.asList(commands));
+    }
+
+    public void addAfterTagCommands(ExtensionCommand ... commands)
+    {
+        afterTag.addAll(Arrays.asList(commands));
     }
     
     @Override
@@ -67,5 +88,23 @@ public abstract class EmptyDevelopMergingExtension extends EmptyJGitFlowExtensio
     public Iterable<ExtensionCommand> afterDevelopMerge()
     {
         return Iterables.unmodifiableIterable(afterDevelopMerge);
+    }
+
+    @Override
+    public Iterable<ExtensionCommand> beforeTag()
+    {
+        return Iterables.unmodifiableIterable(beforeTag);
+    }
+
+    @Override
+    public Iterable<ExtensionCommand> afterTag()
+    {
+        return Iterables.unmodifiableIterable(afterTag);
+    }
+
+    @Override
+    public Iterable<ExtensionCommand> afterTopicCheckout()
+    {
+        return Iterables.unmodifiableIterable(afterTopicCheckout);
     }
 }

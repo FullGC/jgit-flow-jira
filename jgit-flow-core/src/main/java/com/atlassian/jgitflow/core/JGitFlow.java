@@ -3,6 +3,7 @@ package com.atlassian.jgitflow.core;
 import java.io.File;
 import java.io.IOException;
 
+import com.atlassian.jgitflow.core.command.*;
 import com.atlassian.jgitflow.core.exception.AlreadyInitializedException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
@@ -366,7 +367,7 @@ public class JGitFlow
      * Returns a command object to start a feature
      *
      * @param name
-     * @return a {@link com.atlassian.jgitflow.core.FeatureStartCommand}
+     * @return a {@link com.atlassian.jgitflow.core.command.FeatureStartCommand}
      */
     public FeatureStartCommand featureStart(String name)
     {
@@ -377,7 +378,7 @@ public class JGitFlow
      * Returns a command object to finish a feature
      *
      * @param name
-     * @return a {@link com.atlassian.jgitflow.core.FeatureFinishCommand}
+     * @return a {@link com.atlassian.jgitflow.core.command.FeatureFinishCommand}
      */
     public FeatureFinishCommand featureFinish(String name)
     {
@@ -388,7 +389,7 @@ public class JGitFlow
      * Returns a command object to publish a feature
      *
      * @param name
-     * @return a {@link com.atlassian.jgitflow.core.FeaturePublishCommand}
+     * @return a {@link com.atlassian.jgitflow.core.command.FeaturePublishCommand}
      */
     public FeaturePublishCommand featurePublish(String name)
     {
@@ -399,7 +400,7 @@ public class JGitFlow
      * Returns a command object to start a release
      *
      * @param name
-     * @return a {@link com.atlassian.jgitflow.core.ReleaseStartCommand}
+     * @return a {@link com.atlassian.jgitflow.core.command.ReleaseStartCommand}
      */
     public ReleaseStartCommand releaseStart(String name)
     {
@@ -410,7 +411,7 @@ public class JGitFlow
      * Returns a command object to finish a release
      *
      * @param name
-     * @return a {@link com.atlassian.jgitflow.core.ReleaseFinishCommand}
+     * @return a {@link com.atlassian.jgitflow.core.command.ReleaseFinishCommand}
      */
     public ReleaseFinishCommand releaseFinish(String name)
     {
@@ -421,7 +422,7 @@ public class JGitFlow
      * Returns a command object to publish a release
      *
      * @param name
-     * @return a {@link com.atlassian.jgitflow.core.ReleasePublishCommand}
+     * @return a {@link com.atlassian.jgitflow.core.command.ReleasePublishCommand}
      */
     public ReleasePublishCommand releasePublish(String name)
     {
@@ -432,7 +433,7 @@ public class JGitFlow
      * Returns a command object to start a hotfix
      *
      * @param name
-     * @return a {@link com.atlassian.jgitflow.core.HotfixStartCommand}
+     * @return a {@link com.atlassian.jgitflow.core.command.HotfixStartCommand}
      */
     public HotfixStartCommand hotfixStart(String name)
     {
@@ -443,7 +444,7 @@ public class JGitFlow
      * Returns a command object to finish a hotfix
      *
      * @param name
-     * @return a {@link com.atlassian.jgitflow.core.HotfixFinishCommand}
+     * @return a {@link com.atlassian.jgitflow.core.command.HotfixFinishCommand}
      */
     public HotfixFinishCommand hotfixFinish(String name)
     {
@@ -454,7 +455,7 @@ public class JGitFlow
      * Returns a command object to publish a hotfix
      *
      * @param name
-     * @return a {@link com.atlassian.jgitflow.core.HotfixPublishCommand}
+     * @return a {@link com.atlassian.jgitflow.core.command.HotfixPublishCommand}
      */
     public HotfixPublishCommand hotfixPublish(String name)
     {

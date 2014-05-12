@@ -79,6 +79,11 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             Status status = git.status().call();
             Repository repository = git.getRepository();
 
+            if (getLogger().isDebugEnabled())
+            {
+                getLogger().debug("committing all poms on branch '" + repository.getBranch() + "'");
+            }
+            
             File canonicalRepoDir;
 
             {
@@ -127,6 +132,10 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             }
         }
         catch (GitAPIException e)
+        {
+            throw new MavenJGitFlowException("error committing pom changes: " + e.getMessage(), e);
+        }
+        catch (IOException e)
         {
             throw new MavenJGitFlowException("error committing pom changes: " + e.getMessage(), e);
         }

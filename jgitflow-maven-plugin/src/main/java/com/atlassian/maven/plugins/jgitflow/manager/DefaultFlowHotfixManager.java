@@ -168,7 +168,7 @@ public class DefaultFlowHotfixManager extends AbstractFlowReleaseManager
                 setupHelper.ensureOrigin();
             }
 
-            hotfixLabel = labelProvider.getVersionLabel(VersionType.HOTFIX, ProjectCacheKey.HOTFIX_LABEL, masterProjects);
+            hotfixLabel = labelProvider.getNextVersionLabel(VersionType.HOTFIX, ProjectCacheKey.HOTFIX_LABEL, masterProjects);
             flow.hotfixStart(hotfixLabel)
                 .setAllowUntracked(ctx.isAllowUntracked())
                 .setPush(ctx.isPushHotfixes())

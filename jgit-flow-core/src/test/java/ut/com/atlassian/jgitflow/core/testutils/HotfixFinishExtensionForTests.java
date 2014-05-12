@@ -62,4 +62,22 @@ public class HotfixFinishExtensionForTests extends BaseExtensionForTests<Release
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(BaseExtensionForTests.AFTER_PUSH));
     }
+
+    @Override
+    public Iterable<ExtensionCommand> afterTopicCheckout()
+    {
+        return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_TOPIC_CHECKOUT));
+    }
+
+    @Override
+    public Iterable<ExtensionCommand> beforeTag()
+    {
+        return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE_TAG));
+    }
+
+    @Override
+    public Iterable<ExtensionCommand> afterTag()
+    {
+        return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_TAG));
+    }
 }

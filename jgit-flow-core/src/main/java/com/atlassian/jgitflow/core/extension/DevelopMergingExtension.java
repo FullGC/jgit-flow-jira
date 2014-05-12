@@ -1,6 +1,6 @@
 package com.atlassian.jgitflow.core.extension;
 
-public interface DevelopMergingExtension extends JGitFlowExtension
+public interface DevelopMergingExtension extends BranchMergingExtension
 {
     Iterable<ExtensionCommand> beforeDevelopCheckout();
 
