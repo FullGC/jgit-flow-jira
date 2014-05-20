@@ -33,6 +33,7 @@ import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -103,89 +104,18 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     {
         JGitFlow flow = null;
 
-        setupProviders(ctx,session,reactorProjects);
-        
-        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-        MavenSession currentSession = session;
-
         try
         {
+            finishExtension.init();
+
+            String featureLabel = getFinishLabelAndRunPreflight(ctx,reactorProjects,session);
             flow = jGitFlowProvider.gitFlow();
 
             JGitFlowReporter reporter = flow.getReporter();
 
-            setupHelper.runCommonSetup();
-
-            if (ctx.isPushFeatures() || ctx.isPullDevelop())
-            {
-                setupHelper.ensureOrigin();
-            }
-
-            //do a pull if needed
-            if (GitHelper.remoteBranchExists(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
-            {
-                if (ctx.isPullDevelop())
-                {
-                    reporter.debugText("finishFeature", "pulling develop before remote behind check");
-                    reporter.flush();
-
-                    flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-                    flow.git().pull().call();
-                }
-
-                if (GitHelper.localBranchBehindRemote(flow.git(), flow.getDevelopBranchName(), flow.getReporter()))
-                {
-                    reporter.errorText("feature-finish", "local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
-                    reporter.flush();
-                    throw new BranchOutOfDateException("local branch '" + flow.getDevelopBranchName() + "' is behind the remote branch");
-                }
-            }
-
-            String featureLabel = labelProvider.getFeatureFinishName();
-
-            String prefixedBranchName = flow.getFeatureBranchPrefix() + featureLabel;
-
-            // make sure we are on specific feature branch
-            flow.git().checkout().setName(prefixedBranchName).call();
-
-            //make sure we're not behind remote
-            if (GitHelper.remoteBranchExists(flow.git(), prefixedBranchName, reporter))
-            {
-                if (GitHelper.localBranchBehindRemote(flow.git(), prefixedBranchName, reporter))
-                {
-                    reporter.errorText("feature-finish", "local branch '" + prefixedBranchName + "' is behind the remote branch");
-                    reporter.flush();
-                    throw new BranchOutOfDateException("local branch '" + prefixedBranchName + "' is behind the remote branch");
-                }
-            }
-
-            if (ctx.isEnableFeatureVersions())
-            {
-                updateFeaturePomsWithNonFeatureVersion(featureLabel, reactorProjects, session);
-
-                //reload the reactor projects
-                MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(prefixedBranchName, ReleaseUtil.getRootProject(reactorProjects), session);
-                List<MavenProject> featureProjects = featureSession.getSortedProjects();
-
-                currentSession = featureSession;
-                rootProject = ReleaseUtil.getRootProject(featureProjects);
-            }
-
-
-            if (!ctx.isNoBuild())
-            {
-                try
-                {
-                    mavenExecutionHelper.execute(rootProject, currentSession);
-                }
-                catch (MavenExecutorException e)
-                {
-                    throw new MavenJGitFlowException("Error building: " + e.getMessage(), e);
-                }
-            }
-
             getLogger().info("running jgitflow feature finish...");
-            flow.featureFinish(featureLabel)
+            
+            MergeResult mergeResult = flow.featureFinish(featureLabel)
                 .setKeepBranch(ctx.isKeepBranch())
                 .setSquash(ctx.isSquash())
                 .setRebase(ctx.isFeatureRebase())
@@ -194,10 +124,17 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                 .setNoMerge(ctx.isNoFeatureMerge())
                 .setScmMessagePrefix(ctx.getScmCommentPrefix())
                 .setScmMessageSuffix(ctx.getScmCommentSuffix())
+                .setExtension(finishExtension)
                 .call();
+            
+            if (!mergeResult.getMergeStatus().isSuccessful())
+            {
+                getLogger().error("Error merging into " + flow.getDevelopBranchName() + ":");
+                getLogger().error(mergeResult.toString());
+                getLogger().error("see .git/jgitflow.log for more info");
 
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+                throw new MavenJGitFlowException("Error while merging feature!");
+            }
 
         }
         catch (JGitFlowException e)
@@ -205,14 +142,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
             throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
         catch (GitAPIException e)
-        {
-            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
-        }
-        catch (ReactorReloadException e)
-        {
-            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
-        }
-        catch (IOException e)
         {
             throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
@@ -320,40 +249,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
     }
 
-    private void updateFeaturePomsWithNonFeatureVersion(String featureLabel, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
-    {
-        try
-        {
-            ReleaseContext ctx = contextProvider.getContext();
-            JGitFlow flow = jGitFlowProvider.gitFlow();
-            //reload the reactor projects
-            MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(flow.getFeatureBranchPrefix() + featureLabel, ReleaseUtil.getRootProject(originalProjects), session);
-            List<MavenProject> featureProjects = featureSession.getSortedProjects();
-
-            String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureLabel);
-            featureVersion = StringUtils.replace(featureVersion, "-", "_");
-
-            pomUpdater.removeFeatureVersionFromSnapshotVersions(ProjectCacheKey.FEATURE_FINISH_LABEL, featureVersion, featureProjects);
-
-            projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version" + ctx.getScmCommentSuffix());
-        }
-        catch (GitAPIException e)
-        {
-            throw new MavenJGitFlowException("Error finishing feature: " + e.getMessage(), e);
-        }
-        catch (ReactorReloadException e)
-        {
-            throw new MavenJGitFlowException("Error finishing feature: " + e.getMessage(), e);
-        }
-        catch (IOException e)
-        {
-            throw new MavenJGitFlowException("Error finishing feature: " + e.getMessage(), e);
-        }
-        catch (JGitFlowException e)
-        {
-            throw new MavenJGitFlowException("Error finishing feature: " + e.getMessage(), e);
-        }
-    }
+    
 
     public String getStartLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
     {
@@ -367,6 +263,14 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         verifyInitialVersionState.run(BranchType.FEATURE, branchProjects);
         
         return labelProvider.getFeatureStartName();
+
+    }
+
+    public String getFinishLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
+    {
+        runPreflight(ctx,reactorProjects,session);
+
+        return labelProvider.getFeatureFinishName();
 
     }
 

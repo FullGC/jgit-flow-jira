@@ -65,6 +65,10 @@ public class VerifyReleaseVersionStateAndDepsCommand implements ExtensionCommand
                     cacheKey = ProjectCacheKey.MASTER_BRANCH;
                     break;
 
+                case FEATURE:
+                    cacheKey = ProjectCacheKey.FEATURE_BRANCH;
+                    break;
+
                 default:
                     throw new JGitFlowExtensionException("Unsupported branch type '" + branchType.name() + "' while running " + this.getClass().getSimpleName() + " command");
             }

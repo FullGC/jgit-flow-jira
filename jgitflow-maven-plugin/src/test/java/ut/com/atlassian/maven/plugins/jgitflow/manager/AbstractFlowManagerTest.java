@@ -275,6 +275,11 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         return createReactorProjects(path, path, subpath, true);
     }
 
+    protected List<MavenProject> createReactorProjects(String path, String subpath, boolean clean) throws Exception
+    {
+        return createReactorProjects(path, path, subpath, clean);
+    }
+
     protected List<MavenProject> createReactorProjectsNoClean(String path, String subpath) throws Exception
     {
         return createReactorProjects(path, path, subpath, false);

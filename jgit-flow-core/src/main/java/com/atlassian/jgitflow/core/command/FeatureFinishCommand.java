@@ -141,6 +141,9 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
 
             ensureLocalBranchesNotBehindRemotes(prefixedBranchName, prefixedBranchName, gfConfig.getDevelop());
 
+            //checkout the branch to merge just so we can run any extensions that need to be on this branch
+            checkoutTopicBranch(prefixedBranchName,extension);
+
             if (rebase)
             {
                 runExtensionCommands(extension.beforeRebase());

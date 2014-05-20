@@ -9,25 +9,25 @@ import org.codehaus.plexus.component.annotations.Requirement;
 public abstract class ProductionBranchMergingPluginExtension extends EmptyMasterAndDevelopMergingExtension implements InitializingExtension
 {
     @Requirement
-    EnsureOriginCommand ensureOriginCommand;
+    private EnsureOriginCommand ensureOriginCommand;
 
     @Requirement
-    PullDevelopCommand pullDevelopCommand;
+    private PullDevelopCommand pullDevelopCommand;
 
     @Requirement
-    PullMasterCommand pullMasterCommand;
+    private PullMasterCommand pullMasterCommand;
 
     @Requirement
-    UpdatePomsWithNonSnapshotCommand updatePomsWithNonSnapshotCommand;
+    private UpdatePomsWithNonSnapshotCommand updatePomsWithNonSnapshotCommand;
     
     @Requirement
-    VerifyReleaseVersionStateAndDepsCommand verifyReleaseVersionStateAndDepsCommand;
+    private VerifyReleaseVersionStateAndDepsCommand verifyReleaseVersionStateAndDepsCommand;
     
     @Requirement
-    MavenBuildCommand mavenBuildCommand;
+    private MavenBuildCommand mavenBuildCommand;
 
     @Requirement
-    TagMessageUpdateCommand tagMessageUpdateCommand;
+    private TagMessageUpdateCommand tagMessageUpdateCommand;
 
     @Override
     public void init()

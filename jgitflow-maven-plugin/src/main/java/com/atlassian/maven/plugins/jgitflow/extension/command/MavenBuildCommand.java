@@ -54,6 +54,6 @@ public class MavenBuildCommand implements ExtensionCommand
     @Override
     public ExtensionFailStrategy failStrategy()
     {
-        return null;
+        return ExtensionFailStrategy.ERROR;
     }
 }

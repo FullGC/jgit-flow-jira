@@ -93,18 +93,29 @@ public class FinishScriptHelper
         remoteGit.add().addFilepattern(".").call();
         remoteGit.commit().setMessage("updating develop versions").call();
 
+        String branchVersion = releaseVersion;
+
+        if("feature/".equals(branchPrefix))
+        {
+            branchVersion = StringUtils.replace(releaseVersion, "-", "_");
+            branchVersion = StringUtils.substringBeforeLast(developVersion, "-SNAPSHOT") + "-" + branchVersion + "-SNAPSHOT";
+        }
+        
         remoteGit.branchCreate().setName(branchPrefix + releaseVersion).call();
         remoteGit.commit().setMessage("added branch " + branchPrefix + releaseVersion).call();
         remoteGit.checkout().setName(branchPrefix + releaseVersion).call();
 
-        //update release Version
+        //update branch Version
         Collection<File> releasePoms = FileUtils.listFiles(remoteProjectDir, FileFilterUtils.nameFileFilter("pom.xml"), FileFilterUtils.directoryFileFilter());
 
+        //if the prefix is feature, we need special handling of the version/branch
+        
+        
         for (File releasePom : releasePoms)
         {
-            System.out.println("updating pom for release: " + releasePom.getAbsolutePath());
+            System.out.println("updating pom for branch: " + releasePom.getAbsolutePath());
             String pomString = FileUtils.readFileToString(releasePom);
-            String updatedReleasePom = StringUtils.replace(pomString, "<version>" + developVersion + "</version>", "<version>" + releaseVersion + "-SNAPSHOT</version>");
+            String updatedReleasePom = StringUtils.replace(pomString, "<version>" + developVersion + "</version>", "<version>" + branchVersion + "</version>");
             FileUtils.writeStringToFile(releasePom, updatedReleasePom);
         }
 
