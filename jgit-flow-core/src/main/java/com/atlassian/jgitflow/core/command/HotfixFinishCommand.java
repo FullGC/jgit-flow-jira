@@ -108,6 +108,9 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
 
             ensureLocalBranchesNotBehindRemotes(prefixedBranchName, gfConfig.getMaster(), gfConfig.getDevelop());
 
+            //checkout the branch to merge just so we can run any extensions that need to be on this branch
+            checkoutTopicBranch(prefixedBranchName,extension);
+
             //first merge master
             MergeProcessExtensionWrapper masterExtension = new MergeProcessExtensionWrapper(extension.beforeMasterCheckout(), extension.afterMasterCheckout(), extension.beforeMasterMerge(), extension.afterMasterMerge());
             masterResult = doMerge(prefixedBranchName, gfConfig.getMaster(), masterExtension);
@@ -115,7 +118,7 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
             //now, tag master
             if (!noTag && masterResult.getMergeStatus().isSuccessful())
             {
-                doTag(gfConfig.getMaster(), message, masterResult);
+                doTag(gfConfig.getMaster(), message, masterResult,extension);
             }
 
             //IMPORTANT: we need to back-merge master into develop so that git describe works properly

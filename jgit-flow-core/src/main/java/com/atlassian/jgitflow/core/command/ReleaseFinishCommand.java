@@ -114,13 +114,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
             ensureLocalBranchesNotBehindRemotes(prefixedBranchName, gfConfig.getMaster(), gfConfig.getDevelop());
 
             //checkout the branch to merge just so we can run any extensions that need to be on this branch
-            if(log.isDebugEnabled())
-            {
-                log.debug("checking out topic branch '" + prefixedBranchName + "'...");    
-            }
-            
-            git.checkout().setName(prefixedBranchName).call();
-            runExtensionCommands(extension.afterTopicCheckout());
+            checkoutTopicBranch(prefixedBranchName,extension);
 
             boolean mergeSuccess = false;
             if (!noMerge)
@@ -137,9 +131,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
                 //now, tag master
                 if (!noTag && masterResult.getMergeStatus().isSuccessful())
                 {
-                    runExtensionCommands(extension.beforeTag());
-                    doTag(gfConfig.getMaster(), getMessage(), masterResult);
-                    runExtensionCommands(extension.afterTag());
+                    doTag(gfConfig.getMaster(), getMessage(), masterResult, extension);
                 }
 
                 //IMPORTANT: we need to back-merge master into develop so that git describe works properly

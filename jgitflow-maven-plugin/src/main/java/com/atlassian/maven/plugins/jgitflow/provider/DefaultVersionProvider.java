@@ -38,10 +38,10 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
     private final Map<ProjectCacheKey, Map<String, String>> nextHotfixVersions;
     private final Map<ProjectCacheKey, Map<String, String>> lastReleaseVersions;
     private final Map<ProjectCacheKey, Map<String, String>> originalVersions;
-    
+
     @Requirement
     private PrettyPrompter prompter;
-    
+
     @Requirement
     private MavenExecutionHelper mavenHelper;
 
@@ -51,7 +51,8 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
     @Requirement
     private ContextProvider contextProvider;
 
-    private MavenSession session;
+    @Requirement
+    private MavenSessionProvider sessionProvider;
 
     public DefaultVersionProvider()
     {
@@ -226,7 +227,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
                 Map<String, String> versions = new HashMap<String, String>();
 
                 JGitFlow flow = jGitFlowProvider.gitFlow();
-                MavenSession masterSession = mavenHelper.getSessionForBranch(flow.getMasterBranchName(), rootProject, session);
+                MavenSession masterSession = mavenHelper.getSessionForBranch(flow.getMasterBranchName(), rootProject, sessionProvider.getSession());
 
                 List<MavenProject> masterProjects = masterSession.getSortedProjects();
 

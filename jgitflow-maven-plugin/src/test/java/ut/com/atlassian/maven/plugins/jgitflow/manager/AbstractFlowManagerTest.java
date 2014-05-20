@@ -158,6 +158,53 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         assertTrue(flow.git().status().call().isClean());
     }
 
+    protected void basicHotfixRewriteTest(String projectName) throws Exception
+    {
+        basicHotfixRewriteTest(projectName,"");
+    }
+
+    protected void basicHotfixRewriteTest(String projectName, String releaseVersion) throws Exception
+    {
+        List<MavenProject> projects = createReactorProjects("rewrite-for-hotfix",projectName);
+        File projectRoot = projects.get(0).getBasedir();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+
+        if(!Strings.isNullOrEmpty(releaseVersion))
+        {
+            ctx.setDefaultReleaseVersion(releaseVersion);
+        }
+
+        ctx.setInteractive(false).setNoTag(true);
+
+        basicHotfixRewriteTest(projectName, ctx);
+    }
+
+    protected void basicHotfixRewriteTest(String projectName, ReleaseContext ctx) throws Exception
+    {
+        List<MavenProject> projects = createReactorProjects("rewrite-for-hotfix",projectName);
+        File projectRoot = ctx.getBaseDir();
+
+        JGitFlow flow = JGitFlow.getOrInit(projectRoot);
+        flow.git().checkout().setName(flow.getMasterBranchName()).call();
+        assertOnMaster(flow);
+
+        initialCommitAll(flow);
+        FlowReleaseManager relman = getHotfixManager();
+
+        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+
+        ctx.setInteractive(false);
+        
+        relman.start(ctx,projects,session);
+
+        assertOnHotfix(flow);
+
+        compareSnapPomFiles(projects);
+
+        assertTrue(flow.git().status().call().isClean());
+    }
+
     protected void initialCommitAll(JGitFlow flow) throws Exception
     {
         flow.git().add().addFilepattern(".").call();
@@ -167,6 +214,11 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     protected void assertOnDevelop(JGitFlow flow) throws Exception
     {
         assertEquals(flow.getDevelopBranchName(), flow.git().getRepository().getBranch());
+    }
+
+    protected void assertOnMaster(JGitFlow flow) throws Exception
+    {
+        assertEquals(flow.getMasterBranchName(), flow.git().getRepository().getBranch());
     }
 
     protected void assertOnRelease(JGitFlow flow, String version) throws Exception
@@ -193,14 +245,19 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         }
     }
 
-    protected void assertOnHotfix(JGitFlow flow, String version) throws Exception
+    protected void assertOnHotfix(JGitFlow flow) throws Exception
     {
-        assertEquals(flow.getHotfixBranchPrefix() + version, flow.git().getRepository().getBranch());
+        assertTrue(flow.git().getRepository().getBranch().contains(flow.getHotfixBranchPrefix()));
     }
 
     protected FlowReleaseManager getReleaseManager() throws Exception
     {
         return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"release");
+    }
+    
+    protected FlowReleaseManager getHotfixManager() throws Exception
+    {
+        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"hotfix");
     }
 
     protected FlowReleaseManager getFeatureManager() throws Exception

@@ -7,12 +7,14 @@ import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.exception.LocalBranchMissingException;
+import com.atlassian.jgitflow.core.extension.BranchMergingExtension;
 import com.atlassian.jgitflow.core.extension.impl.MergeProcessExtensionWrapper;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -101,8 +103,9 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
         return mergeResult;
     }
 
-    protected void doTag(String branchToTag, String tagMessage, MergeResult resultToLog) throws GitAPIException, JGitFlowGitAPIException
+    protected void doTag(String branchToTag, String tagMessage, MergeResult resultToLog, BranchMergingExtension extension) throws GitAPIException, JGitFlowGitAPIException, JGitFlowExtensionException
     {
+        runExtensionCommands(extension.beforeTag());
         git.checkout().setName(branchToTag).call();
         String tagName = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.VERSIONTAG.configKey()) + getBranchName();
 
@@ -118,6 +121,8 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
             );
             git.tag().setName(tagName).setMessage(getScmMessagePrefix() + tagMessage + getScmMessageSuffix()).call();
         }
+
+        runExtensionCommands(extension.afterTag());
     }
 
     protected void cleanupBranchesIfNeeded(String branchToCheckout, String... branchesToDelete) throws GitAPIException, JGitFlowGitAPIException
@@ -145,6 +150,12 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
         }
     }
 
+    protected void checkoutTopicBranch(String branchName, BranchMergingExtension extension) throws GitAPIException, JGitFlowExtensionException
+    {
+        git.checkout().setName(branchName).call();
+        runExtensionCommands(extension.afterTopicCheckout());    
+    }
+    
     protected MergeResult createEmptyMergeResult()
     {
         return new MergeResult(null, null, new ObjectId[]{null, null}, MergeResult.MergeStatus.ALREADY_UP_TO_DATE, MergeStrategy.RESOLVE, null);

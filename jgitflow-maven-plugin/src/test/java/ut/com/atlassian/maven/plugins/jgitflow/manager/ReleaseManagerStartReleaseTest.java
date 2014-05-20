@@ -317,12 +317,6 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     }
 
     @Test
-    public void releaseWithDifferentModuleVersions() throws Exception
-    {
-        basicReleaseRewriteTest("modules-with-different-versions");
-    }
-
-    @Test
     public void releaseWithDeepMultimodule() throws Exception
     {
         basicReleaseRewriteTest("multimodule-with-deep-subprojects");
@@ -376,12 +370,6 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         assertOnRelease(flow, "1.0");
 
         compareSnapPomFiles(projects);
-    }
-
-    @Test
-    public void releaseWithPropertyDependencyCoord() throws Exception
-    {
-        basicReleaseRewriteTest("pom-with-property-dependency-coordinate");
     }
 
     @Test

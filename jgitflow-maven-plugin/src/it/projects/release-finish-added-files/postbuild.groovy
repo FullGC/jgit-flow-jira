@@ -1,10 +1,10 @@
 import com.atlassian.jgitflow.core.JGitFlow
-import com.atlassian.maven.plugins.jgitflow.it.ReleaseFinishScriptHelper
+import com.atlassian.maven.plugins.jgitflow.it.FinishScriptHelper
 import static org.junit.Assert.assertTrue
 
 try
 {
-    helper = new ReleaseFinishScriptHelper(basedir, localRepositoryPath, context)
+    helper = new FinishScriptHelper(basedir, localRepositoryPath, context)
     flow = JGitFlow.getOrInit(basedir)
     flow.git().checkout().setName("master").call()
 

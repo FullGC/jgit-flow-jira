@@ -54,7 +54,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
             @Override
             public String apply(String input)
             {
-                if (input.equalsIgnoreCase(versionLabel + delimitedVersionSuffix + "-SNAPSHOT"))
+                if (input.endsWith(delimitedVersionSuffix + "-SNAPSHOT"))
                 {
                     return StringUtils.substringBeforeLast(input, delimitedVersionSuffix + "-SNAPSHOT");
                 }
@@ -71,9 +71,9 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     @Override
     public void addSnapshotToPomVersions(ProjectCacheKey cacheKey, final VersionType versionType, final String versionLabel, final String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
-        getLogger().info("adding snapshot from pom versions...");
+        getLogger().info("adding snapshot to pom versions...");
         
-        ReleaseContext ctx = contextProvider.getContext();
+        final ReleaseContext ctx = contextProvider.getContext();
         
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
@@ -86,14 +86,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
             @Override
             public String apply(String input)
             {
-                if (input.equalsIgnoreCase(versionLabel))
-                {
-                    return input + delimitedVersionSuffix + "-SNAPSHOT";
-                }
-                else
-                {
-                    return input;
-                }
+                return input + delimitedVersionSuffix + "-SNAPSHOT";
             }
         });
 
