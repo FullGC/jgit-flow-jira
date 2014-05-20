@@ -8,9 +8,12 @@ import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.util.GitHelper;
+import com.atlassian.maven.plugins.jgitflow.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
+import com.atlassian.maven.plugins.jgitflow.extension.FeatureFinishPluginExtension;
+import com.atlassian.maven.plugins.jgitflow.extension.FeatureStartPluginExtension;
 import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
@@ -31,6 +34,7 @@ import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.RefSpec;
 
@@ -40,9 +44,6 @@ import org.eclipse.jgit.transport.RefSpec;
 @Component(role = FlowReleaseManager.class, hint = "feature")
 public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 {
-    @Requirement
-    private JGitFlowSetupHelper setupHelper;
-
     @Requirement
     private MavenExecutionHelper mavenExecutionHelper;
 
@@ -54,39 +55,34 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
     @Requirement
     private PomUpdater pomUpdater;
-    
+
     @Requirement
-    private JGitFlowProvider jGitFlowProvider;
+    private FeatureStartPluginExtension startExtension;
+
+    @Requirement
+    private FeatureFinishPluginExtension finishExtension;
 
     @Override
     public void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws MavenJGitFlowException
     {
         JGitFlow flow = null;
-        setupProviders(ctx,session,reactorProjects);
         
         try
         {
+            String featureName = getStartLabelAndRunPreflight(ctx,reactorProjects,session);
+            
             flow = jGitFlowProvider.gitFlow();
 
-            setupHelper.runCommonSetup();
+            startExtension.init();
 
-            String featureName = startFeature();
-
-            if (ctx.isEnableFeatureVersions())
-            {
-                updateFeaturePomsWithFeatureVersion(featureName,reactorProjects, session);
-            }
-
-            if (ctx.isPushFeatures())
-            {
-                final String prefixedBranchName = flow.getFeatureBranchPrefix() + featureName;
-                RefSpec branchSpec = new RefSpec(prefixedBranchName);
-                flow.git().push().setRemote("origin").setRefSpecs(branchSpec).call();
-            }
-        }
-        catch (GitAPIException e)
-        {
-            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
+            flow.featureStart(featureName)
+                .setAllowUntracked(ctx.isAllowUntracked())
+                .setPush(ctx.isPushFeatures())
+                .setStartCommit(ctx.getStartCommit())
+                .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                .setScmMessageSuffix(ctx.getScmCommentSuffix())
+                .setExtension(startExtension)
+                .call();
         }
         catch (JGitFlowException e)
         {
@@ -324,80 +320,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         }
     }
 
-    private String startFeature() throws MavenJGitFlowException
-    {
-        String featureName = "";
-
-        try
-        {
-            ReleaseContext ctx = contextProvider.getContext();
-            JGitFlow flow = jGitFlowProvider.gitFlow();
-            
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-
-            featureName = labelProvider.getFeatureStartName();
-
-            if (ctx.isPushFeatures())
-            {
-                setupHelper.ensureOrigin();
-            }
-
-            flow.featureStart(featureName)
-                .setAllowUntracked(ctx.isAllowUntracked())
-                .setPush(ctx.isPushFeatures())
-                .setStartCommit(ctx.getStartCommit())
-                .setScmMessagePrefix(ctx.getScmCommentPrefix())
-                .setScmMessageSuffix(ctx.getScmCommentSuffix())
-                .call();
-        }
-        catch (GitAPIException e)
-        {
-            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
-        }
-        catch (JGitFlowException e)
-        {
-            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
-        }
-
-        return featureName;
-    }
-
-    private void updateFeaturePomsWithFeatureVersion(String featureName, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
-    {
-        try
-        {
-            ReleaseContext ctx = contextProvider.getContext();
-            JGitFlow flow = jGitFlowProvider.gitFlow();
-            //reload the reactor projects
-            MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(flow.getFeatureBranchPrefix() + featureName, ReleaseUtil.getRootProject(originalProjects), session);
-            List<MavenProject> featureProjects = featureSession.getSortedProjects();
-
-            String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureName);
-            featureVersion = StringUtils.replace(featureVersion, "-", "_");
-
-            pomUpdater.addFeatureVersionToSnapshotVersions(ProjectCacheKey.FEATURE_START_LABEL, featureVersion, featureProjects);
-
-            projectHelper.commitAllPoms(flow.git(), featureProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version" + ctx.getScmCommentSuffix());
-        }
-        catch (GitAPIException e)
-        {
-            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
-        }
-        catch (ReactorReloadException e)
-        {
-            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
-        }
-        catch (IOException e)
-        {
-            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
-        }
-        catch (JGitFlowException e)
-        {
-            throw new MavenJGitFlowException("Error starting feature: " + e.getMessage(), e);
-        }
-    }
-
     private void updateFeaturePomsWithNonFeatureVersion(String featureLabel, List<MavenProject> originalProjects, MavenSession session) throws MavenJGitFlowException
     {
         try
@@ -431,6 +353,21 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             throw new MavenJGitFlowException("Error finishing feature: " + e.getMessage(), e);
         }
+    }
+
+    public String getStartLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
+    {
+        runPreflight(ctx,reactorProjects,session);
+
+        JGitFlow flow = jGitFlowProvider.gitFlow();
+
+        //make sure we're on develop
+        List<MavenProject> branchProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName(), reactorProjects);
+
+        verifyInitialVersionState.run(BranchType.FEATURE, branchProjects);
+        
+        return labelProvider.getFeatureStartName();
+
     }
 
 }

@@ -101,48 +101,5 @@ public class FeatureManagerStartFeatureTest extends AbstractFlowManagerTest
         String pom = FileUtils.readFileToString(projects.get(0).getFile());
         assertTrue(pom.contains("1.0-" + UNDERSCORED_FEATURE_NAME + "-SNAPSHOT"));
     }
-
-    /*
-    @Test(expected = JGitFlowReleaseException.class)
-    public void existingFeaturesPrompt() throws Exception
-    {
-        String projectSubdir = "basic-pom";
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir);
-        File projectRoot = projects.get(0).getBasedir();
-
-        JGitFlow flow = JGitFlow.getOrInit(projectRoot);
-
-        assertOnDevelop(flow);
-
-        initialCommitAll(flow);
-
-        flow.git().checkout().setCreateBranch(true).setName(flow.getFeatureBranchPrefix() + FEATURE_NAME + "1").call();
-        flow.git().checkout().setCreateBranch(true).setName(flow.getFeatureBranchPrefix() + FEATURE_NAME + "2").call();
-
-        //go back to develop
-        flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-
-        assertOnDevelop(flow);
-
-        FlowReleaseManager relman = getFeatureManager();
-
-        ReleaseContext ctx = new ReleaseContext(projectRoot);
-        ctx.setInteractive(true);
-
-        TestInputHandler userInput = (TestInputHandler) lookup(InputHandler.class.getName(),"test");
-        TestOutputHandler consoleOutput = (TestOutputHandler) lookup(OutputHandler.class.getName(),"test");
-
-        userInput.setResponse("2");
-        relman.start(ctx, projects);
-
-        System.out.println("console: " + consoleOutput.getValue());
-
-        
-
-        comparePomFiles(projects);
-    }
-    */
-
-
 }
 

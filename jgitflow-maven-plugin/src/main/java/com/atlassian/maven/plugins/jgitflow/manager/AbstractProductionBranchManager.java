@@ -9,15 +9,10 @@ import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.extension.ReleaseStartPluginExtension;
-import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
-import com.atlassian.maven.plugins.jgitflow.manager.tasks.CheckoutAndGetProjects;
-import com.atlassian.maven.plugins.jgitflow.manager.tasks.SetupOriginAndFetchIfNeeded;
-import com.atlassian.maven.plugins.jgitflow.manager.tasks.VerifyInitialVersionState;
 import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 
 import org.apache.maven.execution.MavenSession;
@@ -33,9 +28,6 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
     public static final String ls = System.getProperty("line.separator");
 
     @Requirement
-    protected JGitFlowSetupHelper setupHelper;
-
-    @Requirement
     protected MavenExecutionHelper mavenExecutionHelper;
 
     @Requirement
@@ -48,18 +40,6 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
     protected PomUpdater pomUpdater;
 
     @Requirement
-    protected JGitFlowProvider jGitFlowProvider;
-
-    @Requirement
-    protected SetupOriginAndFetchIfNeeded setupOriginAndFetchIfNeeded;
-
-    @Requirement
-    protected CheckoutAndGetProjects checkoutAndGetProjects;
-
-    @Requirement
-    protected VerifyInitialVersionState verifyInitialVersionState;
-
-    @Requirement
     protected ReleaseStartPluginExtension extension;
 
     public AbstractProductionBranchManager(BranchType branchType)
@@ -69,33 +49,33 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
 
     public String getStartLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
     {
-        runPreflight(ctx,reactorProjects,session);
+        runPreflight(ctx, reactorProjects, session);
 
         JGitFlow flow = jGitFlowProvider.gitFlow();
 
         String branchName = null;
         VersionType versionType = null;
         ProjectCacheKey cacheKey = null;
-        
-        switch(branchType)
+
+        switch (branchType)
         {
             case RELEASE:
                 branchName = flow.getDevelopBranchName();
                 versionType = VersionType.RELEASE;
                 cacheKey = ProjectCacheKey.RELEASE_START_LABEL;
                 break;
-            
+
             case HOTFIX:
                 branchName = flow.getMasterBranchName();
                 versionType = VersionType.HOTFIX;
                 cacheKey = ProjectCacheKey.HOTFIX_LABEL;
                 break;
         }
-        
+
         checkNotNull(branchName);
         checkNotNull(versionType);
         checkNotNull(cacheKey);
-        
+
         List<MavenProject> branchProjects = checkoutAndGetProjects.run(branchName, reactorProjects);
 
         verifyInitialVersionState.run(branchType, branchProjects);
@@ -106,21 +86,9 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
 
     public String getFinishLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
     {
-        runPreflight(ctx,reactorProjects,session);
+        runPreflight(ctx, reactorProjects, session);
 
         return labelProvider.getCurrentProductionVersionLabel(branchType);
-
-    }
-
-    public void runPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
-    {
-        setupProviders(ctx, session, reactorProjects);
-
-        JGitFlow flow = jGitFlowProvider.gitFlow();
-
-        setupHelper.runCommonSetup();
-
-        setupOriginAndFetchIfNeeded.run();
 
     }
 }

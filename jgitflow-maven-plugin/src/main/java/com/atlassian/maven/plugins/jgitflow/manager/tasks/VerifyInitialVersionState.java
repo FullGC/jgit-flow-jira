@@ -60,6 +60,11 @@ public class VerifyInitialVersionState
                     initialVersionState = VersionState.RELEASE;
                     cacheKey = ProjectCacheKey.MASTER_BRANCH;
                     break;
+
+                case FEATURE:
+                    initialVersionState = VersionState.SNAPSHOT;
+                    cacheKey = ProjectCacheKey.DEVELOP_BRANCH;
+                    break;
             }
 
             checkNotNull(initialVersionState);
