@@ -14,10 +14,7 @@ import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.extension.FeatureFinishPluginExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.FeatureStartPluginExtension;
-import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
-import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
-import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
-import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.*;
 import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
@@ -47,9 +44,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 {
     @Requirement
     private MavenExecutionHelper mavenExecutionHelper;
-
-    @Requirement
-    private ProjectHelper projectHelper;
 
     @Requirement
     private BranchLabelProvider labelProvider;
@@ -159,26 +153,18 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     {
         JGitFlow flow = null;
 
-        setupProviders(ctx,session,reactorProjects);
-        
-        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-        MavenSession currentSession = session;
-
         try
         {
+            String featureLabel = getFinishLabelAndRunPreflight(ctx,reactorProjects,session);
             flow = jGitFlowProvider.gitFlow();
+
+            JGitFlowReporter reporter = flow.getReporter();
+
+            SessionAndProjects sessionAndProjects = checkoutAndGetProjects.run(flow.getFeatureBranchPrefix() + featureLabel, reactorProjects);
+
+            List<MavenProject> featureProjects = sessionAndProjects.getProjects();
+            MavenSession featureSession = sessionAndProjects.getSession();
             
-            setupHelper.runCommonSetup();
-
-            String featureLabel = labelProvider.getFeatureFinishName();
-
-            // make sure we are on specific feature branch
-            flow.git().checkout().setName(flow.getFeatureBranchPrefix() + featureLabel).call();
-
-            //update poms with feature name version
-            MavenSession featureSession = mavenExecutionHelper.getSessionForBranch(flow.getFeatureBranchPrefix() + featureLabel, ReleaseUtil.getRootProject(reactorProjects), session);
-            List<MavenProject> featureProjects = featureSession.getSortedProjects();
-
             String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureLabel);
             featureVersion = StringUtils.replace(featureVersion, "-", "_");
 
@@ -193,7 +179,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             pomUpdater.removeSnapshotFromFeatureVersions(ProjectCacheKey.FEATURE_DEPLOY_LABEL, featureVersion, reactorProjects);
 
-            rootProject = ReleaseUtil.getRootProject(featureProjects);
+            MavenProject rootProject = ReleaseUtil.getRootProject(featureProjects);
             featureSession = mavenExecutionHelper.reloadReactor(rootProject, session);
 
             rootProject = ReleaseUtil.getRootProject(featureSession.getSortedProjects());
@@ -236,10 +222,6 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
         }
-        catch (IOException e)
-        {
-            throw new MavenJGitFlowException("Error finish feature: " + e.getMessage(), e);
-        }
         finally
         {
             if (null != flow)
@@ -258,7 +240,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         JGitFlow flow = jGitFlowProvider.gitFlow();
 
         //make sure we're on develop
-        List<MavenProject> branchProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName(), reactorProjects);
+        List<MavenProject> branchProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName(), reactorProjects).getProjects();
 
         verifyInitialVersionState.run(BranchType.FEATURE, branchProjects);
         
