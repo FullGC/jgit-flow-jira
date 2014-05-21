@@ -38,9 +38,6 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
 
         FeatureFinishExtensionForTests extension = new FeatureFinishExtensionForTests();
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setFeatureFinishExtension(extension);
-
         flow.featureStart(MY_FEATURE).setPush(true).call();
 
         //just in case
@@ -52,7 +49,7 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         flow.git().add().addFilepattern(junkFile.getName()).call();
         RevCommit localcommit = flow.git().commit().setMessage("adding junk file").call();
         
-        flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtension(extension).call();
 
         //we should be on develop branch
         assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
@@ -89,9 +86,6 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         FeatureFinishExtensionForTests extension = new FeatureFinishExtensionForTests();
         extension.withException(BaseExtensionForTests.BEFORE_DEVELOP_CHECKOUT, ExtensionFailStrategy.ERROR);
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setFeatureFinishExtension(extension);
-
         flow.featureStart(MY_FEATURE).setPush(true).call();
 
         //just in case
@@ -105,7 +99,7 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         
         try
         {
-            flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtensionProvider(provider).call();
+            flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtension(extension).call();
 
             fail("Exception should have been thrown!!");
         }
@@ -134,9 +128,6 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         FeatureFinishExtensionForTests extension = new FeatureFinishExtensionForTests();
         extension.withException(BaseExtensionForTests.BEFORE_DEVELOP_CHECKOUT, ExtensionFailStrategy.WARN);
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setFeatureFinishExtension(extension);
-
         flow.featureStart(MY_FEATURE).setPush(true).call();
 
         //just in case
@@ -148,7 +139,7 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         flow.git().add().addFilepattern(junkFile.getName()).call();
         RevCommit localcommit = flow.git().commit().setMessage("adding junk file").call();
         
-        flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtension(extension).call();
 
         //we should be on develop branch
         assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());

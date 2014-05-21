@@ -1,76 +1,47 @@
 package com.atlassian.jgitflow.core.extension.impl;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.FeatureFinishExtension;
 
-public class EmptyFeatureFinishExtension implements FeatureFinishExtension
+import com.google.common.collect.Iterables;
+
+import static com.google.common.collect.Lists.newArrayList;
+
+public class EmptyFeatureFinishExtension extends EmptyDevelopMergingExtension implements FeatureFinishExtension
 {
-    @Override
-    public List<ExtensionCommand> before()
+    private final List<ExtensionCommand> beforeRebase;
+    private final List<ExtensionCommand> afterRebase;
+
+    public EmptyFeatureFinishExtension()
     {
-        return Collections.EMPTY_LIST;
+        this.beforeRebase = newArrayList();
+        this.afterRebase = newArrayList();
+    }
+
+    public void addBeforeRebaseCommands(ExtensionCommand ... commands)
+    {
+        beforeRebase.addAll(Arrays.asList(commands));
+    }
+
+    public void addAfterRebaseCommands(ExtensionCommand ... commands)
+    {
+        afterRebase.addAll(Arrays.asList(commands));
+    }
+    
+    @Override
+    public Iterable<ExtensionCommand> beforeRebase()
+    {
+        return Iterables.unmodifiableIterable(beforeRebase);
     }
 
     @Override
-    public List<ExtensionCommand> beforeFetch()
+    public Iterable<ExtensionCommand> afterRebase()
     {
-        return Collections.EMPTY_LIST;
+        return Iterables.unmodifiableIterable(afterRebase);
     }
 
-    @Override
-    public List<ExtensionCommand> afterFetch()
-    {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<ExtensionCommand> beforeRebase()
-    {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<ExtensionCommand> afterRebase()
-    {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<ExtensionCommand> beforeDevelopCheckout()
-    {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<ExtensionCommand> afterDevelopCheckout()
-    {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<ExtensionCommand> beforeDevelopMerge()
-    {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<ExtensionCommand> afterDevelopMerge()
-    {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<ExtensionCommand> afterPush()
-    {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<ExtensionCommand> after()
-    {
-        return Collections.EMPTY_LIST;
-    }
 }

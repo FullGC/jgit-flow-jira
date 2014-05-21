@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.components.interactivity.OutputHandler;
 import org.codehaus.plexus.components.interactivity.Prompter;
@@ -16,6 +18,7 @@ import jline.ANSIBuffer;
 /**
  * @since version
  */
+@Component(role = PrettyPrompter.class)
 public class PrettyPrompter implements Prompter
 {
     //maven-cli-plugin uses an old version jline that has ansi codes in package scope.
@@ -36,15 +39,10 @@ public class PrettyPrompter implements Prompter
     public static final int FG_WHITE = 37;
     public static final char ESC = 27;
 
-
-    /**
-     * @requirement
-     */
+    @Requirement
     private OutputHandler outputHandler;
 
-    /**
-     * @requirement
-     */
+    @Requirement(hint = "console")
     private InputHandler inputHandler;
 
     private boolean useAnsiColor;

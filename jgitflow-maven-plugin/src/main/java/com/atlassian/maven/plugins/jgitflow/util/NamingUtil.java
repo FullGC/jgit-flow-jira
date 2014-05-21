@@ -31,4 +31,9 @@ public class NamingUtil
         
         return dashed.toLowerCase();
     }
+    
+    public static String unprefixedBranchName(String prefix,String branchName)
+    {
+        return StringUtils.substringAfter(branchName,prefix);
+    }
 }

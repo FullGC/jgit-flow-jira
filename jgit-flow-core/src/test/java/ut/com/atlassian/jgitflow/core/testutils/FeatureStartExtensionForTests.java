@@ -13,19 +13,19 @@ import com.google.common.collect.Lists;
 public class FeatureStartExtensionForTests extends BaseExtensionForTests<FeatureStartExtensionForTests> implements FeatureStartExtension
 {
     @Override
-    public List<ExtensionCommand> beforeCreateBranch()
+    public Iterable<ExtensionCommand> beforeCreateBranch()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE_CREATE_BRANCH));
     }
 
     @Override
-    public List<ExtensionCommand> afterCreateBranch()
+    public Iterable<ExtensionCommand> afterCreateBranch()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_CREATE_BRANCH));
     }
 
     @Override
-    public List<ExtensionCommand> afterPush()
+    public Iterable<ExtensionCommand> afterPush()
     {
         return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_PUSH));
     }

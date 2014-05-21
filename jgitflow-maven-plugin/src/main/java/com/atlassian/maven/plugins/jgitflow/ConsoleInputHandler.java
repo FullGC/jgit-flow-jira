@@ -2,7 +2,9 @@ package com.atlassian.maven.plugins.jgitflow;
 
 import java.io.*;
 
+import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.components.interactivity.AbstractInputHandler;
+import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Disposable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
@@ -14,6 +16,7 @@ import jline.UnixTerminal;
 /**
  * @since version
  */
+@Component(role = InputHandler.class, hint = "console")
 public class ConsoleInputHandler extends AbstractInputHandler implements Initializable, Disposable
 {
     private final Console console = System.console();

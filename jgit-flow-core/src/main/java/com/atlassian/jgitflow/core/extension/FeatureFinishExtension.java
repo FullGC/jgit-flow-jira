@@ -1,18 +1,10 @@
 package com.atlassian.jgitflow.core.extension;
 
-import java.util.List;
-
-public interface FeatureFinishExtension extends JGitFlowExtension
+public interface FeatureFinishExtension extends DevelopMergingExtension
 {
-    List<ExtensionCommand> beforeRebase();
+    Iterable<ExtensionCommand> beforeRebase();
 
-    List<ExtensionCommand> afterRebase();
+    Iterable<ExtensionCommand> afterRebase();
 
-    List<ExtensionCommand> beforeDevelopCheckout();
-
-    List<ExtensionCommand> afterDevelopCheckout();
-
-    List<ExtensionCommand> beforeDevelopMerge();
-
-    List<ExtensionCommand> afterDevelopMerge();
+    
 }

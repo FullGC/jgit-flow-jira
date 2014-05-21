@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import ut.com.atlassian.jgitflow.core.BaseGitFlowTest;
 import ut.com.atlassian.jgitflow.core.testutils.BaseExtensionForTests;
-import ut.com.atlassian.jgitflow.core.testutils.ExtensionProviderForTests;
 import ut.com.atlassian.jgitflow.core.testutils.ReleaseStartExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
@@ -38,9 +37,6 @@ public class ReleaseStartExtensionTest extends BaseGitFlowTest
 
         ReleaseStartExtensionForTests extension = new ReleaseStartExtensionForTests();
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setReleaseStartExtension(extension);
-
         //do a commit to the remote develop branch
         remoteGit.checkout().setName("develop").call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
@@ -52,7 +48,7 @@ public class ReleaseStartExtensionTest extends BaseGitFlowTest
         git.checkout().setName("develop").call();
         git.pull().call();
 
-        flow.releaseStart("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        flow.releaseStart("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
         assertTrue("before was not called", extension.wasCalled(BaseExtensionForTests.BEFORE));
         assertTrue("beforeFetch was not called", extension.wasCalled(BaseExtensionForTests.BEFORE_FETCH));
@@ -80,9 +76,6 @@ public class ReleaseStartExtensionTest extends BaseGitFlowTest
         ReleaseStartExtensionForTests extension = new ReleaseStartExtensionForTests();
         extension.withException(BaseExtensionForTests.AFTER_CREATE_BRANCH, ExtensionFailStrategy.WARN);
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setReleaseStartExtension(extension);
-
         //do a commit to the remote develop branch
         remoteGit.checkout().setName("develop").call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
@@ -94,7 +87,7 @@ public class ReleaseStartExtensionTest extends BaseGitFlowTest
         git.checkout().setName("develop").call();
         git.pull().call();
 
-        flow.releaseStart("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        flow.releaseStart("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
         assertTrue("before was not called", extension.wasCalled(BaseExtensionForTests.BEFORE));
         assertTrue("beforeFetch was not called", extension.wasCalled(BaseExtensionForTests.BEFORE_FETCH));
@@ -122,9 +115,6 @@ public class ReleaseStartExtensionTest extends BaseGitFlowTest
         ReleaseStartExtensionForTests extension = new ReleaseStartExtensionForTests();
         extension.withException(BaseExtensionForTests.AFTER_CREATE_BRANCH, ExtensionFailStrategy.ERROR);
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setReleaseStartExtension(extension);
-
         //do a commit to the remote develop branch
         remoteGit.checkout().setName("develop").call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
@@ -138,7 +128,7 @@ public class ReleaseStartExtensionTest extends BaseGitFlowTest
 
         try
         {
-            flow.releaseStart("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+            flow.releaseStart("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
             fail("Exception should have been thrown!!");
         }

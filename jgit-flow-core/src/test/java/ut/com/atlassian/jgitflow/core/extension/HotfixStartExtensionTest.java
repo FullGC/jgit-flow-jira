@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import ut.com.atlassian.jgitflow.core.BaseGitFlowTest;
 import ut.com.atlassian.jgitflow.core.testutils.BaseExtensionForTests;
-import ut.com.atlassian.jgitflow.core.testutils.ExtensionProviderForTests;
 import ut.com.atlassian.jgitflow.core.testutils.HotfixStartExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
@@ -38,9 +37,6 @@ public class HotfixStartExtensionTest extends BaseGitFlowTest
 
         HotfixStartExtensionForTests extension = new HotfixStartExtensionForTests();
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setHotfixStartExtension(extension);
-
         //do a commit to the remote develop branch
         remoteGit.checkout().setName("master").call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
@@ -53,7 +49,7 @@ public class HotfixStartExtensionTest extends BaseGitFlowTest
         git.pull().call();
         git.checkout().setName("develop").call();
 
-        flow.hotfixStart("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        flow.hotfixStart("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
         assertEquals(flow.getHotfixBranchPrefix() + "1.0", git.getRepository().getBranch());
 
@@ -82,9 +78,6 @@ public class HotfixStartExtensionTest extends BaseGitFlowTest
         HotfixStartExtensionForTests extension = new HotfixStartExtensionForTests();
         extension.withException(BaseExtensionForTests.AFTER_CREATE_BRANCH, ExtensionFailStrategy.ERROR);
         
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setHotfixStartExtension(extension);
-
         //do a commit to the remote develop branch
         remoteGit.checkout().setName("master").call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
@@ -99,7 +92,7 @@ public class HotfixStartExtensionTest extends BaseGitFlowTest
 
         try
         {
-            flow.hotfixStart("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+            flow.hotfixStart("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
             fail("Exception should have been thrown!!");
         }
@@ -128,9 +121,6 @@ public class HotfixStartExtensionTest extends BaseGitFlowTest
         HotfixStartExtensionForTests extension = new HotfixStartExtensionForTests();
         extension.withException(BaseExtensionForTests.AFTER_CREATE_BRANCH, ExtensionFailStrategy.WARN);
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setHotfixStartExtension(extension);
-
         //do a commit to the remote develop branch
         remoteGit.checkout().setName("master").call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
@@ -143,7 +133,7 @@ public class HotfixStartExtensionTest extends BaseGitFlowTest
         git.pull().call();
         git.checkout().setName("develop").call();
 
-        flow.hotfixStart("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        flow.hotfixStart("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
         assertEquals(flow.getHotfixBranchPrefix() + "1.0", git.getRepository().getBranch());
 

@@ -8,7 +8,6 @@ import com.atlassian.jgitflow.core.JGitFlowInitCommand;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -20,7 +19,6 @@ import org.junit.Test;
 
 import ut.com.atlassian.jgitflow.core.BaseGitFlowTest;
 import ut.com.atlassian.jgitflow.core.testutils.BaseExtensionForTests;
-import ut.com.atlassian.jgitflow.core.testutils.ExtensionProviderForTests;
 import ut.com.atlassian.jgitflow.core.testutils.ReleaseFinishExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
@@ -68,9 +66,7 @@ public class ReleaseFinishExtensionTest extends BaseGitFlowTest
 
         ReleaseFinishExtensionForTests extension = new ReleaseFinishExtensionForTests();
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setReleaseFinishExtension(extension);
-        ReleaseMergeResult result = flow.releaseFinish("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        ReleaseMergeResult result = flow.releaseFinish("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
         assertTrue(result.wasSuccessful());
 
@@ -128,12 +124,9 @@ public class ReleaseFinishExtensionTest extends BaseGitFlowTest
         ReleaseFinishExtensionForTests extension = new ReleaseFinishExtensionForTests();
         extension.withException(BaseExtensionForTests.BEFORE_DEVELOP_CHECKOUT, ExtensionFailStrategy.ERROR);
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setReleaseFinishExtension(extension);
-        
         try
         {
-            ReleaseMergeResult result = flow.releaseFinish("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+            ReleaseMergeResult result = flow.releaseFinish("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
             fail("Exception should have been thrown!!");
         }
@@ -188,9 +181,7 @@ public class ReleaseFinishExtensionTest extends BaseGitFlowTest
         ReleaseFinishExtensionForTests extension = new ReleaseFinishExtensionForTests();
         extension.withException(BaseExtensionForTests.BEFORE_DEVELOP_CHECKOUT, ExtensionFailStrategy.WARN);
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setReleaseFinishExtension(extension);
-        ReleaseMergeResult result = flow.releaseFinish("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        ReleaseMergeResult result = flow.releaseFinish("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
         assertTrue(result.wasSuccessful());
 

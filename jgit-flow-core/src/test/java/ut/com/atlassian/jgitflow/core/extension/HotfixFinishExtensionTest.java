@@ -6,7 +6,6 @@ import java.util.List;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowInitCommand;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
-import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 
@@ -20,7 +19,6 @@ import org.junit.Test;
 
 import ut.com.atlassian.jgitflow.core.BaseGitFlowTest;
 import ut.com.atlassian.jgitflow.core.testutils.BaseExtensionForTests;
-import ut.com.atlassian.jgitflow.core.testutils.ExtensionProviderForTests;
 import ut.com.atlassian.jgitflow.core.testutils.HotfixFinishExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
@@ -67,9 +65,7 @@ public class HotfixFinishExtensionTest extends BaseGitFlowTest
 
         HotfixFinishExtensionForTests extension = new HotfixFinishExtensionForTests();
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setHotfixFinishExtension(extension);
-        ReleaseMergeResult result = flow.hotfixFinish("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        ReleaseMergeResult result = flow.hotfixFinish("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
         assertTrue(result.wasSuccessful());
 
@@ -128,12 +124,9 @@ public class HotfixFinishExtensionTest extends BaseGitFlowTest
         HotfixFinishExtensionForTests extension = new HotfixFinishExtensionForTests();
         extension.withException(BaseExtensionForTests.BEFORE_DEVELOP_CHECKOUT, ExtensionFailStrategy.ERROR);
         
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setHotfixFinishExtension(extension);
-
         try
         {
-            ReleaseMergeResult result = flow.hotfixFinish("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+            ReleaseMergeResult result = flow.hotfixFinish("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
             fail("Exception should have been thrown!!");
         }
@@ -189,9 +182,7 @@ public class HotfixFinishExtensionTest extends BaseGitFlowTest
         HotfixFinishExtensionForTests extension = new HotfixFinishExtensionForTests();
         extension.withException(BaseExtensionForTests.BEFORE_DEVELOP_CHECKOUT, ExtensionFailStrategy.WARN);
 
-        ExtensionProviderForTests provider = new ExtensionProviderForTests();
-        provider.setHotfixFinishExtension(extension);
-        ReleaseMergeResult result = flow.hotfixFinish("1.0").setFetch(true).setPush(true).setExtensionProvider(provider).call();
+        ReleaseMergeResult result = flow.hotfixFinish("1.0").setFetch(true).setPush(true).setExtension(extension).call();
 
         assertTrue(result.wasSuccessful());
 

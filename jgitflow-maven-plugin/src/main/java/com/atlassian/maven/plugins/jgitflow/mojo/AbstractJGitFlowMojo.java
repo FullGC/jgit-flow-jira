@@ -1,0 +1,115 @@
+package com.atlassian.maven.plugins.jgitflow.mojo;
+
+import java.io.File;
+import java.util.List;
+
+import com.atlassian.maven.plugins.jgitflow.FlowInitContext;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.MavenSessionProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.ReactorProjectsProvider;
+
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
+
+/**
+ * @since version
+ */
+public abstract class AbstractJGitFlowMojo extends AbstractMojo
+{
+    @Component
+    protected MavenProject project;
+
+    @Component
+    protected MavenSession session;
+
+    @Component
+    private Settings settings;
+
+    @Parameter(defaultValue = "${basedir}", readonly = true, required = true)
+    private File basedir;
+
+    @Parameter(defaultValue = "${reactorProjects}", readonly = true, required = true)
+    private List<MavenProject> reactorProjects;
+
+    @Parameter(defaultValue = "${flowInitContext}")
+    private FlowInitContext flowInitContext;
+
+    @Parameter(defaultValue = "false", property = "enableSshAgent")
+    protected boolean enableSshAgent = false;
+
+    @Parameter(defaultValue = "false", property = "allowUntracked")
+    protected boolean allowUntracked = false;
+
+    @Parameter(property = "offline", defaultValue = "${settings.offline}")
+    protected boolean offline;
+
+    @Parameter(property = "localOnly", defaultValue = "false")
+    protected boolean localOnly = false;
+
+    @Parameter(property = "defaultOriginUrl", defaultValue = "")
+    protected String defaultOriginUrl = "";
+
+    @Parameter(property = "scmCommentPrefix", defaultValue = "")
+    protected String scmCommentPrefix = "";
+
+    @Parameter(property = "scmCommentSuffix", defaultValue = "")
+    protected String scmCommentSuffix = "";
+
+    @Parameter(property = "username", defaultValue = "")
+    protected String username = "";
+
+    @Parameter(property = "password", defaultValue = "")
+    protected String password = "";
+
+    @Parameter(defaultValue = "true", property = "alwaysUpdateOrigin")
+    protected boolean alwaysUpdateOrigin = true;
+
+    Settings getSettings()
+    {
+        return settings;
+    }
+
+    protected final File getBasedir()
+    {
+        return basedir;
+    }
+
+    /**
+     * Sets the base directory of the build.
+     *
+     * @param basedir The build's base directory, must not be <code>null</code>.
+     */
+    public void setBasedir(File basedir)
+    {
+        this.basedir = basedir;
+    }
+
+    /**
+     * Gets the list of projects in the build reactor.
+     *
+     * @return The list of reactor project, never <code>null</code>.
+     */
+    public List<MavenProject> getReactorProjects()
+    {
+        return reactorProjects;
+    }
+
+    public FlowInitContext getFlowInitContext()
+    {
+        return flowInitContext;
+    }
+
+    public void setFlowInitContext(FlowInitContext flowInitContext)
+    {
+        this.flowInitContext = flowInitContext;
+    }
+
+    public boolean isRemoteAllowed()
+    {
+        return (!offline && !localOnly);
+    }
+}

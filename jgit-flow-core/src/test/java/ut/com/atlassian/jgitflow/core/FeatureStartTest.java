@@ -5,7 +5,6 @@ import java.io.File;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowInitCommand;
 import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
-import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.exception.LocalBranchExistsException;
 import com.atlassian.jgitflow.core.exception.NotInitializedException;
 import com.atlassian.jgitflow.core.util.GitHelper;

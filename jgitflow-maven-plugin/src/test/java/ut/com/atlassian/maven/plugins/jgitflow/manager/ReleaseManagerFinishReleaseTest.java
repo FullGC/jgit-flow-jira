@@ -30,7 +30,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
     {
         String commentPrefix = "woot!";
         String commentSuffix = "+review CR-XYZ @reviewer1 @reviewer2";
-        
+
         String projectName = "basic-pom";
         Git git = null;
         Git remoteGit = null;
@@ -74,9 +74,9 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         projects = createReactorProjectsNoClean("release-projects", projectName);
 
         relman.finish(ctx, projects, session);
-        
+
         String fullMessage = GitHelper.getLatestCommit(flow.git(),flow.git().getRepository().getBranch()).getFullMessage();
-        
+
         assertTrue(fullMessage.startsWith(commentPrefix));
         assertTrue(fullMessage.endsWith(commentSuffix));
     }
