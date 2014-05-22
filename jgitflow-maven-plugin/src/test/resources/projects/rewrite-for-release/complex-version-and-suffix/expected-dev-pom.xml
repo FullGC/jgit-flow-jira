@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>groupId</groupId>
   <artifactId>artifactId</artifactId>
-  <version>0.0.3-20131220-1014.ae2063b9b82c107908d3476078a7c7d9b6df1ce0.HEAD</version>
+  <version>0.0.3-20131221-1014.ae2063b9b82c107908d3476078a7c7d9b6df1ce0.HEAD-SNAPSHOT</version>
 
   <prerequisites>
     <maven>2.0.4</maven>

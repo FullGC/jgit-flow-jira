@@ -37,9 +37,6 @@ public class UpdateDevelopWithNextDevVersionCommand implements ExtensionCommand
 
     @Requirement
     private CheckoutAndGetProjects checkoutAndGetProjects;
-    
-    @Requirement
-    private ReactorProjectsProvider reactorProjectsProvider;
 
     @Requirement
     private BranchLabelProvider labelProvider;
@@ -61,7 +58,7 @@ public class UpdateDevelopWithNextDevVersionCommand implements ExtensionCommand
             String originalBranchName = currentBranchHelper.getBranchName();
             
             //check out develop and reload the reactor
-            SessionAndProjects sessionAndProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName(),reactorProjectsProvider.getReactorProjects());
+            SessionAndProjects sessionAndProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName());
             List<MavenProject> developProjects = sessionAndProjects.getProjects();
 
             String developLabel = labelProvider.getNextVersionLabel(VersionType.DEVELOPMENT, ProjectCacheKey.DEVELOP_BRANCH, developProjects);

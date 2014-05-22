@@ -20,6 +20,5 @@ public class DefaultMavenSessionProvider implements MavenSessionProvider
     public void setSession(MavenSession session)
     {
         INSTANCE.session = session;
-        System.out.println("Set session for " + this.toString());
     }
 }

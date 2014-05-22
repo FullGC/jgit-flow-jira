@@ -9,10 +9,7 @@ import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.SessionAndProjects;
-import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.MavenSessionProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
+import com.atlassian.maven.plugins.jgitflow.provider.*;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
@@ -36,8 +33,11 @@ public class CheckoutAndGetProjects
 
     @Requirement
     private ContextProvider contextProvider;
+
+    @Requirement
+    private ReactorProjectsProvider reactorProjectsProvider;
     
-    public SessionAndProjects run(String branchName, List<MavenProject> originalProjects) throws MavenJGitFlowException
+    public SessionAndProjects run(String branchName) throws MavenJGitFlowException
     {
         try
         {
@@ -47,7 +47,7 @@ public class CheckoutAndGetProjects
             flow.git().checkout().setName(branchName).call();
             
             //reload the reactor projects for develop
-            MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(branchName, ReleaseUtil.getRootProject(originalProjects), sessionProvider.getSession());
+            MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(branchName, ReleaseUtil.getRootProject(reactorProjectsProvider.getReactorProjects()), sessionProvider.getSession());
             
             return new SessionAndProjects(branchSession,branchSession.getSortedProjects());
         }
