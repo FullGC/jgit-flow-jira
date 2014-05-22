@@ -350,7 +350,7 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     public void releaseWithFlatParent() throws Exception
     {
         List<MavenProject> projects = createReactorProjects("rewrite-for-release/pom-with-parent-flat", "root-project");
-        File projectRoot = projects.get(0).getBasedir();
+        File projectRoot = projects.get(0).getBasedir().getParentFile();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();

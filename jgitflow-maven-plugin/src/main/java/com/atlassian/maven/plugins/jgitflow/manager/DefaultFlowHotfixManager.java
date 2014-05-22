@@ -104,7 +104,7 @@ public class DefaultFlowHotfixManager extends AbstractProductionBranchManager
 
             flow = jGitFlowProvider.gitFlow();
 
-            getLogger().info("running jgitflow release finish...");
+            getLogger().info("running jgitflow hotfix finish...");
             ReleaseMergeResult mergeResult = flow.hotfixFinish(hotfixLabel)
                                                  .setPush(ctx.isPushReleases())
                                                  .setKeepBranch(ctx.isKeepBranch())

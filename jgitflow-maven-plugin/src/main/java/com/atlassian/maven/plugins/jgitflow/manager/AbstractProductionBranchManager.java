@@ -76,7 +76,7 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
         checkNotNull(versionType);
         checkNotNull(cacheKey);
 
-        List<MavenProject> branchProjects = checkoutAndGetProjects.run(branchName, reactorProjects).getProjects();
+        List<MavenProject> branchProjects = checkoutAndGetProjects.run(branchName).getProjects();
 
         verifyInitialVersionState.run(branchType, branchProjects);
 

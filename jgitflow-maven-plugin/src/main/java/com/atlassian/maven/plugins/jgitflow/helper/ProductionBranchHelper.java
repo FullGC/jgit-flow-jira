@@ -40,7 +40,24 @@ public class ProductionBranchHelper
     {
         try
         {
-            String branchPrefix = "";
+            String branchName = getProductionBranchName(branchType);
+            MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(branchName, ReleaseUtil.getRootProject(reactorProjectsProvider.getReactorProjects()), sessionProvider.getSession());
+
+            return branchSession.getSortedProjects();
+
+        }
+        catch (Exception e)
+        {
+            throw new MavenJGitFlowException("Error getting project for production branch", e);
+        }
+           
+    }
+    
+    public String getProductionBranchName(BranchType branchType) throws MavenJGitFlowException
+    {
+        String branchPrefix = "";
+        try
+        {
             JGitFlow flow = jGitFlowProvider.gitFlow();
             switch (branchType)
             {
@@ -53,7 +70,7 @@ public class ProductionBranchHelper
                     break;
 
                 default:
-                    throw new MavenJGitFlowException("Unsupported branch type '" + branchType.name() + "' while trying to get the current production branch projects");
+                    throw new MavenJGitFlowException("Unsupported branch type '" + branchType.name() + "' while trying to get the current production branch name");
             }
 
             List<Ref> productionBranches = GitHelper.listBranchesWithPrefix(flow.git(), branchPrefix, flow.getReporter());
@@ -63,18 +80,11 @@ public class ProductionBranchHelper
                 throw new MavenJGitFlowException("Could not find current production branch of type " + branchType.name());
             }
 
-            String rheadPrefix = Constants.R_HEADS + branchPrefix;
-            Ref productionBranch = productionBranches.get(0);
-
-            MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(productionBranch.getName(), ReleaseUtil.getRootProject(reactorProjectsProvider.getReactorProjects()), sessionProvider.getSession());
-
-            return branchSession.getSortedProjects();
-
+            return productionBranches.get(0).getName();
         }
         catch (Exception e)
         {
-            throw new MavenJGitFlowException("Error getting project for production branch", e);
+            throw new MavenJGitFlowException("Error getting name for production branch", e);
         }
-           
     }
 }

@@ -84,8 +84,9 @@ public class UpdatePomsWithNonSnapshotCommand extends AbstractLogEnabled impleme
             checkNotNull(cacheKey);
 
             String unprefixedBranchName = currentBranchHelper.getUnprefixedBranchName();
+            String fullBranchName = currentBranchHelper.getBranchName();
 
-            getLogger().info("Updating poms for " + branchType.name());
+            getLogger().info("(" + fullBranchName + ") Updating poms for " + branchType.name());
 
             //reload the reactor projects for release
             List<MavenProject> branchProjects = currentBranchHelper.getProjectsForCurrentBranch();
@@ -96,7 +97,7 @@ public class UpdatePomsWithNonSnapshotCommand extends AbstractLogEnabled impleme
         }
         catch (Exception e)
         {
-            throw new JGitFlowExtensionException("Error updating poms with snapshot versions for branch '" + branchType.name() + "'");
+            throw new JGitFlowExtensionException("Error updating poms with non-snapshot versions for branch '" + branchType.name() + "'");
         }
     }
 

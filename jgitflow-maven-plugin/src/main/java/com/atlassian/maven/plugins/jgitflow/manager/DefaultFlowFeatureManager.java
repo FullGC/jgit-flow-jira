@@ -160,7 +160,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
             JGitFlowReporter reporter = flow.getReporter();
 
-            SessionAndProjects sessionAndProjects = checkoutAndGetProjects.run(flow.getFeatureBranchPrefix() + featureLabel, reactorProjects);
+            SessionAndProjects sessionAndProjects = checkoutAndGetProjects.run(flow.getFeatureBranchPrefix() + featureLabel);
 
             List<MavenProject> featureProjects = sessionAndProjects.getProjects();
             MavenSession featureSession = sessionAndProjects.getSession();
@@ -240,7 +240,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         JGitFlow flow = jGitFlowProvider.gitFlow();
 
         //make sure we're on develop
-        List<MavenProject> branchProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName(), reactorProjects).getProjects();
+        List<MavenProject> branchProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName()).getProjects();
 
         verifyInitialVersionState.run(BranchType.FEATURE, branchProjects);
         

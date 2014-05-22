@@ -176,7 +176,7 @@ public class RequirementHelper
      */
     public void requireNoExistingReleaseBranches() throws ReleaseBranchExistsException, JGitFlowGitAPIException
     {
-        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, JGitFlowConstants.PREFIXES.RELEASE.configKey(), reporter);
+        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()), reporter);
 
         if (!branches.isEmpty())
         {
@@ -194,7 +194,7 @@ public class RequirementHelper
      */
     public void requireNoExistingHotfixBranches() throws HotfixBranchExistsException, JGitFlowGitAPIException
     {
-        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, JGitFlowConstants.PREFIXES.HOTFIX.configKey(), reporter);
+        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.HOTFIX.configKey()), reporter);
 
         if (!branches.isEmpty())
         {

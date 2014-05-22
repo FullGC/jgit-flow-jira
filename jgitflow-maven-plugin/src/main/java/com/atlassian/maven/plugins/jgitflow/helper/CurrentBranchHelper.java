@@ -6,6 +6,7 @@ import java.util.List;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.MavenSessionProvider;
@@ -78,6 +79,19 @@ public class CurrentBranchHelper
         String branchPrefix = flow.getPrefixForBranch(branchName);
 
         return NamingUtil.unprefixedBranchName(branchPrefix, branchName);
+    }
+
+    public String getBranchName() throws MavenJGitFlowException
+    {
+        try
+        {
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+            return flow.git().getRepository().getBranch();
+        }
+        catch (Exception e)
+        {
+            throw new MavenJGitFlowException("Error looking up current branch name", e);
+        }
     }
     
     public BranchType getBranchType() throws JGitFlowException, IOException

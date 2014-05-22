@@ -88,17 +88,17 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         ((Contextualizable) projectBuilder).contextualize(EMPTY_CONTEXT);
         ((Contextualizable) lookup(WagonManager.ROLE)).contextualize(EMPTY_CONTEXT);
 
-        if(null != testFileBase && testFileBase.exists())
-        {
-            try
-            {
-                FileUtils.deleteDirectory(testFileBase);
-            }
-            catch (IOException e)
-            {
-                //ignore
-            }
-        }
+//        if(null != testFileBase && testFileBase.exists())
+//        {
+//            try
+//            {
+//                FileUtils.deleteDirectory(testFileBase);
+//            }
+//            catch (IOException e)
+//            {
+//                //ignore
+//            }
+//        }
     }
 
     @Override
@@ -156,6 +156,11 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         compareSnapPomFiles(projects);
 
         assertTrue(flow.git().status().call().isClean());
+
+        flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+
+        compareDevPomFiles(projects);
+        
     }
 
     protected void basicHotfixRewriteTest(String projectName) throws Exception
@@ -445,6 +450,14 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         }
     }
 
+    protected void compareDevPomFiles(List<MavenProject> reactorProjects)throws IOException
+    {
+        for (MavenProject project : reactorProjects)
+        {
+            compareDevPomFiles(project);
+        }
+    }
+
     protected void compareSnapPomFiles(List<MavenProject> reactorProjects)throws IOException
     {
         for (MavenProject project : reactorProjects)
@@ -456,7 +469,14 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     protected void comparePomFiles(MavenProject project) throws IOException
     {
         File actualFile = project.getFile();
-        File expectedFile = new File(actualFile.getParentFile(), "expected-"+actualFile.getName() );
+        File expectedFile = new File(actualFile.getParentFile(), "expected-nosnap-"+actualFile.getName() );
+        comparePomFiles(expectedFile, actualFile);
+    }
+
+    protected void compareDevPomFiles(MavenProject project) throws IOException
+    {
+        File actualFile = project.getFile();
+        File expectedFile = new File(actualFile.getParentFile(), "expected-dev-"+actualFile.getName() );
         comparePomFiles(expectedFile, actualFile);
     }
 

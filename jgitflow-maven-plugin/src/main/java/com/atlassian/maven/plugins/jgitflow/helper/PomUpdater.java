@@ -16,9 +16,9 @@ public interface PomUpdater
 
     void addSnapshotToPomVersions(ProjectCacheKey cacheKey, VersionType versionType, String versionLabel, String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException;
 
-    void copyPomVersionsFromProject(List<MavenProject> projectsToUpdate, List<MavenProject> projectsToCopy) throws MavenJGitFlowException;
+    void copyPomVersionsFromProject(List<MavenProject> projectsToCopy,List<MavenProject> projectsToUpdate) throws MavenJGitFlowException;
 
-    void copyPomVersionsFromMap(List<MavenProject> projectsToUpdate, Map<String,String> versionsToCopy) throws MavenJGitFlowException;
+    void copyPomVersionsFromMap(Map<String,String> versionsToCopy, List<MavenProject> projectsToUpdate) throws MavenJGitFlowException;
 
     void updatePomsWithNextDevelopmentVersion(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException;
 
