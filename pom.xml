@@ -9,7 +9,7 @@
 
     <groupId>external.atlassian.jgitflow</groupId>
     <artifactId>jgitflow-parent</artifactId>
-    <version>1.0-m2-SNAPSHOT</version>
+    <version>1.0-m2-mjf_149_maven_extensions-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -52,6 +52,7 @@
 
     <modules>
         <module>jgit-flow-core</module>
+        <module>jgitflow-maven-api</module>
         <module>jgitflow-maven-plugin</module>
     </modules>
 
