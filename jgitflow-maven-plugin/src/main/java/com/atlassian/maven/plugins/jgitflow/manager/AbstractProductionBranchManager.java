@@ -25,8 +25,6 @@ public abstract class AbstractProductionBranchManager extends AbstractFlowReleas
 {
     private final BranchType branchType;
 
-    public static final String ls = System.getProperty("line.separator");
-
     @Requirement
     protected MavenExecutionHelper mavenExecutionHelper;
 
