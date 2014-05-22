@@ -1,6 +1,23 @@
 package com.atlassian.maven.jgitflow.api;
 
-public class MavenJGitFlowExtensionException
+public class MavenJGitFlowExtensionException extends Exception
 {
+    public MavenJGitFlowExtensionException()
+    {
+    }
 
+    public MavenJGitFlowExtensionException(String message)
+    {
+        super(message);
+    }
+
+    public MavenJGitFlowExtensionException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
+
+    public MavenJGitFlowExtensionException(Throwable cause)
+    {
+        super(cause);
+    }
 }
