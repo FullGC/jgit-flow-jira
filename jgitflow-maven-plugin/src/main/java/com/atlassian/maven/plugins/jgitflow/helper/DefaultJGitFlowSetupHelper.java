@@ -23,6 +23,7 @@ import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -59,13 +60,36 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
             fixCygwinIfNeeded();
             writeReportHeader();
             setupCredentialProviders();
+            warnCoreAutoCrlf();
         }
         catch (Exception e)
         {
             throw new MavenJGitFlowException("Error running common setup tasks", e);
         }
     }
-    
+
+    public void warnCoreAutoCrlf() throws MavenJGitFlowException
+    {
+        try
+        {
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+            StoredConfig config = flow.git().getRepository().getConfig();
+
+            CoreConfig.AutoCRLF autoCRLF = config.getEnum(ConfigConstants.CONFIG_CORE_SECTION, null,ConfigConstants.CONFIG_KEY_AUTOCRLF, CoreConfig.AutoCRLF.FALSE);
+            
+            if(autoCRLF.TRUE.equals(autoCRLF))
+            {
+                getLogger().warn("..oo00 ---- WARNING ---- 00oo..");
+                getLogger().warn("core.autocrlf is set to true but is NOT supported by JGit or JGitFlow!");
+                getLogger().warn("00oo.. you have been warned 00oo..");
+            }
+        }
+        catch (Exception e)
+        {
+            throw new MavenJGitFlowException("Error checking for core.autocrlf", e);
+        }
+    }
+
     @Override
     public void fixCygwinIfNeeded() throws MavenJGitFlowException
     {

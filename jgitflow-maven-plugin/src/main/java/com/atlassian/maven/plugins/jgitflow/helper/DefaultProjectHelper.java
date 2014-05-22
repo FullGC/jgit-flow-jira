@@ -41,8 +41,6 @@ import static com.google.common.collect.Lists.newArrayList;
 @Component(role = ProjectHelper.class)
 public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectHelper
 {
-    private static final String ls = System.getProperty("line.separator");
-
     private static String OS = System.getProperty("os.name").toLowerCase();
     private static boolean isWindows = (OS.indexOf("win") >= 0);
 

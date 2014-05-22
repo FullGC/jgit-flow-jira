@@ -91,32 +91,6 @@ public class MavenProjectRewriter implements ProjectRewriter
         }
 
     }
-    
-    /*
-    private void writePom(Document doc, File f) throws ProjectRewriteException
-    {
-        FileOutputStream fos = null;
-        
-        try
-        {
-            fos = new FileOutputStream(f);
-
-            Format format = Format.getRawFormat();
-            XMLOutputter out = new XMLOutputter(format);
-            
-            out.output(doc,fos);
-        }
-        
-        catch (IOException e)
-        {
-            throw new ProjectRewriteException("Error writing pom!", e);
-        }
-        finally
-        {
-            IOUtil.close(fos);
-        }
-    }
-    */
 
     private boolean applyAllChanges(MavenProject project, Element root, Iterable<ProjectChange> items) throws ProjectRewriteException
     {
@@ -221,41 +195,6 @@ public class MavenProjectRewriter implements ProjectRewriter
             c.setText( ReleaseUtil.normalizeLineEndings( c.getText(), ls ) );
         }
     }
-    
-    /*
-    private Document readPom(File pomFile) throws ProjectRewriteException
-    {
-        FileInputStream fis = null;
-        try 
-        {
-            fis = new FileInputStream(pomFile);
-            final StAXStreamBuilder builder = new StAXStreamBuilder();
-            XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            XMLStreamReader streamReader = inputFactory.createXMLStreamReader(fis);
-            
-            return builder.build(streamReader);
-        }
-        catch (XMLStreamException e)
-        {
-            throw new ProjectRewriteException("unable to read pom!", e);
-        }
-        catch (JDOMException e)
-        {
-            throw new ProjectRewriteException("unable to read pom!", e);
-        }
-        catch (IOException e)
-        {
-            throw new ProjectRewriteException("unable to read pom!", e);
-        }
-        finally
-        {
-            if(null != fis)
-            {
-                IOUtil.close(fis);
-            }
-        }
-    }
-    */
 
     private class DocumentDescriptor 
     {
