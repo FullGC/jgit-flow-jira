@@ -123,42 +123,11 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
 
                 throw new MavenJGitFlowException("Error while merging release!");
             }
-
-            //-- MOVE this to release start
-            //make sure we're on develop
-            flow.git().checkout().setName(flow.getDevelopBranchName()).call();
-
-            //reload the reactor projects for develop
-            MavenSession developSession = mavenExecutionHelper.getSessionForBranch(flow.getDevelopBranchName(), originalRootProject, session);
-            List<MavenProject> developProjects = developSession.getSortedProjects();
-
-            String developLabel = labelProvider.getNextVersionLabel(VersionType.DEVELOPMENT, ProjectCacheKey.DEVELOP_BRANCH, developProjects);
-
-            pomUpdater.updatePomsWithNextDevelopmentVersion(ProjectCacheKey.DEVELOP_BRANCH, developProjects);
-
-            projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for " + developLabel + " development" + ctx.getScmCommentSuffix());
-
-            if (ctx.isPushReleases())
-            {
-                RefSpec developSpec = new RefSpec(ctx.getFlowInitContext().getDevelop());
-                flow.git().push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(developSpec).call();
-            }
+            
         }
         catch (JGitFlowException e)
         {
             throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
-        }
-        catch (GitAPIException e)
-        {
-            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
-        }
-        catch (ReactorReloadException e)
-        {
-            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
-        }
-        catch (IOException e)
-        {
-            throw new MavenJGitFlowException("Error releasing: " + e.getMessage(), e);
         }
         finally
         {

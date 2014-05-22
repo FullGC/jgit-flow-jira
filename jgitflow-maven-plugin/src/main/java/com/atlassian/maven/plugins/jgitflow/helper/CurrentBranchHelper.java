@@ -79,6 +79,12 @@ public class CurrentBranchHelper
 
         return NamingUtil.unprefixedBranchName(branchPrefix, branchName);
     }
+
+    public String getBranchName() throws JGitFlowException, IOException
+    {
+        JGitFlow flow = jGitFlowProvider.gitFlow();
+        return flow.git().getRepository().getBranch();
+    }
     
     public BranchType getBranchType() throws JGitFlowException, IOException
     {

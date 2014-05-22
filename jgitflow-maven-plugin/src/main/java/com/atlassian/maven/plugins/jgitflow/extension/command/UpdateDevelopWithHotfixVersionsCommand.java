@@ -58,7 +58,7 @@ public class UpdateDevelopWithHotfixVersionsCommand implements ExtensionCommand
         }
         catch (Exception e)
         {
-            throw new JGitFlowExtensionException("Error updating develop oms to hotfix version", e);
+            throw new JGitFlowExtensionException("Error updating develop poms to hotfix version", e);
         }
         
     }
