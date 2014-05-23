@@ -95,6 +95,32 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
     }
 
     @Override
+    public String getRootVersion(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects)
+    {
+        if(reactorProjects.size() < 1)
+        {
+            return "";
+        }
+        
+        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
+        
+        return getOriginalVersions(cacheKey,reactorProjects).get(ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
+    }
+
+    @Override
+    public String getRootVersion(List<MavenProject> reactorProjects)
+    {
+        if(reactorProjects.size() < 1)
+        {
+            return "";
+        }
+
+        MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
+
+        return getOriginalVersions(reactorProjects).get(ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
+    }
+
+    @Override
     public Map<String, String> getNextVersionsForType(VersionType versionType, ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         Map<String, String> versions = new HashMap<String, String>();

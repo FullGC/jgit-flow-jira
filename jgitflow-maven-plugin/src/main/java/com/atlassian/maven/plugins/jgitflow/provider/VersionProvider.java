@@ -87,4 +87,8 @@ public interface VersionProvider
      */
     Map<String,String> getOriginalVersions(List<MavenProject> reactorProjects);
     
+    String getRootVersion(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects);
+
+    String getRootVersion(List<MavenProject> reactorProjects);
+    
 }

@@ -10,14 +10,12 @@ import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.helper.CurrentBranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
-import com.atlassian.maven.plugins.jgitflow.helper.SessionAndProjects;
 import com.atlassian.maven.plugins.jgitflow.manager.tasks.CheckoutAndGetProjects;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.ReactorProjectsProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.VersionCacheProvider;
 
 import org.apache.maven.project.MavenProject;
@@ -38,7 +36,7 @@ public class UpdateDevelopWithPreviousVersionsCommand implements ExtensionComman
     private PomUpdater pomUpdater;
     
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
     
     @Requirement
     private ProjectHelper projectHelper;
@@ -59,7 +57,7 @@ public class UpdateDevelopWithPreviousVersionsCommand implements ExtensionComman
             
             JGitFlow flow = jGitFlowProvider.gitFlow();
             
-            String originalBranchName = currentBranchHelper.getBranchName();
+            String originalBranchName = branchHelper.getCurrentBranchName();
 
             List<MavenProject> developProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName()).getProjects();
 

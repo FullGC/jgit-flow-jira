@@ -8,6 +8,7 @@ import java.util.*;
 
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
+import com.atlassian.maven.plugins.jgitflow.helper.SessionAndProjects;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import com.google.common.base.Strings;
@@ -113,12 +114,12 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     }
 
 
-    protected void basicReleaseRewriteTest(String projectName) throws Exception
+    protected SessionAndProjects basicReleaseRewriteTest(String projectName) throws Exception
     {
-        basicReleaseRewriteTest(projectName,"");
+        return basicReleaseRewriteTest(projectName,"");
     }
 
-    protected void basicReleaseRewriteTest(String projectName, String releaseVersion) throws Exception
+    protected SessionAndProjects basicReleaseRewriteTest(String projectName, String releaseVersion) throws Exception
     {
         List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectName);
         File projectRoot = projects.get(0).getBasedir();
@@ -132,10 +133,10 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
         ctx.setInteractive(false).setNoTag(true);
 
-        basicReleaseRewriteTest(projectName, ctx);
+        return basicReleaseRewriteTest(projectName, ctx);
     }
 
-    protected void basicReleaseRewriteTest(String projectName, ReleaseContext ctx) throws Exception
+    protected SessionAndProjects basicReleaseRewriteTest(String projectName, ReleaseContext ctx) throws Exception
     {
         List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectName);
         File projectRoot = ctx.getBaseDir();
@@ -160,6 +161,8 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
         compareDevPomFiles(projects);
+        
+        return new SessionAndProjects(session,projects);
         
     }
 
@@ -212,8 +215,13 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected void initialCommitAll(JGitFlow flow) throws Exception
     {
+        commitAll(flow, "Initial commit");
+    }
+
+    protected void commitAll(JGitFlow flow, String message) throws Exception
+    {
         flow.git().add().addFilepattern(".").call();
-        flow.git().commit().setMessage("initial commit").call();
+        flow.git().commit().setMessage(message).call();
     }
 
     protected void assertOnDevelop(JGitFlow flow) throws Exception
@@ -275,6 +283,24 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         return ReleaseUtil.readXmlFile(getTestFile(PROJECT_BASEDIR + "target/test-classes/projects/" + fileName));
     }
 
+    protected void copyTestProject(String path, String subpath) throws IOException
+    {
+        File testResourcesDir = getTestFile(PROJECT_BASEDIR + "src/test/resources/");
+        File resourceDir = null;
+        File targetDir = null;
+        if(Strings.isNullOrEmpty(subpath))
+        {
+            resourceDir = new File( testResourcesDir, "projects/" + path + "/" );
+            targetDir = new File( testFileBase, "projects/" + path + "/" );
+        }
+        else
+        {
+            resourceDir = new File( testResourcesDir, "projects/" + path + "/" + subpath + "/" );
+            targetDir = new File( testFileBase, "projects/" + path + "/" + subpath + "/" );
+        }
+
+        FileUtils.copyDirectoryStructure(resourceDir, targetDir);
+    }
     protected List<MavenProject> createReactorProjects(String path, String subpath) throws Exception
     {
         return createReactorProjects(path, path, subpath, true);
@@ -493,6 +519,13 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         String actualPom = ReleaseUtil.readXmlFile(actualFile);
 
         assertEquals(expectedPom,actualPom);
+    }
+    
+    public void updatePomVersion(File pomFile, String oldVersion,String newVersion) throws IOException
+    {
+        String xmlString = org.apache.commons.io.FileUtils.readFileToString(pomFile);
+        String updatedXml = org.apache.commons.lang.StringUtils.replace(xmlString, "<version>" + oldVersion + "</version>", "<version>" + newVersion + "</version>");
+        org.apache.commons.io.FileUtils.writeStringToFile(pomFile, updatedXml);
     }
 
     public File newTempDir()

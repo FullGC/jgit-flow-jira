@@ -5,7 +5,7 @@ import java.util.List;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
-import com.atlassian.maven.plugins.jgitflow.helper.CurrentBranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
@@ -33,7 +33,7 @@ public class GetProjectsForBranch
     private ContextProvider contextProvider;
 
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
 
     public List<MavenProject> run(String branchName, List<MavenProject> originalProjects) throws MavenJGitFlowException
     {
@@ -42,7 +42,7 @@ public class GetProjectsForBranch
             JGitFlow flow = jGitFlowProvider.gitFlow();
             ReleaseContext ctx = contextProvider.getContext();
             
-            String originalBranchName = currentBranchHelper.getBranchName();
+            String originalBranchName = branchHelper.getCurrentBranchName();
             
             flow.git().checkout().setName(branchName).call();
 

@@ -68,7 +68,7 @@ public class DefaultFlowHotfixManager extends AbstractProductionBranchManager
 
             flow = jGitFlowProvider.gitFlow();
 
-            startExtension.init();
+            startExtension.init(ctx.getHotfixStartExtension());
 
             flow.hotfixStart(hotfixLabel)
                 .setAllowUntracked(ctx.isAllowUntracked())
@@ -99,7 +99,7 @@ public class DefaultFlowHotfixManager extends AbstractProductionBranchManager
 
         try
         {
-            finishExtension.init();
+            finishExtension.init(ctx.getHotfixFinishExtension());
             String hotfixLabel = getFinishLabelAndRunPreflight(ctx,reactorProjects,session);
 
             flow = jGitFlowProvider.gitFlow();

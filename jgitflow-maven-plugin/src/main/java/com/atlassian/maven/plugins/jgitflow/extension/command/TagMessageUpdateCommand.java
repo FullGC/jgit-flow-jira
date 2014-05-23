@@ -4,12 +4,11 @@ import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.AbstractBranchMergingCommand;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
-import com.atlassian.jgitflow.core.command.ReleaseFinishCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.helper.CurrentBranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 
 import org.apache.maven.project.MavenProject;
@@ -22,7 +21,7 @@ import org.eclipse.jgit.api.Git;
 public class TagMessageUpdateCommand implements ExtensionCommand
 {
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
 
     @Requirement
     private ContextProvider contextProvider;
@@ -38,7 +37,7 @@ public class TagMessageUpdateCommand implements ExtensionCommand
                 
                 AbstractBranchMergingCommand mergingCommand = (AbstractBranchMergingCommand) gitFlowCommand;
                 
-                MavenProject rootProject = ReleaseUtil.getRootProject(currentBranchHelper.getProjectsForCurrentBranch());
+                MavenProject rootProject = ReleaseUtil.getRootProject(branchHelper.getProjectsForCurrentBranch());
                 
                 mergingCommand.setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()));
             }

@@ -1,6 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow.extension;
 
 import com.atlassian.jgitflow.core.extension.ReleaseFinishExtension;
+import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.command.UpdateDevelopPomsWithMasterVersion;
 import com.atlassian.maven.plugins.jgitflow.extension.command.UpdateDevelopWithPreviousVersionsCommand;
 
@@ -12,15 +13,15 @@ public class ReleaseFinishPluginExtension extends ProductionBranchMergingPluginE
 {
     @Requirement
     private UpdateDevelopPomsWithMasterVersion updateDevelopPomsWithMasterVersion;
-    
+
     @Requirement
     private UpdateDevelopWithPreviousVersionsCommand updateDevelopWithPreviousVersionsCommand;
-    
+
     @Override
-    public void init()
+    public void init(MavenJGitFlowExtension externalExtension)
     {
-        super.init();
-        
+        super.init(externalExtension);
+
         addBeforeDevelopMergeCommands(updateDevelopPomsWithMasterVersion);
         addAfterDevelopMergeCommands(updateDevelopWithPreviousVersionsCommand);
     }

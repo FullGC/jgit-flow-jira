@@ -7,7 +7,7 @@ import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.helper.CurrentBranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.SessionAndProjects;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
@@ -25,7 +25,7 @@ public class MavenBuildCommand implements ExtensionCommand
     private ContextProvider contextProvider;
 
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
     
     @Requirement
     MavenExecutionHelper mavenExecutionHelper;
@@ -36,7 +36,7 @@ public class MavenBuildCommand implements ExtensionCommand
         try
         {
             ReleaseContext ctx = contextProvider.getContext();
-            SessionAndProjects sap = currentBranchHelper.getSessionAndProjectsForCurrentBranch();
+            SessionAndProjects sap = branchHelper.getSessionAndProjectsForCurrentBranch();
 
             MavenProject rootProject = ReleaseUtil.getRootProject(sap.getProjects());
 

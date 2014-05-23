@@ -1,6 +1,7 @@
-package com.atlassian.maven.jgitflow.api;
+package com.atlassian.maven.jgitflow.api.util;
 
 import com.atlassian.jgitflow.core.JGitFlowInfo;
+import com.atlassian.maven.jgitflow.api.exception.MavenJGitFlowExtensionException;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
@@ -16,7 +17,7 @@ public class JGitFlowCommitHelper
      *
      * @param flow          the JGitFlow instance to use
      * @param commitMessage The message for the commit
-     * @throws MavenJGitFlowExtensionException
+     * @throws com.atlassian.maven.jgitflow.api.exception.MavenJGitFlowExtensionException
      */
     public static void commitAllChanges(JGitFlowInfo flow, String commitMessage) throws MavenJGitFlowExtensionException
     {

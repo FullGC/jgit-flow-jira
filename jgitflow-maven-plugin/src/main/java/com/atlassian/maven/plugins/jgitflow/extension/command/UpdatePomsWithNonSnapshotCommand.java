@@ -12,7 +12,7 @@ import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 import com.atlassian.maven.plugins.jgitflow.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
-import com.atlassian.maven.plugins.jgitflow.helper.CurrentBranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
@@ -47,7 +47,7 @@ public class UpdatePomsWithNonSnapshotCommand extends AbstractLogEnabled impleme
     private ReactorProjectsProvider projectsProvider;
 
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
 
     @Override
     public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
@@ -60,7 +60,7 @@ public class UpdatePomsWithNonSnapshotCommand extends AbstractLogEnabled impleme
 
         try
         {
-            branchType = currentBranchHelper.getBranchType();
+            branchType = branchHelper.getCurrentBranchType();
 
             ReleaseContext ctx = contextProvider.getContext();
             JGitFlow flow = jGitFlowProvider.gitFlow();
@@ -68,7 +68,7 @@ public class UpdatePomsWithNonSnapshotCommand extends AbstractLogEnabled impleme
             switch (branchType)
             {
                 case RELEASE:
-                    cacheKey = ProjectCacheKey.RELEASE_START_LABEL;
+                    cacheKey = ProjectCacheKey.RELEASE_FINISH_LABEL;
                     versionSuffix = ctx.getReleaseBranchVersionSuffix();
                     break;
 
@@ -82,18 +82,16 @@ public class UpdatePomsWithNonSnapshotCommand extends AbstractLogEnabled impleme
             }
 
             checkNotNull(cacheKey);
-
-            String unprefixedBranchName = currentBranchHelper.getUnprefixedBranchName();
-            String fullBranchName = currentBranchHelper.getBranchName();
+            String fullBranchName = branchHelper.getCurrentBranchName();
 
             getLogger().info("(" + fullBranchName + ") Updating poms for " + branchType.name());
 
             //reload the reactor projects for release
-            List<MavenProject> branchProjects = currentBranchHelper.getProjectsForCurrentBranch();
+            List<MavenProject> branchProjects = branchHelper.getProjectsForCurrentBranch();
 
-            pomUpdater.removeSnapshotFromPomVersions(cacheKey, unprefixedBranchName, versionSuffix, branchProjects);
+            pomUpdater.removeSnapshotFromPomVersions(cacheKey, versionSuffix, branchProjects);
 
-            projectHelper.commitAllPoms(flow.git(), branchProjects, ctx.getScmCommentPrefix() + "updating poms for branch'" + unprefixedBranchName + "' with non-snapshot versions" + ctx.getScmCommentSuffix());
+            projectHelper.commitAllPoms(flow.git(), branchProjects, ctx.getScmCommentPrefix() + "updating poms for branch'" + fullBranchName + "' with non-snapshot versions" + ctx.getScmCommentSuffix());
         }
         catch (Exception e)
         {

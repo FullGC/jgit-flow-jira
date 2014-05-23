@@ -1,4 +1,4 @@
-package com.atlassian.maven.jgitflow.api;
+package com.atlassian.maven.jgitflow.api.exception;
 
 public class MavenJGitFlowExtensionException extends Exception
 {

@@ -51,7 +51,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     private VersionProvider versionProvider;
 
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
 
     @Override
     public void commitAllChanges(Git git, String message) throws MavenJGitFlowException
@@ -75,7 +75,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     @Override
     public void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws MavenJGitFlowException
     {
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         try
         {
@@ -183,7 +183,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     @Override
     public void checkPomForVersionState(VersionState state, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         getLogger().info("(" + fullBranchName + ") Checking for " + state.name() + " version in projects...");
         boolean hasSnapshotProject = false;
@@ -219,7 +219,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     {
         List<String> snapshots = newArrayList();
 
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         getLogger().info("(" + fullBranchName + ") Checking dependencies and plugins for snapshots ...");
         Map<String, String> originalReactorVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);

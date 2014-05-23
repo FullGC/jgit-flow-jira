@@ -1,15 +1,21 @@
 package com.atlassian.maven.plugins.jgitflow.mojo;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.plugins.jgitflow.FlowInitContext;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.MavenSessionProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ReactorProjectsProvider;
 
+import com.google.common.base.Strings;
+
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -111,5 +117,25 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     public boolean isRemoteAllowed()
     {
         return (!offline && !localOnly);
+    }
+    
+    public MavenJGitFlowExtension getExtensionInstance(String classname) throws MojoExecutionException
+    {
+        if(Strings.isNullOrEmpty(classname))
+        {
+            return null;    
+        }
+        
+        try
+        {
+            Class<?> providerClass = Thread.currentThread().getContextClassLoader().loadClass(classname);
+            Constructor ctr = providerClass.getConstructor();
+
+            return (MavenJGitFlowExtension) ctr.newInstance();
+        }
+        catch (Exception e)
+        {
+            throw new MojoExecutionException("Unable to load maven jgitflow extension class '" + classname + "'",e);
+        }
     }
 }

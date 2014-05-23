@@ -53,7 +53,7 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
 
             flow = jGitFlowProvider.gitFlow();
             
-            startExtension.init();
+            startExtension.init(ctx.getReleaseStartExtension());
 
             flow.releaseStart(releaseLabel)
                 .setAllowUntracked(ctx.isAllowUntracked())
@@ -85,7 +85,7 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
 
         try
         {
-            finishExtension.init();
+            finishExtension.init(ctx.getReleaseFinishExtension());
             String releaseLabel = getFinishLabelAndRunPreflight(ctx,reactorProjects,session);
 
             flow = jGitFlowProvider.gitFlow();
@@ -127,7 +127,7 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
         }
         catch (JGitFlowException e)
         {
-            throw new MavenJGitFlowException("Error starting release: " + e.getMessage(), e);
+            throw new MavenJGitFlowException("Error finishing release: " + e.getMessage(), e);
         }
         finally
         {

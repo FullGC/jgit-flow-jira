@@ -1,6 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow.extension;
 
 import com.atlassian.jgitflow.core.extension.ReleaseStartExtension;
+import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.command.UpdateDevelopWithNextDevVersionCommand;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -13,9 +14,9 @@ public class ReleaseStartPluginExtension extends ProductionBranchCreatingPluginE
     private UpdateDevelopWithNextDevVersionCommand updateDevelopWithNextDevVersionCommand;
 
     @Override
-    public void init()
+    public void init(MavenJGitFlowExtension externalExtension)
     {
-        super.init();
+        super.init(externalExtension);
         addAfterCreateBranchCommands(updateDevelopWithNextDevVersionCommand);
     }
 }

@@ -3,9 +3,9 @@ package com.atlassian.maven.jgitflow.api.example;
 import java.io.File;
 
 import com.atlassian.jgitflow.core.JGitFlowInfo;
-import com.atlassian.maven.jgitflow.api.JGitFlowCommitHelper;
-import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtensionException;
-import com.atlassian.maven.jgitflow.api.NoopMavenJgitFlowExtension;
+import com.atlassian.maven.jgitflow.api.impl.NoopMavenReleaseFinishExtension;
+import com.atlassian.maven.jgitflow.api.exception.MavenJGitFlowExtensionException;
+import com.atlassian.maven.jgitflow.api.util.JGitFlowCommitHelper;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -15,7 +15,7 @@ import org.eclipse.jgit.api.Git;
 /**
  * An example class meant to be used on release-finish to update a README.md file with the new release version
  */
-public class UpdateReadmeExtension extends NoopMavenJgitFlowExtension
+public class UpdateReadmeExtension extends NoopMavenReleaseFinishExtension
 {
 
     public static final String README_MD = "README.md";
@@ -42,12 +42,12 @@ public class UpdateReadmeExtension extends NoopMavenJgitFlowExtension
             //do the replacement
             //NOTE: This is not performant or scalable. It's only here for example purposes.
             String readmeContent = Files.toString(readmeFile, Charsets.UTF_8);
-            String newContent = readmeContent.replace(oldVersion,newVersion);
-            
-            Files.write(newContent,readmeFile,Charsets.UTF_8);
-            
+            String newContent = readmeContent.replace(oldVersion, newVersion);
+
+            Files.write(newContent, readmeFile, Charsets.UTF_8);
+
             //now commit the change
-            JGitFlowCommitHelper.commitAllChanges(flow,"updating version in README.md");
+            JGitFlowCommitHelper.commitAllChanges(flow, "updating version in README.md");
 
         }
         catch (Exception e)

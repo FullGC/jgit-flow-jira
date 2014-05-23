@@ -1,7 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow.extension.command;
 
 import java.util.List;
-import java.util.Map;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
@@ -11,9 +10,9 @@ import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 import com.atlassian.maven.plugins.jgitflow.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
-import com.atlassian.maven.plugins.jgitflow.helper.*;
-import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
+import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
+import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.VersionCacheProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.VersionProvider;
@@ -28,46 +27,43 @@ public class UpdateDevelopWithHotfixVersionsCommand implements ExtensionCommand
 {
     @Requirement
     private VersionCacheProvider versionCacheProvider;
-    
-    @Requirement
-    private PomUpdater pomUpdater;
-   
-    @Requirement
-    private ProductionBranchHelper productionBranchHelper;
 
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
-    
+    private PomUpdater pomUpdater;
+
+    @Requirement
+    private BranchHelper branchHelper;
+
     @Requirement
     private VersionProvider versionProvider;
-    
+
     @Requirement
     private ProjectHelper projectHelper;
 
     @Requirement
     private ContextProvider contextProvider;
-    
+
     @Override
     public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
     {
         try
         {
             ReleaseContext ctx = contextProvider.getContext();
-            
+
             versionCacheProvider.cacheCurrentBranchVersions();
-            
-            List<MavenProject> developProjects = currentBranchHelper.getProjectsForCurrentBranch();
-            
-            List<MavenProject> hotfixProjects = productionBranchHelper.getProjectsForProductionBranch(BranchType.HOTFIX);
-            
-            pomUpdater.copyPomVersionsFromProject(hotfixProjects,developProjects);
-            projectHelper.commitAllPoms(git,developProjects,ctx.getScmCommentPrefix() + "Updating develop poms to hotfix version to avoid merge conflicts" + ctx.getScmCommentSuffix());
+
+            List<MavenProject> developProjects = branchHelper.getProjectsForCurrentBranch();
+
+            List<MavenProject> hotfixProjects = branchHelper.getProjectsForTopicBranch(BranchType.HOTFIX);
+
+            pomUpdater.copyPomVersionsFromProject(hotfixProjects, developProjects);
+            projectHelper.commitAllPoms(git, developProjects, ctx.getScmCommentPrefix() + "Updating develop poms to hotfix version to avoid merge conflicts" + ctx.getScmCommentSuffix());
         }
         catch (Exception e)
         {
             throw new JGitFlowExtensionException("Error updating develop poms to hotfix version", e);
         }
-        
+
     }
 
     @Override
