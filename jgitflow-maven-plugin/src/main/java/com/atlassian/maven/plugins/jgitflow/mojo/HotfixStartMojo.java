@@ -1,5 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow.mojo;
 
+import com.atlassian.maven.jgitflow.api.MavenHotfixStartExtension;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
@@ -9,11 +10,12 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * @since version
  */
-@Mojo(name = "hotfix-start", aggregator = true)
+@Mojo(name = "hotfix-start", aggregator = true, requiresDependencyResolution = ResolutionScope.TEST)
 public class HotfixStartMojo extends AbstractJGitFlowMojo
 {
     /**
@@ -50,9 +52,18 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
     @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
 
+    @Parameter(defaultValue = "")
+    private String hotfixStartExtension = "";
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+        ClassLoader oldClassloader = Thread.currentThread().getContextClassLoader();
+
+        Thread.currentThread().setContextClassLoader(getClassloader(getClasspath()));
+        
+        MavenHotfixStartExtension extensionObject = (MavenHotfixStartExtension) getExtensionInstance(hotfixStartExtension);
+        
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setAutoVersionSubmodules(autoVersionSubmodules)
            .setInteractive(getSettings().isInteractiveMode())
@@ -79,6 +90,10 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
         catch (MavenJGitFlowException e)
         {
             throw new MojoExecutionException("Error starting hotfix: " + e.getMessage(),e);
+        }
+        finally
+        {
+            Thread.currentThread().setContextClassLoader(oldClassloader);
         }
     }
 }

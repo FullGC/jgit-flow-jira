@@ -3,7 +3,10 @@ package com.atlassian.maven.plugins.jgitflow.mojo;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
 
 import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.plugins.jgitflow.FlowInitContext;
@@ -13,6 +16,7 @@ import com.atlassian.maven.plugins.jgitflow.provider.ReactorProjectsProvider;
 
 import com.google.common.base.Strings;
 
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -136,6 +140,56 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
         catch (Exception e)
         {
             throw new MojoExecutionException("Unable to load maven jgitflow extension class '" + classname + "'",e);
+        }
+    }
+
+    public ClassLoader getClassloader(String classpath)
+    {
+        List<String> pathList = Arrays.asList(classpath.split(File.pathSeparator));
+
+        List<URL> urls = new ArrayList<URL>( pathList.size() );
+        for ( String filename : pathList )
+        {
+            try
+            {
+                urls.add( new File( filename ).toURL() );
+            }
+            catch ( MalformedURLException e )
+            {
+                //ignore
+            }
+        }
+
+        return new URLClassLoader((URL[]) urls.toArray(new URL[urls.size()]), Thread.currentThread().getContextClassLoader());
+    }
+
+    protected String getClasspath() throws MojoExecutionException
+    {
+        Set<String> allPaths = new HashSet<String>();
+        StringBuffer finalPath = new StringBuffer(File.pathSeparator + project.getBuild().getOutputDirectory());
+
+        try
+        {
+            allPaths.addAll(project.getCompileClasspathElements());
+            allPaths.addAll(project.getRuntimeClasspathElements());
+            allPaths.addAll(project.getSystemClasspathElements());
+
+            URL[] pluginUrls = ((URLClassLoader)Thread.currentThread().getContextClassLoader()).getURLs();
+            for(URL pluginUrl : pluginUrls)
+            {
+                allPaths.add(new File(pluginUrl.getFile()).getPath());
+            }
+
+            for(String path : allPaths) {
+                finalPath.append(File.pathSeparator);
+                finalPath.append(path);
+            }
+
+            return finalPath.toString();
+        }
+        catch (DependencyResolutionRequiredException e)
+        {
+            throw new MojoExecutionException("Dependencies must be resolved", e);
         }
     }
 }

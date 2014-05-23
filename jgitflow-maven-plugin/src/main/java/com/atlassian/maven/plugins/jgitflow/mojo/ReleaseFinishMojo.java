@@ -13,11 +13,12 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * @since version
  */
-@Mojo(name = "release-finish", aggregator = true)
+@Mojo(name = "release-finish", aggregator = true, requiresDependencyResolution = ResolutionScope.TEST)
 public class ReleaseFinishMojo extends AbstractJGitFlowMojo
 {
     /**
@@ -90,6 +91,10 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+        ClassLoader oldClassloader = Thread.currentThread().getContextClassLoader();
+
+        Thread.currentThread().setContextClassLoader(getClassloader(getClasspath()));
+        
         MavenReleaseFinishExtension extensionObject = (MavenReleaseFinishExtension) getExtensionInstance(releaseFinishExtension);
         
         ReleaseContext ctx = new ReleaseContext(getBasedir());
@@ -129,6 +134,10 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
         catch (MavenJGitFlowException e)
         {
             throw new MojoExecutionException("Error finishing release: " + e.getMessage(),e);
+        }
+        finally
+        {
+            Thread.currentThread().setContextClassLoader(oldClassloader);
         }
     }
 }
