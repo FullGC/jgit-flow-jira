@@ -40,12 +40,12 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     private ContextProvider contextProvider;
     
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
 
     @Override
-    public void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, final String versionLabel, final String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException
+    public void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, final String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         getLogger().info("(" + fullBranchName + ") removing snapshot from pom versions...");
         ReleaseContext ctx = contextProvider.getContext();
@@ -74,9 +74,9 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     }
 
     @Override
-    public void addSnapshotToPomVersions(ProjectCacheKey cacheKey, final VersionType versionType, final String versionLabel, final String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException
+    public void addSnapshotToPomVersions(ProjectCacheKey cacheKey, final VersionType versionType, final String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         getLogger().info("(" + fullBranchName + ") adding snapshot to pom versions...");
         
@@ -103,7 +103,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     @Override
     public void copyPomVersionsFromProject(List<MavenProject> projectsToCopy,List<MavenProject> projectsToUpdate) throws MavenJGitFlowException
     {
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         getLogger().info("(" + fullBranchName + ") copying pom versions...");
         
@@ -129,7 +129,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     @Override
     public void updatePomsWithNextDevelopmentVersion(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         getLogger().info("(" + fullBranchName + ") updating poms with next development version...");
         
@@ -143,7 +143,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     @Override
     public void addFeatureVersionToSnapshotVersions(ProjectCacheKey cacheKey, final String featureVersion, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         getLogger().info("(" + fullBranchName + ") adding feature versions to poms...");
         ReleaseContext ctx = contextProvider.getContext();
@@ -172,7 +172,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     @Override
     public void removeFeatureVersionFromSnapshotVersions(ProjectCacheKey cacheKey, final String featureVersion, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         getLogger().info("(" + fullBranchName + ") removing feature versions to poms...");
         ReleaseContext ctx = contextProvider.getContext();
@@ -228,7 +228,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
 
     protected void doUpdate(List<MavenProject> reactorProjects, Map<String, String> originalVersions, Map<String, String> finalVersions, boolean updateDependencies) throws MavenJGitFlowException
     {
-        String fullBranchName = currentBranchHelper.getBranchName();
+        String fullBranchName = branchHelper.getCurrentBranchName();
         
         getLogger().info("(" + fullBranchName + ") updating poms for all projects...");
         if (!getLogger().isDebugEnabled())

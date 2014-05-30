@@ -3,6 +3,10 @@ package com.atlassian.maven.plugins.jgitflow;
 import java.io.File;
 
 import com.atlassian.jgitflow.core.InitContext;
+import com.atlassian.maven.jgitflow.api.MavenHotfixFinishExtension;
+import com.atlassian.maven.jgitflow.api.MavenHotfixStartExtension;
+import com.atlassian.maven.jgitflow.api.MavenReleaseFinishExtension;
+import com.atlassian.maven.jgitflow.api.MavenReleaseStartExtension;
 
 import com.google.common.base.Strings;
 
@@ -48,7 +52,11 @@ public class ReleaseContext
     private String username;
     private String password;
     private boolean alwaysUpdateOrigin;
-    
+    private MavenReleaseStartExtension releaseStartExtension;
+    private MavenReleaseFinishExtension releaseFinishExtension;
+    private MavenHotfixStartExtension hotfixStartExtension;
+    private MavenHotfixFinishExtension hotfixFinishExtension;
+
     public ReleaseContext(File baseDir)
     {
         this.baseDir = baseDir;
@@ -87,6 +95,10 @@ public class ReleaseContext
         this.username = "";
         this.password = "";
         this.alwaysUpdateOrigin = true;
+        this.releaseStartExtension = null;
+        this.releaseFinishExtension = null;
+        this.hotfixStartExtension = null;
+        this.hotfixFinishExtension = null;
     }
 
     public boolean isAllowSnapshots()
@@ -280,11 +292,11 @@ public class ReleaseContext
 
     public ReleaseContext setTagMessage(String msg)
     {
-        if(!Strings.isNullOrEmpty(msg))
+        if (!Strings.isNullOrEmpty(msg))
         {
             this.tagMessage = msg;
         }
-        
+
         return this;
     }
 
@@ -326,7 +338,7 @@ public class ReleaseContext
         this.defaultFeatureName = defaultFeatureName;
         return this;
     }
-    
+
     public String getDefaultFeatureName()
     {
         return defaultFeatureName;
@@ -412,7 +424,7 @@ public class ReleaseContext
     public String getDefaultOriginUrl()
     {
         return defaultOriginUrl;
-        
+
     }
 
     public ReleaseContext setDefaultOriginUrl(String defaultOriginUrl)
@@ -423,11 +435,11 @@ public class ReleaseContext
 
     public String getScmCommentPrefix()
     {
-        if(null == scmCommentPrefix || scmCommentPrefix.equalsIgnoreCase("null"))
+        if (null == scmCommentPrefix || scmCommentPrefix.equalsIgnoreCase("null"))
         {
             this.scmCommentPrefix = "";
         }
-        
+
         return scmCommentPrefix;
     }
 
@@ -439,7 +451,7 @@ public class ReleaseContext
 
     public String getScmCommentSuffix()
     {
-        if(null == scmCommentSuffix || scmCommentSuffix.equalsIgnoreCase("null"))
+        if (null == scmCommentSuffix || scmCommentSuffix.equalsIgnoreCase("null"))
         {
             this.scmCommentSuffix = "";
         }
@@ -475,23 +487,27 @@ public class ReleaseContext
         return pullDevelop;
     }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getUsername()
+    {
+        return username;
+    }
 
-	public ReleaseContext setUsername(String username) {
-		this.username = username;
-		return this;
-	}
+    public ReleaseContext setUsername(String username)
+    {
+        this.username = username;
+        return this;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getPassword()
+    {
+        return password;
+    }
 
-	public ReleaseContext setPassword(String password) {
-		this.password = password;
-		return this;
-	}
+    public ReleaseContext setPassword(String password)
+    {
+        this.password = password;
+        return this;
+    }
 
     public boolean isAlwaysUpdateOrigin()
     {
@@ -504,4 +520,47 @@ public class ReleaseContext
         return this;
     }
 
+    public MavenReleaseStartExtension getReleaseStartExtension()
+    {
+        return releaseStartExtension;
+    }
+
+    public ReleaseContext setReleaseStartExtension(MavenReleaseStartExtension releaseStartExtension)
+    {
+        this.releaseStartExtension = releaseStartExtension;
+        return this;
+    }
+
+    public MavenReleaseFinishExtension getReleaseFinishExtension()
+    {
+        return releaseFinishExtension;
+    }
+
+    public ReleaseContext setReleaseFinishExtension(MavenReleaseFinishExtension releaseFinishExtension)
+    {
+        this.releaseFinishExtension = releaseFinishExtension;
+        return this;
+    }
+
+    public MavenHotfixStartExtension getHotfixStartExtension()
+    {
+        return hotfixStartExtension;
+    }
+
+    public ReleaseContext setHotfixStartExtension(MavenHotfixStartExtension hotfixStartExtension)
+    {
+        this.hotfixStartExtension = hotfixStartExtension;
+        return this;
+    }
+
+    public MavenHotfixFinishExtension getHotfixFinishExtension()
+    {
+        return hotfixFinishExtension;
+    }
+
+    public ReleaseContext setHotfixFinishExtension(MavenHotfixFinishExtension hotfixFinishExtension)
+    {
+        this.hotfixFinishExtension = hotfixFinishExtension;
+        return this;
+    }
 }

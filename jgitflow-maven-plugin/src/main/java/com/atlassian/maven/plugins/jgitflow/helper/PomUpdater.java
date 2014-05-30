@@ -12,9 +12,9 @@ import org.apache.maven.project.MavenProject;
 public interface PomUpdater
 {
 
-    void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, String versionLabel, String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException;
+    void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException;
 
-    void addSnapshotToPomVersions(ProjectCacheKey cacheKey, VersionType versionType, String versionLabel, String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException;
+    void addSnapshotToPomVersions(ProjectCacheKey cacheKey, VersionType versionType, String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException;
 
     void copyPomVersionsFromProject(List<MavenProject> projectsToCopy,List<MavenProject> projectsToUpdate) throws MavenJGitFlowException;
 

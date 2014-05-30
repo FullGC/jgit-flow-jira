@@ -4,6 +4,7 @@ import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.FeatureStartExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyBranchCreatingExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureStartExtension;
+import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.command.EnsureOriginCommand;
 import com.atlassian.maven.plugins.jgitflow.extension.command.UpdateFeaturePomsWithSnapshotsCommand;
 
@@ -18,8 +19,8 @@ public class FeatureStartPluginExtension extends EmptyFeatureStartExtension impl
     
     @Requirement
     private UpdateFeaturePomsWithSnapshotsCommand updateFeaturePomsWithSnapshotsCommand;
-            
-    
+
+
     @Override
     public void init()
     {

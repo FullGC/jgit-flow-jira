@@ -32,7 +32,7 @@ public class UpdateDevelopPomsWithMasterVersion implements ExtensionCommand
     private PomUpdater pomUpdater;
 
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
 
     @Requirement
     private GetProjectsForBranch getProjectsForBranch;
@@ -54,7 +54,7 @@ public class UpdateDevelopPomsWithMasterVersion implements ExtensionCommand
     {
         try
         {
-            String originalBranchName = currentBranchHelper.getBranchName();
+            String originalBranchName = branchHelper.getCurrentBranchName();
 
             ReleaseContext ctx = contextProvider.getContext();
             

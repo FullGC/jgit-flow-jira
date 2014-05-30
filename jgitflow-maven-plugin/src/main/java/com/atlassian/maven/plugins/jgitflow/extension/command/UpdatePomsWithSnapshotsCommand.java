@@ -12,7 +12,7 @@ import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
-import com.atlassian.maven.plugins.jgitflow.helper.CurrentBranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.*;
@@ -40,7 +40,7 @@ public class UpdatePomsWithSnapshotsCommand implements ExtensionCommand
     private ProjectHelper projectHelper;
 
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
 
     @Override
     public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
@@ -52,7 +52,7 @@ public class UpdatePomsWithSnapshotsCommand implements ExtensionCommand
 
         try
         {
-            BranchType branchType = currentBranchHelper.getBranchType();
+            BranchType branchType = branchHelper.getCurrentBranchType();
 
             ReleaseContext ctx = contextProvider.getContext();
             JGitFlow flow = jGitFlowProvider.gitFlow();
@@ -78,12 +78,12 @@ public class UpdatePomsWithSnapshotsCommand implements ExtensionCommand
             checkNotNull(cacheKey);
             checkNotNull(versionType);
 
-            unprefixedBranchName = currentBranchHelper.getUnprefixedBranchName();
+            unprefixedBranchName = branchHelper.getUnprefixedCurrentBranchName();
 
             //reload the reactor projects for release
-            List<MavenProject> branchProjects = currentBranchHelper.getProjectsForCurrentBranch();
+            List<MavenProject> branchProjects = branchHelper.getProjectsForCurrentBranch();
 
-            pomUpdater.addSnapshotToPomVersions(cacheKey, versionType, unprefixedBranchName, versionSuffix, branchProjects);
+            pomUpdater.addSnapshotToPomVersions(cacheKey, versionType, versionSuffix, branchProjects);
 
             projectHelper.commitAllPoms(flow.git(), branchProjects, ctx.getScmCommentPrefix() + "updating poms for branch '" + unprefixedBranchName + "' with snapshot versions" + ctx.getScmCommentSuffix());
         }

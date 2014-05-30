@@ -1,6 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow.extension;
 
 import com.atlassian.jgitflow.core.extension.HotfixFinishExtension;
+import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.command.UpdateDevelopWithHotfixVersionsCommand;
 import com.atlassian.maven.plugins.jgitflow.extension.command.UpdateDevelopWithPreviousVersionsCommand;
 
@@ -15,11 +16,11 @@ public class HotfixFinishPluginExtension extends ProductionBranchMergingPluginEx
     
     @Requirement
     private UpdateDevelopWithPreviousVersionsCommand updateDevelopWithPreviousVersionsCommand;
-    
+
     @Override
-    public void init()
+    public void init(MavenJGitFlowExtension externalExtension)
     {
-        super.init();
+        super.init(externalExtension);
         
         //we need to avoid merge conflicts from master to develop with hotfix versions
         

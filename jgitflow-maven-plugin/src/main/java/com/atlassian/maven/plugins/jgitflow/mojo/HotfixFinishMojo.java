@@ -1,5 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow.mojo;
 
+import com.atlassian.maven.jgitflow.api.MavenHotfixFinishExtension;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
@@ -9,11 +10,12 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * @since version
  */
-@Mojo(name = "hotfix-finish", aggregator = true)
+@Mojo(name = "hotfix-finish", aggregator = true, requiresDependencyResolution = ResolutionScope.TEST)
 public class HotfixFinishMojo extends AbstractJGitFlowMojo
 {
     /**
@@ -74,9 +76,18 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
 
+    @Parameter(defaultValue = "")
+    private String hotfixFinishExtension = "";
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+        ClassLoader oldClassloader = Thread.currentThread().getContextClassLoader();
+
+        Thread.currentThread().setContextClassLoader(getClassloader(getClasspath()));
+        
+        MavenHotfixFinishExtension extensionObject = (MavenHotfixFinishExtension) getExtensionInstance(hotfixFinishExtension);
+        
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
            .setAutoVersionSubmodules(autoVersionSubmodules)
@@ -102,6 +113,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setPassword(password)
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
+           .setHotfixFinishExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
@@ -111,6 +123,10 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
         catch (MavenJGitFlowException e)
         {
             throw new MojoExecutionException("Error finishing hotfix: " + e.getMessage(),e);
+        }
+        finally
+        {
+            Thread.currentThread().setContextClassLoader(oldClassloader);
         }
     }
 }

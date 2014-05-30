@@ -13,7 +13,7 @@ import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
-import com.atlassian.maven.plugins.jgitflow.helper.CurrentBranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 
@@ -36,7 +36,7 @@ public class VerifyReleaseVersionStateAndDepsCommand implements ExtensionCommand
     private ProjectHelper projectHelper;
 
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
     
     
     @Override
@@ -44,7 +44,7 @@ public class VerifyReleaseVersionStateAndDepsCommand implements ExtensionCommand
     {
         try
         {
-            BranchType branchType = currentBranchHelper.getBranchType();
+            BranchType branchType = branchHelper.getCurrentBranchType();
             ProjectCacheKey cacheKey = null;
             
             switch (branchType)
@@ -74,7 +74,7 @@ public class VerifyReleaseVersionStateAndDepsCommand implements ExtensionCommand
             }
             
             ReleaseContext ctx = contextProvider.getContext();
-            List<MavenProject> branchProjects = currentBranchHelper.getProjectsForCurrentBranch();
+            List<MavenProject> branchProjects = branchHelper.getProjectsForCurrentBranch();
 
             projectHelper.checkPomForVersionState(VersionState.RELEASE, branchProjects);
 

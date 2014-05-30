@@ -1,6 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow.extension;
 
 import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureFinishExtension;
+import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.command.EnsureOriginCommand;
 import com.atlassian.maven.plugins.jgitflow.extension.command.MavenBuildCommand;
 import com.atlassian.maven.plugins.jgitflow.extension.command.PullDevelopCommand;

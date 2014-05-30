@@ -74,9 +74,7 @@ public abstract class AbstractBranchCreatingCommand<C, T> extends AbstractGitFlo
             enforcer().requireRemoteBranchAbsent(branchToPush);
             reporter.infoText(getCommandName(), "pushing new branch to origin: " + branchToPush);
 
-            RefSpec branchSpec = new RefSpec(branchToPush);
-
-            git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(branchSpec).call();
+            git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(new RefSpec(gfConfig.getDevelop()), new RefSpec(branchToPush)).call();
 
             reporter.debugText(getCommandName(), "push complete");
 

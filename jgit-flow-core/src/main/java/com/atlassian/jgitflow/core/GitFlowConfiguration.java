@@ -216,6 +216,16 @@ public class GitFlowConfiguration
 
     public BranchType getTypeForBranch(String branchName)
     {
+        if(getMaster().equals(branchName))
+        {
+            return BranchType.MASTER;
+        }
+        
+        if(getDevelop().equals(branchName))
+        {
+            return BranchType.DEVELOP;
+        }
+        
         String branchPrefix = "";
 
         for (String prefixName : getPrefixNames())

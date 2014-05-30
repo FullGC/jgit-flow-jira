@@ -11,7 +11,7 @@ import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
-import com.atlassian.maven.plugins.jgitflow.helper.CurrentBranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.SessionAndProjects;
@@ -27,7 +27,7 @@ import org.eclipse.jgit.api.Git;
 public class UpdateDevelopWithNextDevVersionCommand implements ExtensionCommand
 {
     @Requirement
-    private CurrentBranchHelper currentBranchHelper;
+    private BranchHelper branchHelper;
 
     @Requirement
     private ProjectHelper projectHelper;
@@ -55,7 +55,7 @@ public class UpdateDevelopWithNextDevVersionCommand implements ExtensionCommand
             JGitFlow flow = jGitFlowProvider.gitFlow();
             ReleaseContext ctx = contextProvider.getContext();
             
-            String originalBranchName = currentBranchHelper.getBranchName();
+            String originalBranchName = branchHelper.getCurrentBranchName();
             
             //check out develop and reload the reactor
             SessionAndProjects sessionAndProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName());
