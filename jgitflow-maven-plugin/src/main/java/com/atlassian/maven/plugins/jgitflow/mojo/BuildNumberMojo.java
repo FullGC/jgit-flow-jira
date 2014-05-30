@@ -3,10 +3,13 @@ package com.atlassian.maven.plugins.jgitflow.mojo;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jgitflow.core.exception.JGitFlowException;
+import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
+import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
-import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
-import com.atlassian.maven.plugins.jgitflow.provider.VersionProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.*;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeset;
 import com.atlassian.maven.plugins.jgitflow.rewrite.ProjectRewriter;
 
@@ -14,6 +17,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -47,10 +51,31 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
     @Component
     protected VersionProvider versionProvider;
 
+    @Component
+    protected ContextProvider contextProvider;
+
+    @Component
+    protected MavenSessionProvider sessionProvider;
+
+    @Component
+    protected ReactorProjectsProvider projectsProvider;
+
+    @Component
+    protected JGitFlowSetupHelper setupHelper;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         List<MavenProject> reactorProjects = getReactorProjects();
+
+        try
+        {
+            runPreflight(reactorProjects);
+        }
+        catch (Exception e)
+        {
+            throw new MojoExecutionException("Error setting up build number mojo: " + e.getMessage(), e);
+        }
 
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(ProjectCacheKey.BUILD_NUMBER, reactorProjects);
 
@@ -85,5 +110,19 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
                 throw new MojoExecutionException("Error updating poms with build numbers versions", e);
             }
         }
+    }
+
+    protected void setupProviders(MavenSession session, List<MavenProject> projects)
+    {
+        contextProvider.setContext(new ReleaseContext(getBasedir()));
+        sessionProvider.setSession(session);
+        projectsProvider.setReactorProjects(projects);
+    }
+
+    public void runPreflight(List<MavenProject> reactorProjects) throws JGitFlowException, MavenJGitFlowException
+    {
+        setupProviders(session, reactorProjects);
+
+        setupHelper.runCommonSetup();
     }
 }
