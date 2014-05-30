@@ -113,6 +113,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setPassword(password)
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
+           .setHotfixFinishExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

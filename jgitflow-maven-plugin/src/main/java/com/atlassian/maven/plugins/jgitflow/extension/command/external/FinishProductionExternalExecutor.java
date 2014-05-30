@@ -1,10 +1,10 @@
 package com.atlassian.maven.plugins.jgitflow.extension.command.external;
 
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.JGitFlowInfo;
 import com.atlassian.maven.jgitflow.api.FinishProductionBranchExtension;
 import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.jgitflow.api.exception.MavenJGitFlowExtensionException;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
 import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -16,7 +16,7 @@ public class FinishProductionExternalExecutor extends CachedVersionExternalExecu
     @Override
     public void execute(MavenJGitFlowExtension extension, String newVersion, String oldVersion, JGitFlowInfo flow) throws MavenJGitFlowExtensionException
     {
-        if(!FinishProductionBranchExtension.class.isAssignableFrom(extension.getClass()))
+        if(null == extension || !FinishProductionBranchExtension.class.isAssignableFrom(extension.getClass()))
         {
             return;    
         }

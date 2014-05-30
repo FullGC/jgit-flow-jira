@@ -83,6 +83,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
            .setScmCommentSuffix(scmCommentSuffix)
            .setUsername(username)
            .setPassword(password)
+           .setReleaseStartExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
         
         try
