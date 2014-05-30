@@ -8,6 +8,8 @@ import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import ut.com.atlassian.maven.plugins.jgitflow.TestFinishExtension;
+
+import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import org.apache.maven.execution.MavenSession;
@@ -22,6 +24,7 @@ import ut.com.atlassian.maven.plugins.jgitflow.testutils.RepoUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @since version
@@ -95,6 +98,35 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         ctx.setInteractive(false).setNoTag(true).setAllowSnapshots(true).setReleaseBranchVersionSuffix("RC");
 
         basicReleaseRewriteTest(projectName, ctx);
+    }
+
+    @Test(expected = MavenJGitFlowException.class)
+    public void releaseFinishWithoutReleaseStart() throws Exception
+    {
+
+        String projectName = "master-and-develop";
+        Git git = null;
+
+        List<MavenProject> projects = createReactorProjects("release-projects", projectName);
+        File projectRoot = projects.get(0).getBasedir();
+
+        MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
+
+        TestFinishExtension extension = new TestFinishExtension();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+        ctx.setInteractive(false)
+           .setNoTag(true)
+           .setAllowSnapshots(true)
+           .setNoBuild(true);
+
+        setupProjectsForMasterAndDevelop(projectRoot,projectName);
+
+        FlowReleaseManager relman = getReleaseManager();
+        relman.finish(ctx, projects, session);
+        
+        fail("release finish should throw if there's no release branch!!!");
+        
     }
 
     @Test
