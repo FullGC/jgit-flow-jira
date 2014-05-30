@@ -135,7 +135,7 @@ public class FinishScriptHelper
         String expectedPom = ReleaseUtil.readXmlFile(new File(baseDirectory, expectedPath));
         String actualPom = ReleaseUtil.readXmlFile(new File(baseDirectory, actualPath));
 
-        assertEquals("Pom files don't match: " + expectedPath, expectedPom, actualPom);
+        assertEquals("Pom files don't match!!!: \nexpected:\n" + expectedPom + "actual:\n" + actualPom, expectedPom, actualPom);
     }
     
     public void clearOrigin(Git git) throws IOException

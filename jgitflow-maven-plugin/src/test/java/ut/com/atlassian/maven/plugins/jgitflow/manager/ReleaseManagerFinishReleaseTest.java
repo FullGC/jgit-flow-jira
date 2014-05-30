@@ -5,15 +5,9 @@ import java.util.List;
 import java.util.Properties;
 
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowInfo;
-import com.atlassian.jgitflow.core.exception.AlreadyInitializedException;
-import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
-import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
-import com.atlassian.jgitflow.core.exception.SameBranchException;
 import com.atlassian.jgitflow.core.util.GitHelper;
-import com.atlassian.maven.jgitflow.api.exception.MavenJGitFlowExtensionException;
-import com.atlassian.maven.jgitflow.api.impl.NoopMavenReleaseFinishExtension;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
+import ut.com.atlassian.maven.plugins.jgitflow.TestFinishExtension;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import org.apache.maven.execution.MavenSession;
@@ -114,7 +108,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
 
         MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-        FinishExtension extension = new FinishExtension();
+        TestFinishExtension extension = new TestFinishExtension();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
         ctx.setInteractive(false)
@@ -151,28 +145,5 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
 
         updatePomVersion(new File(projectRoot, "pom.xml"), "1.0", "1.1-SNAPSHOT");
         commitAll(flow, "bumping develop");
-    }
-    
-    private class FinishExtension extends NoopMavenReleaseFinishExtension
-    {
-        private String oldVersion;
-        private String newVersion;
-
-        @Override
-        public void onMasterBranchVersionChange(String newVersion, String oldVersion, JGitFlowInfo flow) throws MavenJGitFlowExtensionException
-        {
-            this.oldVersion = oldVersion;
-            this.newVersion = newVersion;
-        }
-
-        public String getOldVersion()
-        {
-            return oldVersion;
-        }
-
-        public String getNewVersion()
-        {
-            return newVersion;
-        }
     }
 }
