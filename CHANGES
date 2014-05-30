@@ -1,3 +1,33 @@
+Version 1.0-m2
+
+** Bug
+    * [MJF-84] - Release finish fails with merge errors
+    * [MJF-93] - release-finish does not commit updated snapshot versions on develop
+    * [MJF-103] - Finishing of feature doesn't pushes merging back into develop and the deletion of feature branch
+    * [MJF-151] - Error configuring remote git repo with url with enableSsAgent true on Mac OS
+    * [MJF-155] - RequirementHelper.requireNoExistingReleaseBranches ignores releaseBranchPrefix
+    * [MJF-156] - BranchHelper has a regression in getCurrentBranchType
+
+** Epic
+    * [MJF-146] - Refactor JGit Flow to use Command Pattern for hooking into lifecycle
+
+** Improvement
+    * [MJF-67] - Develop version on release
+    * [MJF-91] - Option to update develop version at release-start rather than release-end
+    * [MJF-150] - Refactor core commands to remove code duplication
+
+** New Feature
+    * [MJF-115] - Check for 'core.autocrlf' being set to false.
+    * [MJF-116] - Add support for 'core.eol' GIT configuration parameter
+    * [MJF-147] - Implement command hooks in jgit flow library
+    * [MJF-148] - Implement pom updates as jgit flow commands
+    * [MJF-149] - Expose a way to provide external jgit flow commands to the maven plugin
+
+** Task
+    * [MJF-139] - implement support branches?
+
+=======================
+
 Version 1.0-m1
 
 ** Bug
