@@ -3,14 +3,11 @@ package com.atlassian.maven.plugins.jgitflow.helper;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.util.GitHelper;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
-import com.atlassian.maven.plugins.jgitflow.VersionType;
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.MavenSessionProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 import com.atlassian.maven.plugins.jgitflow.provider.ReactorProjectsProvider;
 
 import org.apache.maven.execution.MavenSession;
@@ -18,7 +15,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 
 @Component(role = ProductionBranchHelper.class)
@@ -84,7 +80,7 @@ public class ProductionBranchHelper
         }
         catch (Exception e)
         {
-            throw new MavenJGitFlowException("Error getting name for production branch", e);
+            throw new MavenJGitFlowException("Error getting name for production branch: " + e.getMessage(), e);
         }
     }
 }

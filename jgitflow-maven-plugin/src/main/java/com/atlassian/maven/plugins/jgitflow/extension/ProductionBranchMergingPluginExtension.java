@@ -1,7 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow.extension;
 
 import com.atlassian.jgitflow.core.extension.impl.EmptyMasterAndDevelopMergingExtension;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
 import com.atlassian.maven.plugins.jgitflow.extension.command.*;
 
 import org.codehaus.plexus.component.annotations.Requirement;
