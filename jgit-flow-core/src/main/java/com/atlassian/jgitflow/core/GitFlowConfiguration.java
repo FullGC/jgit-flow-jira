@@ -213,4 +213,31 @@ public class GitFlowConfiguration
         
         return branchPrefix;
     }
+
+    public BranchType getTypeForBranch(String branchName)
+    {
+        String branchPrefix = "";
+
+        for (String prefixName : getPrefixNames())
+        {
+            if (hasPrefixConfigured(prefixName))
+            {
+                String prefix = getPrefixValue(prefixName);
+
+                if(branchName.startsWith(prefix))
+                {
+                    try
+                    {
+                        return BranchType.valueOf(prefixName.toUpperCase());
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        return BranchType.UNKNOWN;
+                    }
+                }
+            }
+        }
+
+        return BranchType.UNKNOWN;
+    }
 }

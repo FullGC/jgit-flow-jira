@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
+import com.atlassian.jgitflow.core.InitContext;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowInitCommand;
 import com.atlassian.jgitflow.core.exception.DirtyWorkingTreeException;
@@ -346,6 +347,27 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
         basicReleaseRewriteTest("pom-with-parent-and-properties");
     }
 
+    @Test
+    public void releaseBasicPomWithCustomBranchPrefix() throws Exception
+    {
+        String projectName = "basic-pom";
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectName);
+        File projectRoot = projects.get(0).getBasedir();
+
+        InitContext init = new InitContext();
+        init.setRelease("superguy/");
+        
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+        
+        ctx.setInteractive(false)
+           .setNoTag(true)
+           .setAllowSnapshots(true)
+            .setFlowInitContext(init)
+        .setDefaultReleaseVersion("1.0");
+
+        basicReleaseRewriteTest(projectName, ctx);
+    }
+    
     @Test
     public void releaseWithFlatParent() throws Exception
     {

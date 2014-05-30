@@ -542,6 +542,11 @@ public class JGitFlow
         return gfConfig.getPrefixForBranch(branchName);
     }
 
+    public BranchType getTypeForBranch(String branchName)
+    {
+        return gfConfig.getTypeForBranch(branchName);
+    }
+
     public JGitFlowReporter getReporter()
     {
         return reporter;

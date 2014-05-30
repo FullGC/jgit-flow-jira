@@ -1,29 +1,22 @@
 package com.atlassian.maven.plugins.jgitflow.manager;
 
-import java.io.IOException;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
-import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.extension.ReleaseFinishPluginExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.ReleaseStartPluginExtension;
-import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.eclipse.jgit.api.errors.*;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.transport.RefSpec;
 
 /**
  * @since version

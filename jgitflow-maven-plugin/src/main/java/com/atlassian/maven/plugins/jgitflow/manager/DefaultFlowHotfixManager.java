@@ -1,44 +1,20 @@
 package com.atlassian.maven.plugins.jgitflow.manager;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
-import com.atlassian.jgitflow.core.exception.BranchOutOfDateException;
-import com.atlassian.jgitflow.core.exception.HotfixBranchExistsException;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.jgitflow.core.util.GitHelper;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.VersionState;
-import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
-import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
-import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
 import com.atlassian.maven.plugins.jgitflow.extension.HotfixFinishPluginExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.HotfixStartPluginExtension;
-import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
-import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
-import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
-import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
-import com.atlassian.maven.plugins.jgitflow.provider.*;
-
-import com.google.common.base.Joiner;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.release.ReleaseExecutionException;
-import org.apache.maven.shared.release.exec.MavenExecutorException;
-import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.transport.RefSpec;
 
 /**
  * @since version

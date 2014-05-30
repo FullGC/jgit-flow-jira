@@ -1,7 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow.extension.command;
 
 import java.util.List;
-import java.util.Map;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
@@ -9,11 +8,9 @@ import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.helper.*;
-import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.VersionCacheProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.VersionProvider;

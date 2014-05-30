@@ -3,23 +3,19 @@ package com.atlassian.maven.plugins.jgitflow.manager.tasks;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
-import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
-import com.atlassian.maven.plugins.jgitflow.provider.ReactorProjectsProvider;
 
 import com.google.common.base.Joiner;
 
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
