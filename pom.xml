@@ -9,7 +9,7 @@
 
     <groupId>external.atlassian.jgitflow</groupId>
     <artifactId>jgitflow-parent</artifactId>
-    <version>1.0-m1.1</version>
+    <version>1.0-m2</version>
 
     <packaging>pom</packaging>
 
@@ -52,6 +52,8 @@
 
     <modules>
         <module>jgit-flow-core</module>
+        <module>jgitflow-maven-api</module>
+        <module>jgitflow-it-support</module>
         <module>jgitflow-maven-plugin</module>
     </modules>
 
@@ -184,6 +186,11 @@
                 <artifactId>org.apache.servicemix.bundles.jsch</artifactId>
                 <version>0.1.49_1</version>
             </dependency>
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-component-annotations</artifactId>
+                <version>1.5.5</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     
@@ -230,6 +237,8 @@
                     <pushFeatures>true</pushFeatures>
                     <pushReleases>true</pushReleases>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <noFeatureBuild>true</noFeatureBuild>
+                    <noReleaseBuild>true</noReleaseBuild>
                 </configuration>
             </plugin>
             <plugin>
@@ -341,6 +350,7 @@
         <junit.version>4.11</junit.version>
         <commons-io.version>2.4</commons-io.version>
         <maven-artifact.version>2.2.1</maven-artifact.version>
+        <slf4j.version>1.7.7</slf4j.version>
         <skipUnits>${skipTests}</skipUnits>
     </properties>
 </project>

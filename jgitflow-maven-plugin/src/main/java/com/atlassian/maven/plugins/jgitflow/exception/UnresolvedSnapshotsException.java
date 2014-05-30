@@ -3,7 +3,7 @@ package com.atlassian.maven.plugins.jgitflow.exception;
 /**
  * @since version
  */
-public class UnresolvedSnapshotsException extends JGitFlowReleaseException
+public class UnresolvedSnapshotsException extends MavenJGitFlowException
 {
     public UnresolvedSnapshotsException()
     {

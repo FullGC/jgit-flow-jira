@@ -137,7 +137,6 @@ public class HotfixStartTest extends BaseGitFlowTest
 
     }
 
-    @Test(expected = JGitFlowGitAPIException.class)
     public void startHotfixWithFetchNoRemote() throws Exception
     {
         Git git = RepoUtil.createRepositoryWithMaster(newDir());
@@ -206,7 +205,7 @@ public class HotfixStartTest extends BaseGitFlowTest
         git.add().addFilepattern(junkFile.getName()).call();
         RevCommit commit = git.commit().setMessage("committing junk file").call();
 
-        //make sure develop has our commit
+        //make sure master has our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
 
         flow.hotfixStart("1.0").call();
@@ -214,7 +213,7 @@ public class HotfixStartTest extends BaseGitFlowTest
         assertEquals(flow.getHotfixBranchPrefix() + "1.0", git.getRepository().getBranch());
 
         //the hotfix branch should have our commit
-        assertTrue(GitHelper.isMergedInto(git, commit, flow.getHotfixBranchPrefix() + "1.0"));
+        assertTrue("hotfix branch does not have our commit: " + commit.toString(), GitHelper.isMergedInto(git, commit, flow.getHotfixBranchPrefix() + "1.0"));
 
     }
 

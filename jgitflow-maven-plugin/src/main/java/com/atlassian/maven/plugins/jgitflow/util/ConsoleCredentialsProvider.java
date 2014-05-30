@@ -2,7 +2,6 @@ package com.atlassian.maven.plugins.jgitflow.util;
 
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.google.common.base.Strings;
-import org.codehaus.plexus.components.interactivity.Prompter;
 import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.transport.CredentialItem;

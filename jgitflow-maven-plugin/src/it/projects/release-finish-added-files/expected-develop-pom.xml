@@ -29,6 +29,15 @@
         <module>sub/subproject2</module>
     </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>external.atlassian.jgitflow</groupId>
+            <artifactId>jgitflow-it-support</artifactId>
+            <version>@project.version@</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    
     <build>
         <plugins>
             <plugin>
@@ -41,6 +50,7 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <noDeploy>true</noDeploy>
                     <noReleaseBuild>true</noReleaseBuild>
+                    <releaseFinishExtension>com.atlassian.maven.plugins.jgitflow.ITFinishExtension</releaseFinishExtension>
                 </configuration>
             </plugin>
         </plugins>

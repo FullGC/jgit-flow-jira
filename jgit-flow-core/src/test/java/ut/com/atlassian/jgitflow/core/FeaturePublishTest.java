@@ -137,8 +137,8 @@ public class FeaturePublishTest extends BaseGitFlowTest
         //create a new commit
         File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
         FileUtils.writeStringToFile(junkFile, "I am junk");
-        git.add().addFilepattern(junkFile.getName()).call();
-        git.commit().setMessage("committing junk file").call();
+        flow.git().add().addFilepattern(junkFile.getName()).call();
+        flow.git().commit().setMessage("committing junk file").call();
 
         //manually add the feature branch to remote
         remoteGit.branchCreate().setName(flow.getFeatureBranchPrefix() + "my-feature").call();

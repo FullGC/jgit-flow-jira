@@ -25,15 +25,15 @@ public class ReleaseMergeResult
     {
         return developResult;
     }
-    
+
     public boolean wasSuccessful()
     {
         return (!masterHasProblems() && !developHasProblems());
     }
-    
+
     public boolean masterHasProblems()
     {
-       return !masterResult.getMergeStatus().isSuccessful();
+        return !masterResult.getMergeStatus().isSuccessful();
     }
 
     public boolean developHasProblems()

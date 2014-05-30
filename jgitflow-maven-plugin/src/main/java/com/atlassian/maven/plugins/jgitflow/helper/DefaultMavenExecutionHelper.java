@@ -1,71 +1,86 @@
 package com.atlassian.maven.plugins.jgitflow.helper;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 
 import com.google.common.base.Joiner;
 
-import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.model.Profile;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.profiles.DefaultProfileManager;
-import org.apache.maven.profiles.ProfileManager;
-import org.apache.maven.project.*;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.shared.release.ReleaseResult;
 import org.apache.maven.shared.release.env.DefaultReleaseEnvironment;
 import org.apache.maven.shared.release.env.ReleaseEnvironment;
 import org.apache.maven.shared.release.exec.MavenExecutor;
 import org.apache.maven.shared.release.exec.MavenExecutorException;
-import org.codehaus.plexus.util.dag.CycleDetectedException;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
+import org.eclipse.jgit.api.errors.GitAPIException;
 
 /**
  * @since version
  */
+@Component(role = MavenExecutionHelper.class)
 public class DefaultMavenExecutionHelper implements MavenExecutionHelper
 {
-    @Component
+    @Requirement
     protected Map<String, MavenExecutor> mavenExecutors;
 
-    @Component
+    @Requirement
     protected MavenProjectBuilder projectBuilder;
-    
+
+    @Requirement
+    protected JGitFlowProvider jGitFlowProvider;
+
+    @Requirement
+    private ContextProvider contextProvider;
+
     @Override
-    public void execute(MavenProject project, ReleaseContext ctx, MavenSession session) throws MavenExecutorException
+    public void execute(MavenProject project, MavenSession session) throws MavenExecutorException
     {
-        String goal = "clean deploy";
+        ReleaseContext ctx = contextProvider.getContext();
         
-        if(ctx.isNoDeploy())
+        String goal = "clean deploy";
+
+        if (ctx.isNoDeploy())
         {
             goal = "clean install";
         }
-        
-        execute(project,ctx,session,goal);
+
+        execute(project, session, goal);
     }
 
     @Override
-    public void execute(MavenProject project, ReleaseContext ctx, MavenSession session, String goals) throws MavenExecutorException
+    public void execute(MavenProject project, MavenSession session, String goals) throws MavenExecutorException
     {
+        ReleaseContext ctx = contextProvider.getContext();
+        
         List<String> argList = new ArrayList<String>();
 
         Properties userProps = session.getUserProperties();
 
-        for(String key : userProps.stringPropertyNames())
+        for (String key : userProps.stringPropertyNames())
         {
             argList.add("-D" + key + "=" + userProps.getProperty(key));
         }
 
-        if(ctx.isUseReleaseProfile())
+        if (ctx.isUseReleaseProfile())
         {
             argList.add("-DperformRelease=true");
         }
 
-        for(String profileId : getActiveProfileIds(project,session))
+        for (String profileId : getActiveProfileIds(project, session))
         {
             argList.add("-P" + profileId);
         }
@@ -77,7 +92,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         env.setSettings(session.getSettings());
         MavenExecutor mavenExecutor = mavenExecutors.get(env.getMavenExecutorId());
 
-        mavenExecutor.executeGoals(ctx.getBaseDir(),goals,env,ctx.isInteractive(),additionalArgs,result);
+        mavenExecutor.executeGoals(ctx.getBaseDir(), goals, env, ctx.isInteractive(), additionalArgs, result);
 
     }
 
@@ -88,10 +103,10 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         projectFiles.push(rootProject.getFile());
 
         List<MavenProject> reactorProjects = new ArrayList<MavenProject>();
-        
+
         try
         {
-            while(!projectFiles.isEmpty())
+            while (!projectFiles.isEmpty())
             {
                 File file = (File) projectFiles.pop();
 
@@ -106,9 +121,9 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
                     Object pb = oldSession.getContainer().lookup("org.apache.maven.project.ProjectBuilder");
 
                     Class requestClass = Class.forName("org.apache.maven.project.ProjectBuildingRequest");
-                    
-                    Method buildMethod = pb.getClass().getMethod("build",File.class,requestClass);
-                    Object result = buildMethod.invoke(pb,file,pbr);
+
+                    Method buildMethod = pb.getClass().getMethod("build", File.class, requestClass);
+                    Object result = buildMethod.invoke(pb, file, pbr);
                     Method getProjectMethod = result.getClass().getMethod("getProject");
                     getProjectMethod.setAccessible(true);
                     project = (MavenProject) getProjectMethod.invoke(result);
@@ -119,68 +134,87 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
                     // installed, or a genuine project configuration error
                     try
                     {
-                        oldSession.getClass( ).getMethod( "getProjectBuilderConfiguration" );
+                        oldSession.getClass().getMethod("getProjectBuilderConfiguration");
                     }
-                    catch ( NoSuchMethodException e1 )
+                    catch (NoSuchMethodException e1)
                     {
                         // There is no Maven 2 environment, just report the error
                         throw e;
                     }
 
                     // Fallback to Maven 2 API
-                    project = projectBuilder.build(file,oldSession.getProjectBuilderConfiguration());
+                    project = projectBuilder.build(file, oldSession.getProjectBuilderConfiguration());
                 }
-                
+
                 project.setActiveProfiles(rootProject.getActiveProfiles());
                 List<String> moduleNames = project.getModules();
-                
-                for(String moduleName : moduleNames)
+
+                for (String moduleName : moduleNames)
                 {
-                	//if moduleName is a file treat as explicitly defined pom.xml
-                	File baseFile = new File(file.getParentFile(), moduleName);
-                	if(baseFile.isFile()){
-                		projectFiles.push(baseFile);
-                	}else{
-                		projectFiles.push(new File(baseFile, File.separator + "pom.xml"));
-                	}
-                	
+                    //if moduleName is a file treat as explicitly defined pom.xml
+                    File baseFile = new File(file.getParentFile(), moduleName);
+                    if (baseFile.isFile())
+                    {
+                        projectFiles.push(baseFile);
+                    }
+                    else
+                    {
+                        projectFiles.push(new File(baseFile, File.separator + "pom.xml"));
+                    }
+
                 }
-    
+
                 reactorProjects.add(project);
             }
-    
+
             ReactorManager reactorManager = new ReactorManager(reactorProjects);
             MavenSession newSession = new MavenSession(
                     oldSession.getContainer()
-                    ,oldSession.getSettings()
-                    ,oldSession.getLocalRepository()
-                    ,oldSession.getEventDispatcher()
-                    ,reactorManager
-                    ,oldSession.getGoals()
-                    ,oldSession.getExecutionRootDirectory()
-                    ,oldSession.getExecutionProperties()
-                    ,oldSession.getUserProperties()
-                    ,oldSession.getStartTime()
+                    , oldSession.getSettings()
+                    , oldSession.getLocalRepository()
+                    , oldSession.getEventDispatcher()
+                    , reactorManager
+                    , oldSession.getGoals()
+                    , oldSession.getExecutionRootDirectory()
+                    , oldSession.getExecutionProperties()
+                    , oldSession.getUserProperties()
+                    , oldSession.getStartTime()
             );
-            
+
             //in case of maven 3
             try
             {
-                Method setProjectsMethod = newSession.getClass().getMethod("setProjects",List.class);
-                setProjectsMethod.invoke(newSession,reactorManager.getSortedProjects());
+                Method setProjectsMethod = newSession.getClass().getMethod("setProjects", List.class);
+                setProjectsMethod.invoke(newSession, reactorManager.getSortedProjects());
             }
             catch (Exception ignore)
             {
                 //ignore
             }
-            
+
             return newSession;
         }
         catch (Exception e)
         {
-            throw new ReactorReloadException("Error reloading Maven reacotr projects", e);
+            throw new ReactorReloadException("Error reloading Maven reactor projects", e);
         }
-        
+
+    }
+
+    @Override
+    public MavenSession getSessionForBranch(String branchName, MavenProject rootProject, MavenSession oldSession) throws JGitFlowException, IOException, GitAPIException, ReactorReloadException
+    {
+        JGitFlow flow = jGitFlowProvider.gitFlow();
+        String originalBranch = flow.git().getRepository().getBranch();
+
+        flow.git().checkout().setName(branchName).call();
+
+        //reload the reactor projects
+        MavenSession newSession = reloadReactor(rootProject, oldSession);
+
+        flow.git().checkout().setName(originalBranch).call();
+
+        return newSession;
     }
 
     private List<String> getActiveProfileIds(MavenProject project, MavenSession session)
@@ -189,24 +223,24 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
         try
         {
             // Try to use M3-methods
-            Method getRequestMethod = session.getClass().getMethod( "getRequest" );
-            Object mavenExecutionRequest = getRequestMethod.invoke( session );
-            Method getActiveProfilesMethod = mavenExecutionRequest.getClass().getMethod( "getActiveProfiles" );
-            profiles = (List<String>) getActiveProfilesMethod.invoke( mavenExecutionRequest );
+            Method getRequestMethod = session.getClass().getMethod("getRequest");
+            Object mavenExecutionRequest = getRequestMethod.invoke(session);
+            Method getActiveProfilesMethod = mavenExecutionRequest.getClass().getMethod("getActiveProfiles");
+            profiles = (List<String>) getActiveProfilesMethod.invoke(mavenExecutionRequest);
         }
-        catch ( Exception e )
+        catch (Exception e)
         {
             //do nothing
         }
 
-        if ( project.getActiveProfiles() != null && !project.getActiveProfiles().isEmpty() )
+        if (project.getActiveProfiles() != null && !project.getActiveProfiles().isEmpty())
         {
-            for ( Object profile : project.getActiveProfiles() )
+            for (Object profile : project.getActiveProfiles())
             {
-                profiles.add( ( (Profile) profile ).getId() );
+                profiles.add(((Profile) profile).getId());
             }
         }
         return profiles;
     }
-    
+
 }

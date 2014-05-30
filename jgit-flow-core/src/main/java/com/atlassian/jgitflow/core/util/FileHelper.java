@@ -9,6 +9,7 @@ public class FileHelper
 {
     /**
      * Reads the first line of a file
+     *
      * @param f the file to read
      * @return the first line of the file or an empty string
      */
@@ -18,7 +19,7 @@ public class FileHelper
         BufferedReader br = null;
         try
         {
-            if(null != f && f.exists() && f.canRead())
+            if (null != f && f.exists() && f.canRead())
             {
                 br = new BufferedReader(new FileReader(f));
                 line = br.readLine();
@@ -32,9 +33,9 @@ public class FileHelper
         {
             //ignore
         }
-        finally 
+        finally
         {
-            if(null != br)
+            if (null != br)
             {
                 try
                 {
@@ -46,19 +47,20 @@ public class FileHelper
                 }
             }
         }
-        
+
         return line;
     }
 
     /**
      * Creates any non-existent parent directories for the given file
+     *
      * @param f the file to create parent directories for
      * @throws java.io.IOException
      */
     public static void createParentDirs(File f) throws IOException
     {
         File parent = f.getCanonicalFile().getParentFile();
-        if(null != parent)
+        if (null != parent)
         {
             parent.mkdirs();
         }
@@ -66,6 +68,7 @@ public class FileHelper
 
     /**
      * Writes a string to a file replacing the entire contents
+     *
      * @param s The string to write
      * @param f The file to write to
      * @throws java.io.IOException
@@ -86,5 +89,5 @@ public class FileHelper
             }
         }
     }
-    
+
 }

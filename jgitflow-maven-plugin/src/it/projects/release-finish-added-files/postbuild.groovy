@@ -1,14 +1,27 @@
 import com.atlassian.jgitflow.core.JGitFlow
-import com.atlassian.maven.plugins.jgitflow.it.ReleaseFinishScriptHelper
+import com.atlassian.maven.plugins.jgitflow.it.FinishScriptHelper
+import org.apache.commons.io.FileUtils
+
+import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertTrue
 
 try
 {
-    helper = new ReleaseFinishScriptHelper(basedir, localRepositoryPath, context)
+    helper = new FinishScriptHelper(basedir, localRepositoryPath, context)
     flow = JGitFlow.getOrInit(basedir)
     flow.git().checkout().setName("master").call()
 
     helper.comparePomFiles("expected-master-pom.xml", "pom.xml")
+    
+    extFile = new File(flow.git().getRepository().getWorkTree(),"ext-result.txt");
+    assertTrue("extension file missing!",extFile.exists());
+    
+    extResult = FileUtils.readFileToString(extFile);
+    
+    String[] versions = extResult.split(":");
+    
+    assertEquals("old version mismatch", "1.0", versions[0]);
+    assertEquals("new version mismatch", "1.1", versions[1]);
 
     flow.git().checkout().setName("develop").call()
 

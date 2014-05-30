@@ -245,7 +245,7 @@ public class FeatureFinishTest extends BaseGitFlowTest
         remoteGit.add().addFilepattern(junkFile.getName()).call();
         remoteGit.commit().setMessage("adding junk file").call();
 
-        flow.featureFinish("my-feature").setFetchDevelop(true).call();
+        flow.featureFinish("my-feature").setFetch(true).call();
 
     }
 
