@@ -23,9 +23,6 @@ Version 1.0-m2
     * [MJF-148] - Implement pom updates as jgit flow commands
     * [MJF-149] - Expose a way to provide external jgit flow commands to the maven plugin
 
-** Task
-    * [MJF-139] - implement support branches?
-
 =======================
 
 Version 1.0-m1
