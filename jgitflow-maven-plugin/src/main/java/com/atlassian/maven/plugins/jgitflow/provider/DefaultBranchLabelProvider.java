@@ -9,7 +9,7 @@ import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.util.GitHelper;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
@@ -195,7 +195,7 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
         }
         catch (JGitFlowException e)
         {
-            throw new MavenJGitFlowException("Error looking up current production branch label", e);
+            throw new MavenJGitFlowException("Error looking up current production branch label:" + e.getMessage(), e);
         }
     }
 

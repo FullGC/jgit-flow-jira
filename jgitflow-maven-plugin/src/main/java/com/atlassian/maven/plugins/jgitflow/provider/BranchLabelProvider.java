@@ -2,7 +2,7 @@ package com.atlassian.maven.plugins.jgitflow.provider;
 
 import java.util.List;
 
-import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 

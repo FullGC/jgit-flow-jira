@@ -9,7 +9,7 @@ import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;

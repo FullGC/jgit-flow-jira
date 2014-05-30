@@ -1,18 +1,13 @@
 package com.atlassian.maven.plugins.jgitflow.manager.tasks;
 
-import java.util.List;
-
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.SessionAndProjects;
 import com.atlassian.maven.plugins.jgitflow.provider.*;
 
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.release.util.ReleaseUtil;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;

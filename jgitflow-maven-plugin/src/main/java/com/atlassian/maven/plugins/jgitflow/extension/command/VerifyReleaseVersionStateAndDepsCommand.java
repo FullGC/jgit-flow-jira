@@ -8,7 +8,7 @@ import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
@@ -90,7 +90,7 @@ public class VerifyReleaseVersionStateAndDepsCommand implements ExtensionCommand
         }
         catch (Exception e)
         {
-            throw new JGitFlowExtensionException("Error verifying version state in poms", e);
+            throw new JGitFlowExtensionException("Error verifying version state in poms: " + e.getMessage(), e);
         }
     }
 

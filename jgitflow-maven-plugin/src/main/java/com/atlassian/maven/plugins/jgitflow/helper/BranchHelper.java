@@ -3,10 +3,10 @@ package com.atlassian.maven.plugins.jgitflow.helper;
 import java.io.IOException;
 import java.util.List;
 
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.util.GitHelper;
-import com.atlassian.maven.plugins.jgitflow.BranchType;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
@@ -100,27 +100,8 @@ public class BranchHelper
     {
         JGitFlow flow = jGitFlowProvider.gitFlow();
         String branchName = flow.git().getRepository().getBranch();
-        
-        if(flow.getDevelopBranchName().equals(branchName))
-        {
-            return BranchType.DEVELOP;
-        }
 
-        if(flow.getMasterBranchName().equals(branchName))
-        {
-            return BranchType.MASTER;
-        }
-
-        String branchPrefix = stripSlash(flow.getPrefixForBranch(branchName));
-        
-        try
-        {
-            return BranchType.valueOf(branchPrefix.toUpperCase());
-        }
-        catch (IllegalArgumentException e)
-        {
-            return BranchType.UNKNOWN;
-        }
+        return flow.getTypeForBranch(branchName);
     }
 
     public List<MavenProject> getProjectsForTopicBranch(BranchType branchType) throws MavenJGitFlowException
