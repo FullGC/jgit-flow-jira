@@ -38,6 +38,13 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
     @Parameter(property = "releaseVersion", defaultValue = "")
     private String releaseVersion = "";
 
+    /**
+     * Default version to use for new local working copy.
+     *
+     */
+    @Parameter( property = "developmentVersion", defaultValue = "")
+    private String developmentVersion = "";
+
     @Parameter(property = "releaseBranchVersionSuffix", defaultValue = "")
     private String releaseBranchVersionSuffix = "";
 
@@ -69,6 +76,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
         ctx.setAutoVersionSubmodules(autoVersionSubmodules)
            .setInteractive(getSettings().isInteractiveMode())
            .setDefaultReleaseVersion(releaseVersion)
+           .setDefaultDevelopmentVersion(developmentVersion)
            .setReleaseBranchVersionSuffix(releaseBranchVersionSuffix)
            .setAllowSnapshots(allowSnapshots)
            .setUpdateDependencies(updateDependencies)
