@@ -20,7 +20,6 @@ public class RepoUtil
     public static Git createEmptyRepository(File dir) throws GitAPIException
     {
         Git git = Git.init().setDirectory(dir).setBare(true).call();
-        git.commit().setMessage("initial commit").call();
 
         return git;
     }

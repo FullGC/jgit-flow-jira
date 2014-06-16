@@ -109,7 +109,12 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
             while (!projectFiles.isEmpty())
             {
                 File file = (File) projectFiles.pop();
-
+                
+                if(!file.exists() || !file.canRead())
+                {
+                    continue;    
+                }
+                
                 MavenProject project = null;
                 //try maven3 first
                 try
