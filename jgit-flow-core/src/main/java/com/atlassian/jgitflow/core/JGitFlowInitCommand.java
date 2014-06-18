@@ -261,7 +261,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 gfConfig.setPrefix(prefixName, context.getPrefix(prefixName));
             }
 
-            if(!Strings.isNullOrEmpty(currentBranch) && !currentBranch.equals(repo.getBranch()))
+            if(!Strings.isNullOrEmpty(currentBranch) && !currentBranch.equals(repo.getBranch()) && (GitHelper.localBranchExists(git, currentBranch) || GitHelper.remoteBranchExists(git, currentBranch, reporter)))
             {
                 git.checkout().setName(currentBranch).call();
             }
