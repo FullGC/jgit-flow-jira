@@ -45,6 +45,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
                 .setEnableFeatureVersions(enableFeatureVersions)
                 .setEnableSshAgent(enableSshAgent)
                 .setAllowUntracked(allowUntracked)
+                .setAllowSnapshots(allowSnapshots)
                 .setPushFeatures(pushFeatures)
                 .setStartCommit(startCommit)
                 .setAllowRemote(isRemoteAllowed())

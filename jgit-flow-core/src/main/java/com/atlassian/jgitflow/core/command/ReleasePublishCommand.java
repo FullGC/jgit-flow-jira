@@ -11,6 +11,7 @@ import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseStartExtension;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -81,6 +82,7 @@ public class ReleasePublishCommand extends AbstractGitFlowCommand<ReleasePublish
             config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedBranchName, ConfigConstants.CONFIG_KEY_REMOTE, Constants.DEFAULT_REMOTE_NAME);
             config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, prefixedBranchName, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + prefixedBranchName);
             config.save();
+            config.load();
 
             //checkout the branch
             git.checkout().setName(prefixedBranchName).call();
@@ -91,6 +93,10 @@ public class ReleasePublishCommand extends AbstractGitFlowCommand<ReleasePublish
             throw new JGitFlowIOException(e);
         }
         catch (GitAPIException e)
+        {
+            throw new JGitFlowGitAPIException(e);
+        }
+        catch (ConfigInvalidException e)
         {
             throw new JGitFlowGitAPIException(e);
         }

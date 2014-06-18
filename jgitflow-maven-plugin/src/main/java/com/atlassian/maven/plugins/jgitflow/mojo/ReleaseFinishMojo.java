@@ -28,13 +28,6 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
      */
     @Parameter( defaultValue = "false", property = "autoVersionSubmodules" )
     private boolean autoVersionSubmodules = false;
-
-    /**
-     * Whether to allow SNAPSHOT dependencies. Default is to fail when finding any SNAPSHOT.
-     *
-     */
-    @Parameter( defaultValue = "false", property = "allowSnapshots" )
-    private boolean allowSnapshots = false;
     
     @Parameter( defaultValue = "false", property = "pushReleases" )
     private boolean pushReleases = false;

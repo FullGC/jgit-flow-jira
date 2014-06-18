@@ -27,13 +27,6 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
     private boolean autoVersionSubmodules = false;
 
     /**
-     * Whether to allow SNAPSHOT dependencies. Default is to fail when finding any SNAPSHOT.
-     *
-     */
-    @Parameter( defaultValue = "false", property = "allowSnapshots" )
-    private boolean allowSnapshots = false;
-
-    /**
      * Default version to use when preparing a release
      *
      */

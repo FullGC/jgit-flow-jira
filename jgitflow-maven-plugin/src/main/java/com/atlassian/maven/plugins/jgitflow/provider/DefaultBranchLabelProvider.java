@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.util.GitHelper;
@@ -14,6 +15,8 @@ import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
+
+import com.google.common.base.Strings;
 
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.project.MavenProject;
@@ -133,12 +136,28 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
             try
             {
                 String rheadPrefix = Constants.R_HEADS + flow.getFeatureBranchPrefix();
+                String rOriginPrefix = JGitFlowConstants.R_REMOTE_ORIGIN + flow.getFeatureBranchPrefix();
+                
                 List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getFeatureBranchPrefix(), flow.getReporter());
 
                 for (Ref branch : branches)
                 {
-                    String simpleName = branch.getName().substring(branch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
-                    possibleValues.add(simpleName);
+                    String simpleName = "";
+                    
+                    if(branch.getName().contains(rheadPrefix))
+                    {
+                        simpleName = branch.getName().substring(branch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
+                    }
+
+                    if(branch.getName().contains(rOriginPrefix))
+                    {
+                        simpleName = branch.getName().substring(branch.getName().indexOf(rOriginPrefix) + rOriginPrefix.length());
+                    }
+                    
+                    if(!Strings.isNullOrEmpty(simpleName) && !possibleValues.contains(simpleName))
+                    {
+                        possibleValues.add(simpleName);
+                    }
                 }
 
                 featureName = promptForExistingFeatureName(flow.getFeatureBranchPrefix(), featureName, possibleValues);

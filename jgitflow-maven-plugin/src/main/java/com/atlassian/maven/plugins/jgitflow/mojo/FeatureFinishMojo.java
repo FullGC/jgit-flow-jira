@@ -67,6 +67,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
                 .setDefaultFeatureName(featureName)
                 .setEnableSshAgent(enableSshAgent)
                 .setAllowUntracked(allowUntracked)
+                .setAllowSnapshots(allowSnapshots)
                 .setPushFeatures(pushFeatures)
                 .setAllowRemote(isRemoteAllowed())
                 .setAlwaysUpdateOrigin(alwaysUpdateOrigin)

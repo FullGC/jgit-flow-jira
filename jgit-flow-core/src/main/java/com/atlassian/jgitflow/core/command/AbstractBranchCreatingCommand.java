@@ -12,6 +12,7 @@ import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
@@ -85,7 +86,14 @@ public abstract class AbstractBranchCreatingCommand<C, T> extends AbstractGitFlo
             config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, branchToPush, ConfigConstants.CONFIG_KEY_REMOTE, Constants.DEFAULT_REMOTE_NAME);
             config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, branchToPush, ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + branchToPush);
             config.save();
-
+            try
+            {
+                config.load();
+            }
+            catch (ConfigInvalidException e)
+            {
+                throw new JGitFlowGitAPIException("unable to load config",e);
+            }
             runExtensionCommands(pushExtension.afterPush());
         }
     }

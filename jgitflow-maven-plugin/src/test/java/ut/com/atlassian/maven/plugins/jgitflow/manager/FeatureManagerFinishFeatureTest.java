@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
+import com.atlassian.jgitflow.core.InitContext;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
@@ -14,6 +15,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class FeatureManagerFinishFeatureTest extends AbstractFlowManagerTest
@@ -45,14 +47,49 @@ public class FeatureManagerFinishFeatureTest extends AbstractFlowManagerTest
         String pom = FileUtils.readFileToString(projects.get(0).getFile());
         assertTrue(pom.contains("1.0-SNAPSHOT"));
     }
+
+    @Test
+    public void customDevelopName() throws Exception
+    {
+        String developName = "voipac-current";
+        InitContext initContext = new InitContext();
+        initContext.setDevelop(developName);
+
+        JGitFlow flow = startFeature(initContext);
+
+        String projectSubdir = "basic-pom";
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir,false);
+        File projectRoot = projects.get(0).getBasedir();
+
+        FlowReleaseManager relman = getFeatureManager();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+        ctx.setInteractive(false).setEnableFeatureVersions(true).setNoBuild(true).setFlowInitContext(initContext);
+
+        MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
+
+        relman.finish(ctx, projects, session);
+        
+        assertEquals(developName,flow.git().getRepository().getBranch());
+        //reload the projects
+        projects = createReactorProjectsNoClean("rewrite-for-release", projectSubdir);
+
+        String pom = FileUtils.readFileToString(projects.get(0).getFile());
+        assertTrue(pom.contains("1.0-SNAPSHOT"));
+    }
     
-    private void startFeature() throws Exception
+    private JGitFlow startFeature() throws Exception
+    {
+        return startFeature(new InitContext());
+    }
+
+    private JGitFlow startFeature(InitContext initContext) throws Exception
     {
         String projectSubdir = "basic-pom";
         List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir);
         File projectRoot = projects.get(0).getBasedir();
 
-        JGitFlow flow = JGitFlow.getOrInit(projectRoot);
+        JGitFlow flow = JGitFlow.forceInit(projectRoot,initContext);
 
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
@@ -61,7 +98,7 @@ public class FeatureManagerFinishFeatureTest extends AbstractFlowManagerTest
         FlowReleaseManager relman = getFeatureManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        ctx.setInteractive(false).setDefaultFeatureName(FEATURE_NAME).setEnableFeatureVersions(true);
+        ctx.setInteractive(false).setDefaultFeatureName(FEATURE_NAME).setEnableFeatureVersions(true).setFlowInitContext(initContext);
 
         MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
@@ -69,5 +106,7 @@ public class FeatureManagerFinishFeatureTest extends AbstractFlowManagerTest
 
         String pom = FileUtils.readFileToString(projects.get(0).getFile());
         assertTrue(pom.contains("1.0-" + UNDERSCORED_FEATURE_NAME + "-SNAPSHOT"));
+        
+        return flow;
     }
 }
