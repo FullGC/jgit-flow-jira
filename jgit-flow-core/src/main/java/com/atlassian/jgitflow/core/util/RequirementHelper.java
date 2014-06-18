@@ -7,7 +7,10 @@ import com.atlassian.jgitflow.core.JGitFlowConstants;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 
+import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 
@@ -68,6 +71,23 @@ public class RequirementHelper
      */
     public void requireLocalBranchExists(String branch) throws LocalBranchMissingException, JGitFlowGitAPIException
     {
+        if (!GitHelper.localBranchExists(git, branch) && GitHelper.remoteBranchExists(git, branch, reporter))
+        {
+            try
+            {
+                git.checkout()
+                   .setName(branch)
+                   .setCreateBranch(true)
+                   .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK)
+                   .setStartPoint(Constants.DEFAULT_REMOTE_NAME + "/" + branch)
+                   .call();
+            }
+            catch (GitAPIException e)
+            {
+                throw new JGitFlowGitAPIException("error checking out remote branch.", e);
+            }
+        }
+
         if (!GitHelper.localBranchExists(git, branch))
         {
             reporter.errorText(commandName, "localBranchExists() failed: '" + branch + "' does not exist");

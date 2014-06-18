@@ -111,6 +111,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
         {
             doFetchIfNeeded(extension);
 
+            
             ensureLocalBranchesNotBehindRemotes(prefixedBranchName, gfConfig.getMaster(), gfConfig.getDevelop());
 
             //checkout the branch to merge just so we can run any extensions that need to be on this branch

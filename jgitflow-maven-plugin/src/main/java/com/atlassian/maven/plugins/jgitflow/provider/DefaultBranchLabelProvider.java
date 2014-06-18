@@ -208,9 +208,20 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
             }
             
             String rheadPrefix = Constants.R_HEADS + branchPrefix;
+            String rOriginPrefix = JGitFlowConstants.R_REMOTE_ORIGIN + branchPrefix;
             Ref productionBranch = productionBranches.get(0);
+            
+            if(productionBranch.getName().contains(rheadPrefix))
+            {
+                return productionBranch.getName().substring(productionBranch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
+            }
 
-            return productionBranch.getName().substring(productionBranch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
+            if(productionBranch.getName().contains(rOriginPrefix))
+            {
+                return productionBranch.getName().substring(productionBranch.getName().indexOf(rOriginPrefix) + rOriginPrefix.length());
+            }
+            
+            throw new JGitFlowException(productionBranch.getName() + " does not match " + rheadPrefix + " or " + rOriginPrefix);
         }
         catch (JGitFlowException e)
         {

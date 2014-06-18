@@ -210,6 +210,60 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
 
     }
 
+    @Test
+    public void releaseBasicPomWithOnlyRemoteReleaseBranch() throws Exception
+    {
+        ProjectHelper projectHelper = (ProjectHelper) lookup(ProjectHelper.class.getName());
+        JGitFlowSetupHelper setupHelper = (JGitFlowSetupHelper) lookup(JGitFlowSetupHelper.class.getName());
+
+        Git git = null;
+        Git remoteGit = null;
+
+        List<MavenProject> remoteProjects = createReactorProjects("remote-git-project", null);
+
+        File remoteDir = remoteProjects.get(0).getBasedir();
+
+        //make sure we're clean
+        File remoteGitDir = new File(remoteDir, ".git");
+        if (remoteGitDir.exists())
+        {
+            FileUtils.cleanDirectory(remoteGitDir);
+        }
+
+        remoteGit = RepoUtil.createRepositoryWithMasterAndDevelop(remoteDir);
+        remoteGit.add().addFilepattern(".").call();
+        remoteGit.commit().setMessage("pom commit").call();
+
+        File localProject = new File(testFileBase, "projects/local/local-git-project");
+        git = Git.cloneRepository().setDirectory(localProject).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
+
+        List<MavenProject> projects = createReactorProjects("remote-git-project", "local/local-git-project", null, false);
+        File projectRoot = projects.get(0).getBasedir();
+
+        MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
+
+        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
+        JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+        ctx.setInteractive(false).setNoBuild(true).setPushReleases(true);
+
+        FlowReleaseManager relman = getReleaseManager();
+
+        relman.start(ctx,projects,session);
+
+        assertEquals(flow.getReleaseBranchPrefix() + "1.0", git.getRepository().getBranch());
+
+        //delete the local release branch
+        git.checkout().setName("develop").call();
+        git.branchDelete().setBranchNames(flow.getReleaseBranchPrefix() + "1.0").setForce(true).call();
+        
+        relman.finish(ctx, projects, session);
+        
+        assertOnDevelop(flow);
+
+    }
+
     private void setupProjectsForMasterAndDevelop(File projectRoot, String projectName) throws Exception
     {
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
