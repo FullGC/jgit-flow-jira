@@ -51,6 +51,13 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "false", property = "enableSshAgent")
     protected boolean enableSshAgent = false;
 
+    /**
+     * Whether to allow SNAPSHOT dependencies. Default is to fail when finding any SNAPSHOT.
+     *
+     */
+    @Parameter( defaultValue = "false", property = "allowSnapshots" )
+    protected boolean allowSnapshots = false;
+
     @Parameter(defaultValue = "false", property = "allowUntracked")
     protected boolean allowUntracked = false;
 

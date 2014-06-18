@@ -94,7 +94,7 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     @Override
     public MergeResult call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchMissingException, JGitFlowIOException, DirtyWorkingTreeException, MergeConflictsNotResolvedException, BranchOutOfDateException, JGitFlowExtensionException, GitAPIException
     {
-        MergeResult mergeResult = null;
+        MergeResult mergeResult = createEmptyMergeResult();
 
         String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.FEATURE);
 

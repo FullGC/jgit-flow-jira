@@ -188,6 +188,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 throw new SameBranchException("master and develop branches cannot be the same: [" + context.getMaster() + "]");
             }
 
+            reporter.infoText(SHORT_NAME, "setting develop in config to '" + context.getDevelop() + "'");
             gfConfig.setDevelop(context.getDevelop());
 
             //Creation of HEAD
