@@ -28,6 +28,8 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 /**
  * @since version
  */
@@ -50,7 +52,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     public void execute(MavenProject project, MavenSession session) throws MavenExecutorException
     {
         ReleaseContext ctx = contextProvider.getContext();
-        
+
         String goal = "clean deploy";
 
         if (ctx.isNoDeploy())
@@ -65,7 +67,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     public void execute(MavenProject project, MavenSession session, String goals) throws MavenExecutorException
     {
         ReleaseContext ctx = contextProvider.getContext();
-        
+
         List<String> argList = new ArrayList<String>();
 
         Properties userProps = session.getUserProperties();
@@ -99,78 +101,90 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     @Override
     public MavenSession reloadReactor(MavenProject rootProject, MavenSession oldSession) throws ReactorReloadException
     {
-        Stack<File> projectFiles = new Stack<File>();
-        projectFiles.push(rootProject.getFile());
-
         List<MavenProject> reactorProjects = new ArrayList<MavenProject>();
 
+        List<File> pomFiles = newArrayList(rootProject.getFile());
         try
         {
-            while (!projectFiles.isEmpty())
+            MavenProject project = null;
+            //try maven3 first
+            try
             {
-                File file = (File) projectFiles.pop();
-                
-                if(!file.exists() || !file.canRead())
-                {
-                    continue;    
-                }
-                
-                MavenProject project = null;
-                //try maven3 first
-                try
+                if (rootProject.getFile().exists() && rootProject.getFile().canRead())
                 {
                     Method getRequestMethod = oldSession.getClass().getMethod("getRequest");
                     Object mavenExecutionRequest = getRequestMethod.invoke(oldSession);
                     Method getProjectBuildingRequest = mavenExecutionRequest.getClass().getMethod("getProjectBuildingRequest");
                     Object pbr = getProjectBuildingRequest.invoke(mavenExecutionRequest);
+
                     Object pb = oldSession.getContainer().lookup("org.apache.maven.project.ProjectBuilder");
 
                     Class requestClass = Class.forName("org.apache.maven.project.ProjectBuildingRequest");
 
-                    Method buildMethod = pb.getClass().getMethod("build", File.class, requestClass);
-                    Object result = buildMethod.invoke(pb, file, pbr);
-                    Method getProjectMethod = result.getClass().getMethod("getProject");
-                    getProjectMethod.setAccessible(true);
-                    project = (MavenProject) getProjectMethod.invoke(result);
-                }
-                catch (Exception e)
-                {
-                    // MJF-112: Check that the exception is a result of not having Maven 3
-                    // installed, or a genuine project configuration error
-                    try
+                    Method buildMethod = pb.getClass().getMethod("build", List.class, boolean.class, requestClass);
+                    List results = (List) buildMethod.invoke(pb, pomFiles, true, pbr);
+
+                    for (Object result : results)
                     {
-                        oldSession.getClass().getMethod("getProjectBuilderConfiguration");
+                        Method getProjectMethod = result.getClass().getMethod("getProject");
+                        getProjectMethod.setAccessible(true);
+                        project = (MavenProject) getProjectMethod.invoke(result);
+                        project.setActiveProfiles(rootProject.getActiveProfiles());
+                        reactorProjects.add(project);
                     }
-                    catch (NoSuchMethodException e1)
+                }
+
+            }
+            catch (Exception e)
+            {
+                // MJF-112: Check that the exception is a result of not having Maven 3
+                // installed, or a genuine project configuration error
+                try
+                {
+                    oldSession.getClass().getMethod("getProjectBuilderConfiguration");
+                }
+                catch (NoSuchMethodException e1)
+                {
+                    // There is no Maven 2 environment, just report the error
+                    throw e;
+                }
+
+                Stack<File> projectFiles = new Stack<File>();
+                projectFiles.push(rootProject.getFile());
+
+                while (!projectFiles.isEmpty())
+                {
+                    File file = (File) projectFiles.pop();
+
+                    if (!file.exists() || !file.canRead())
                     {
-                        // There is no Maven 2 environment, just report the error
-                        throw e;
+                        continue;
                     }
 
                     // Fallback to Maven 2 API
                     project = projectBuilder.build(file, oldSession.getProjectBuilderConfiguration());
-                }
+                    project.setActiveProfiles(rootProject.getActiveProfiles());
+                    List<String> moduleNames = project.getModules();
 
-                project.setActiveProfiles(rootProject.getActiveProfiles());
-                List<String> moduleNames = project.getModules();
-
-                for (String moduleName : moduleNames)
-                {
-                    //if moduleName is a file treat as explicitly defined pom.xml
-                    File baseFile = new File(file.getParentFile(), moduleName);
-                    if (baseFile.isFile())
+                    for (String moduleName : moduleNames)
                     {
-                        projectFiles.push(baseFile);
-                    }
-                    else
-                    {
-                        projectFiles.push(new File(baseFile, File.separator + "pom.xml"));
+                        //if moduleName is a file treat as explicitly defined pom.xml
+                        File baseFile = new File(file.getParentFile(), moduleName);
+                        if (baseFile.isFile())
+                        {
+                            projectFiles.push(baseFile);
+                        }
+                        else
+                        {
+                            projectFiles.push(new File(baseFile, File.separator + "pom.xml"));
+                        }
+
                     }
 
+                    reactorProjects.add(project);
                 }
-
-                reactorProjects.add(project);
             }
+
 
             ReactorManager reactorManager = new ReactorManager(reactorProjects);
             MavenSession newSession = new MavenSession(
