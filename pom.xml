@@ -9,7 +9,7 @@
 
     <groupId>external.atlassian.jgitflow</groupId>
     <artifactId>jgitflow-parent</artifactId>
-    <version>1.0-m2</version>
+    <version>1.0-m3</version>
 
     <packaging>pom</packaging>
 
@@ -237,8 +237,7 @@
                     <pushFeatures>true</pushFeatures>
                     <pushReleases>true</pushReleases>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <noFeatureBuild>true</noFeatureBuild>
-                    <noReleaseBuild>true</noReleaseBuild>
+                    <defaultOriginUrl>git@bitbucket.org:atlassian/jgit-flow.git</defaultOriginUrl>
                 </configuration>
             </plugin>
             <plugin>

@@ -395,6 +395,23 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
     }
 
     @Test
+    public void releaseWithCustomDevVersion() throws Exception
+    {
+        String projectName = "basic-pom-custom-dev-version";
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectName);
+        File projectRoot = projects.get(0).getBasedir();
+
+        ReleaseContext ctx = new ReleaseContext(projectRoot);
+
+        ctx.setInteractive(false)
+           .setNoTag(true)
+           .setAllowSnapshots(true)
+           .setDefaultDevelopmentVersion("2.0-SNAPSHOT");
+
+        basicReleaseRewriteTest(projectName, ctx);
+    }
+
+    @Test
     public void releaseWithReleasedParent() throws Exception
     {
         basicReleaseRewriteTest("pom-with-released-parent");

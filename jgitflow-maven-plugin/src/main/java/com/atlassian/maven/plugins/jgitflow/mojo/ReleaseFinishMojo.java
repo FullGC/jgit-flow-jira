@@ -28,21 +28,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
      */
     @Parameter( defaultValue = "false", property = "autoVersionSubmodules" )
     private boolean autoVersionSubmodules = false;
-
-    /**
-     * Whether to allow SNAPSHOT dependencies. Default is to fail when finding any SNAPSHOT.
-     *
-     */
-    @Parameter( defaultValue = "false", property = "allowSnapshots" )
-    private boolean allowSnapshots = false;
     
-    /**
-     * Default version to use for new local working copy.
-     *
-     */
-    @Parameter( property = "developmentVersion", defaultValue = "")
-    private String developmentVersion = "";
-
     @Parameter( defaultValue = "false", property = "pushReleases" )
     private boolean pushReleases = false;
 
@@ -100,7 +86,6 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
                 .setAutoVersionSubmodules(autoVersionSubmodules)
-                .setDefaultDevelopmentVersion(developmentVersion)
                 .setReleaseBranchVersionSuffix(releaseBranchVersionSuffix)
                 .setPushReleases(pushReleases)
                 .setKeepBranch(keepBranch)

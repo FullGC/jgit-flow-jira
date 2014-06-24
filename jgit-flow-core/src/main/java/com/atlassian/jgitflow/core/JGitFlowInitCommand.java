@@ -121,29 +121,26 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
         RevWalk walk = null;
         try
         {
+            String currentBranch = repo.getBranch();
+
             //set origin if we need to
             if (!Strings.isNullOrEmpty(defaultOriginUrl))
             {
                 StoredConfig gitConfig = git.getRepository().getConfig();
-                String originUrl = gitConfig.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url");
+                String newOriginUrl = defaultOriginUrl;
 
-                if (Strings.isNullOrEmpty(originUrl))
+                if (defaultOriginUrl.startsWith("file://"))
                 {
-                    String newOriginUrl = defaultOriginUrl;
-
-                    if (defaultOriginUrl.startsWith("file://"))
-                    {
-                        File originFile = new File(defaultOriginUrl.substring(7));
-                        newOriginUrl = "file://" + originFile.getCanonicalPath();
-                    }
-                    gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", newOriginUrl);
-                    gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
-                    gitConfig.save();
-
-                    gitConfig.load();
-                    git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
-
+                    File originFile = new File(defaultOriginUrl.substring(7));
+                    newOriginUrl = "file://" + originFile.getCanonicalPath();
                 }
+                gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", newOriginUrl);
+                gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
+                gitConfig.save();
+
+                gitConfig.load();
+                git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
+
             }
 
             if (!force && gfConfig.gitFlowIsInitialized())
@@ -159,7 +156,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 context.setMaster(gfConfig.getMaster());
             }
 
-
+            //TODO: we should set an allowFetch flag and do a complete fetch before the local/remote checks if needed.
             //if no local master exists, but a remote does, check it out
             if (!GitHelper.localBranchExists(git, context.getMaster()) && GitHelper.remoteBranchExists(git, context.getMaster(), reporter))
             {
@@ -188,6 +185,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 throw new SameBranchException("master and develop branches cannot be the same: [" + context.getMaster() + "]");
             }
 
+            reporter.infoText(SHORT_NAME, "setting develop in config to '" + context.getDevelop() + "'");
             gfConfig.setDevelop(context.getDevelop());
 
             //Creation of HEAD
@@ -219,6 +217,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 refUpdate.link(Constants.R_HEADS + context.getMaster());
 
                 git.commit().setMessage("Initial Commit").call();
+
             }
 
             //creation of develop
@@ -255,6 +254,11 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 }
 
                 gfConfig.setPrefix(prefixName, context.getPrefix(prefixName));
+            }
+
+            if (!Strings.isNullOrEmpty(currentBranch) && !currentBranch.equals(repo.getBranch()) && (GitHelper.localBranchExists(git, currentBranch) || GitHelper.remoteBranchExists(git, currentBranch, reporter)))
+            {
+                git.checkout().setName(currentBranch).call();
             }
 
         }

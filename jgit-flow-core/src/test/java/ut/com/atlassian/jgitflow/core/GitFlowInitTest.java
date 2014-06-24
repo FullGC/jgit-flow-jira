@@ -1,6 +1,7 @@
 package ut.com.atlassian.jgitflow.core;
 
 import java.io.File;
+import java.util.List;
 
 import com.atlassian.jgitflow.core.InitContext;
 import com.atlassian.jgitflow.core.JGitFlow;
@@ -391,6 +392,38 @@ public class GitFlowInitTest extends BaseGitFlowTest
         assertEquals("hotfix/", flow.getHotfixBranchPrefix());
         assertEquals("support/", flow.getSupportBranchPrefix());
         assertEquals("", flow.getVersionTagPrefix());
+
+    }
+
+    @Test
+    public void initWithNoMasterReturnsToCurrentBranch() throws Exception
+    {
+        String featureBranch = "feature/my-feature";
+
+        Git git = null;
+        Git remoteGit = null;
+
+        File workDir = newDir();
+
+        remoteGit = RepoUtil.createRepositoryWithMasterAndDevelop(newDir());
+
+        remoteGit.checkout().setName("develop").call();
+        remoteGit.add().addFilepattern(".").call();
+        remoteGit.commit().setMessage("initial commit").call();
+
+        remoteGit.branchDelete().setBranchNames("master").setForce(true).call();
+
+        remoteGit.branchCreate().setName(featureBranch).call();
+        
+        git = Git.cloneRepository().setDirectory(workDir).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).setBranch(featureBranch).setCloneAllBranches(false).call();
+
+        assertEquals(featureBranch,git.getRepository().getBranch());
+        
+        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
+        JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
+
+        //make sure we're STILL on the feature
+        assertEquals(featureBranch,git.getRepository().getBranch());
 
     }
 }

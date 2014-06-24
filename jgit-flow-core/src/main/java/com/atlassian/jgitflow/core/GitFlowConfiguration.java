@@ -10,6 +10,7 @@ import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -73,8 +74,9 @@ public class GitFlowConfiguration
         try
         {
             config.save();
+            config.load();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             throw new JGitFlowIOException(e);
         }
@@ -93,8 +95,9 @@ public class GitFlowConfiguration
         try
         {
             config.save();
+            config.load();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             throw new JGitFlowIOException(e);
         }
@@ -184,8 +187,9 @@ public class GitFlowConfiguration
             try
             {
                 config.save();
+                config.load();
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 throw new JGitFlowIOException(e);
             }
