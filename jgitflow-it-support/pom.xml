@@ -3,7 +3,7 @@
     <parent>
         <artifactId>jgitflow-parent</artifactId>
         <groupId>external.atlassian.jgitflow</groupId>
-        <version>1.0-m3-mjf_169_origin_url_init-SNAPSHOT</version>
+        <version>1.0-m3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
