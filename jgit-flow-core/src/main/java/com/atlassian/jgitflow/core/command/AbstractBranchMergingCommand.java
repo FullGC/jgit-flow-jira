@@ -142,8 +142,8 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
 
                 if (isPush() && GitHelper.remoteBranchExists(git, branchToDelete, reporter))
                 {
-                    reporter.infoText(getCommandName(), "pushing deleted branch: " + branchToDelete);
-                    RefSpec deleteSpec = new RefSpec(":" + Constants.R_HEADS + branchToDelete);
+                    reporter.infoText(getCommandName(), "pushing deleted branch: :" + branchToDelete);
+                    RefSpec deleteSpec = new RefSpec().setSource(null).setDestination(Constants.R_HEADS + branchToDelete);
                     git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(deleteSpec).call();
                 }
             }

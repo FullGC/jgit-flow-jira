@@ -32,7 +32,7 @@ public class JGitFlowReporter
     public static final int PAD = 4;
 
     private boolean wroteHeader;
-    private boolean logFileCreated;
+    private boolean clearLog;
 
     private String header;
     private File logDir;
@@ -45,7 +45,7 @@ public class JGitFlowReporter
     public JGitFlowReporter()
     {
         this.wroteHeader = false;
-        this.logFileCreated = false;
+        this.clearLog = false;
         this.entries = newArrayList();
         this.allEntries = newArrayList();
 
@@ -56,7 +56,7 @@ public class JGitFlowReporter
         indent = 0;
     }
 
-    void setGitFlowConfiguration(Git git, GitFlowConfiguration config)
+    public void setGitFlowConfiguration(Git git, GitFlowConfiguration config)
     {
         this.logDir = git.getRepository().getDirectory();
         this.header = generateHeader(git, config);
@@ -108,6 +108,13 @@ public class JGitFlowReporter
         return this;
     }
 
+    public JGitFlowReporter clearLog()
+    {
+        this.clearLog = true;
+        
+        return this;
+    }
+    
     public JGitFlowReporter endMethod()
     {
         indent -= PAD;
@@ -163,7 +170,7 @@ public class JGitFlowReporter
         Charset utf8 = Charset.forName("UTF-8");
         try
         {
-            if (!logFileCreated && null != logDir && logDir.exists())
+            if (clearLog && null != logDir && logDir.exists())
             {
                 if (logFile.exists())
                 {
@@ -171,7 +178,14 @@ public class JGitFlowReporter
                 }
 
                 Files.touch(logFile);
-                logFileCreated = true;
+                
+                clearLog = false;
+            }
+            
+            if(!clearLog && null == logDir || !logFile.exists())
+            {
+                logDir.mkdirs();
+                Files.touch(logFile);
             }
 
             if (!wroteHeader && null != header)

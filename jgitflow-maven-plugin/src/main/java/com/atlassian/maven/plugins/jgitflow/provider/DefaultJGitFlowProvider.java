@@ -30,6 +30,8 @@ public class DefaultJGitFlowProvider implements JGitFlowProvider
             {
                 jgitFlow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
             }
+            
+            jgitFlow.getReporter().clearLog();
         }
 
         return jgitFlow;

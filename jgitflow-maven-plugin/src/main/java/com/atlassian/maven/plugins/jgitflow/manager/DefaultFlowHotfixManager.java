@@ -48,7 +48,7 @@ public class DefaultFlowHotfixManager extends AbstractProductionBranchManager
 
             flow.hotfixStart(hotfixLabel)
                 .setAllowUntracked(ctx.isAllowUntracked())
-                .setPush(ctx.isPushReleases())
+                .setPush(ctx.isPushHotfixes())
                 .setStartCommit(ctx.getStartCommit())
                 .setScmMessagePrefix(ctx.getScmCommentPrefix())
                 .setScmMessageSuffix(ctx.getScmCommentSuffix())
@@ -82,7 +82,7 @@ public class DefaultFlowHotfixManager extends AbstractProductionBranchManager
 
             getLogger().info("running jgitflow hotfix finish...");
             ReleaseMergeResult mergeResult = flow.hotfixFinish(hotfixLabel)
-                                                 .setPush(ctx.isPushReleases())
+                                                 .setPush(ctx.isPushHotfixes())
                                                  .setKeepBranch(ctx.isKeepBranch())
                                                  .setNoTag(ctx.isNoTag())
                                                  .setAllowUntracked(ctx.isAllowUntracked())
