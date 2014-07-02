@@ -22,14 +22,13 @@ public class DefaultJGitFlowProvider implements JGitFlowProvider
         
         if (null == jgitFlow)
         {
-            if(ctx.isAlwaysUpdateOrigin())
-            {
-                jgitFlow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext(), ctx.getDefaultOriginUrl());
-            }
-            else
-            {
-                jgitFlow = JGitFlow.forceInit(ctx.getBaseDir(), ctx.getFlowInitContext());
-            }
+            jgitFlow = JGitFlow.forceInitCommand(ctx.getBaseDir(), ctx.getFlowInitContext())
+                    .setDefaultOriginUrl(ctx.getDefaultOriginUrl())
+                    .setAllowRemote(ctx.isRemoteAllowed())
+                    .setAlwaysUpdateOrigin(ctx.isAlwaysUpdateOrigin())
+                    .setPullMaster(ctx.isPullMaster())
+                    .setPullDevelop(ctx.isPullDevelop())
+                    .call();
             
             jgitFlow.getReporter().clearLog();
         }

@@ -10,15 +10,6 @@ import org.codehaus.plexus.component.annotations.Requirement;
 public abstract class ProductionBranchMergingPluginExtension extends EmptyMasterAndDevelopMergingExtension implements ExternalInitializingExtension
 {
     @Requirement
-    private EnsureOriginCommand ensureOriginCommand;
-
-    @Requirement
-    private PullDevelopCommand pullDevelopCommand;
-
-    @Requirement
-    private PullMasterCommand pullMasterCommand;
-
-    @Requirement
     private UpdatePomsWithNonSnapshotCommand updatePomsWithNonSnapshotCommand;
 
     @Requirement
@@ -40,9 +31,6 @@ public abstract class ProductionBranchMergingPluginExtension extends EmptyMaster
     public void init(MavenJGitFlowExtension externalExtension)
     {
         productionExecutor.init(externalExtension);
-
-        addBeforeCommands(ensureOriginCommand);
-        addAfterFetchCommands(pullDevelopCommand, pullMasterCommand);
 
         addAfterTopicCheckoutCommands(
                 cacheVersionsCommand,

@@ -190,6 +190,23 @@ public class JGitFlow
     }
 
     /**
+     * Initializes a project for use with git flow using a custom context overriding any existing configuration.
+     *
+     * @param projectDir
+     * @param context
+     * @return
+     * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
+     * @throws com.atlassian.jgitflow.core.exception.AlreadyInitializedException
+     * @throws com.atlassian.jgitflow.core.exception.SameBranchException
+     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
+     */
+    public static JGitFlowInitCommand forceInitCommand(File projectDir, InitContext context) throws JGitFlowIOException, AlreadyInitializedException, SameBranchException, JGitFlowGitAPIException
+    {
+        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
+        return initCommand.setDirectory(projectDir).setForce(true).setInitContext(context);
+    }
+
+    /**
      * Gets an existing git flow project and returns a JGitFlow instance
      *
      * @param projectDir

@@ -81,6 +81,8 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
            .setAllowRemote(isRemoteAllowed())
            .setDefaultOriginUrl(defaultOriginUrl)
            .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
+           .setPullMaster(pullMaster)
+           .setPullDevelop(pullDevelop)
            .setScmCommentPrefix(scmCommentPrefix)
            .setScmCommentSuffix(scmCommentSuffix)
            .setUsername(username)
