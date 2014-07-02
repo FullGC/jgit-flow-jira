@@ -304,7 +304,38 @@ public class HotfixVersionInfo implements VersionInfo
         if ( digits != null )
         {
             List<String> digits = new ArrayList<String>( this.digits );
-            digits.add("1");
+
+            // modECG
+            // dont know how but will progress that
+            if ( digits.size() == 0)
+            {
+                digits.add("0");
+                digits.add("0");
+                digits.add("1");
+            }
+            // found majorVersion
+            else if( digits.size() == 1 )
+            {
+                digits.add("0");
+                digits.add("1");
+            }
+            // found minorVersion (standard)
+            else if ( digits.size() == 2 )
+            {
+                digits.add("1");
+            }
+            // found bugfixVersion
+            else if ( digits.size() == 3 )
+            {
+                int newBugfixDigit = Integer.parseInt(digits.get(2)) + 1;
+                digits.set(2, String.valueOf(newBugfixDigit));
+            }
+            // found more than that
+            else
+            {
+                // not a real versioning scheme so add some humbug
+                digits.add("hotfix");
+            }
 
             version = new HotfixVersionInfo( digits, annotation, annotationRevision, buildSpecifier, annotationSeparator, annotationRevSeparator, buildSeparator );
         }
