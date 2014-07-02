@@ -451,8 +451,6 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
 
-        setupHelper.ensureOrigin();
-
         flow.releaseStart("1.0").call();
 
         assertEquals(flow.getReleaseBranchPrefix() + "1.0", git.getRepository().getBranch());

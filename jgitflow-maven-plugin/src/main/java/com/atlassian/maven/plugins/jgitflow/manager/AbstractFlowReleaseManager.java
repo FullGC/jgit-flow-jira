@@ -8,7 +8,6 @@ import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
 import com.atlassian.maven.plugins.jgitflow.manager.tasks.CheckoutAndGetProjects;
-import com.atlassian.maven.plugins.jgitflow.manager.tasks.SetupOriginAndFetchIfNeeded;
 import com.atlassian.maven.plugins.jgitflow.manager.tasks.VerifyInitialVersionState;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
@@ -38,9 +37,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     protected JGitFlowProvider jGitFlowProvider;
 
     @Requirement
-    protected SetupOriginAndFetchIfNeeded setupOriginAndFetchIfNeeded;
-
-    @Requirement
     protected JGitFlowSetupHelper setupHelper;
 
     @Requirement
@@ -48,13 +44,13 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
 
     @Requirement
     protected VerifyInitialVersionState verifyInitialVersionState;
-    
+
     @Override
     public void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws MavenJGitFlowException
     {
         //do nothing. override if you need to
     }
-    
+
     protected void setupProviders(ReleaseContext ctx, MavenSession session, List<MavenProject> projects)
     {
         contextProvider.setContext(ctx);
@@ -69,8 +65,6 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
         JGitFlow flow = jGitFlowProvider.gitFlow();
 
         setupHelper.runCommonSetup();
-
-        setupOriginAndFetchIfNeeded.run();
 
     }
 }
