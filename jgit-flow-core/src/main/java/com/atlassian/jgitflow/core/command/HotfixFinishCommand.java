@@ -137,6 +137,8 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
             {
                 cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
             }
+            
+            //TODO: backmerge into release branch if it exists.
 
             reporter.infoText(getCommandName(), "checking out '" + gfConfig.getDevelop() + "'");
             git.checkout().setName(gfConfig.getDevelop()).call();
