@@ -4,7 +4,7 @@
     <parent>
         <groupId>external.atlassian.jgitflow</groupId>
         <artifactId>jgitflow-parent</artifactId>
-        <version>1.0-m4-SNAPSHOT</version>
+        <version>1.0-m4-mjf_118_ssh_setup_too_late-SNAPSHOT</version>
     </parent>
 
     <artifactId>jgit-flow-core</artifactId>
