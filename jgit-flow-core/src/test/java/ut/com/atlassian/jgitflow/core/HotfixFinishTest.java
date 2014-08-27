@@ -160,6 +160,53 @@ public class HotfixFinishTest extends BaseGitFlowTest
     }
 
     @Test
+    public void finishHotfixWithNewCommitAndReleaseBranch() throws Exception
+    {
+        Git git = RepoUtil.createRepositoryWithMasterAndDevelop(newDir());
+        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
+        JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
+
+        flow.releaseStart("1.0").call();
+        
+        String releaseName = "release/1.0";
+        
+        flow.git().checkout().setName("develop").call();
+        
+        flow.hotfixStart("1.0.1").call();
+
+        //create a new commit
+        File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        git.add().addFilepattern(junkFile.getName()).call();
+        RevCommit commit = git.commit().setMessage("committing junk file").call();
+
+        //make sure develop doesn't report our commit yet
+        assertFalse(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
+
+        //make sure release doesn't report our commit yet
+        assertFalse(GitHelper.isMergedInto(git, commit, releaseName));
+
+        //try to finish
+        flow.hotfixFinish("1.0.1").call();
+
+        //we should be on develop branch
+        assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
+
+        //hotfix branch should be gone
+        Ref ref2check = git.getRepository().getRef(flow.getHotfixBranchPrefix() + "1.0.1");
+        assertNull(ref2check);
+
+        //the develop branch should have our commit
+        assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
+
+        //the master branch should have our commit
+        assertTrue(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
+
+        //the release branch should have our commit
+        assertTrue(GitHelper.isMergedInto(git, commit, releaseName));
+    }
+
+    @Test
     public void finishHotfixKeepBranch() throws Exception
     {
         Git git = RepoUtil.createRepositoryWithMasterAndDevelop(newDir());
