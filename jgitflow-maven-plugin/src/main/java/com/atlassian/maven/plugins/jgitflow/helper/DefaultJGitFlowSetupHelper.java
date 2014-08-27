@@ -57,7 +57,6 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
         {
             fixCygwinIfNeeded();
             writeReportHeader();
-            setupCredentialProviders();
             warnCoreAutoCrlf();
         }
         catch (Exception e)
@@ -221,7 +220,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
         if (ctx.isEnableSshAgent())
         {
             flow.getReporter().debugText(getClass().getSimpleName(), "installing ssh-agent credentials provider");
-            SshSessionFactory.setInstance(new SshCredentialsProvider());
+            SshSessionFactory.setInstance(new SshCredentialsProvider(prompter));
             return true;
         }
 
