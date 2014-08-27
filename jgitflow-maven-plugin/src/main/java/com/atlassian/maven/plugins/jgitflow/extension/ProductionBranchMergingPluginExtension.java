@@ -1,5 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow.extension;
 
+import com.atlassian.jgitflow.core.extension.impl.EmptyMasterAndDevelopAndReleaseMergingExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyMasterAndDevelopMergingExtension;
 import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.command.*;
@@ -7,17 +8,8 @@ import com.atlassian.maven.plugins.jgitflow.extension.command.external.FinishPro
 
 import org.codehaus.plexus.component.annotations.Requirement;
 
-public abstract class ProductionBranchMergingPluginExtension extends EmptyMasterAndDevelopMergingExtension implements ExternalInitializingExtension
+public abstract class ProductionBranchMergingPluginExtension extends EmptyMasterAndDevelopAndReleaseMergingExtension implements ExternalInitializingExtension
 {
-    @Requirement
-    private EnsureOriginCommand ensureOriginCommand;
-
-    @Requirement
-    private PullDevelopCommand pullDevelopCommand;
-
-    @Requirement
-    private PullMasterCommand pullMasterCommand;
-
     @Requirement
     private UpdatePomsWithNonSnapshotCommand updatePomsWithNonSnapshotCommand;
 
@@ -40,9 +32,6 @@ public abstract class ProductionBranchMergingPluginExtension extends EmptyMaster
     public void init(MavenJGitFlowExtension externalExtension)
     {
         productionExecutor.init(externalExtension);
-
-        addBeforeCommands(ensureOriginCommand);
-        addAfterFetchCommands(pullDevelopCommand, pullMasterCommand);
 
         addAfterTopicCheckoutCommands(
                 cacheVersionsCommand,

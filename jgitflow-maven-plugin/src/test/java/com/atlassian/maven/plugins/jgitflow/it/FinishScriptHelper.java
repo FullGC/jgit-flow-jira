@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class FinishScriptHelper
 {
+    
     /**
      * The absolute path to the base directory of the test project.
      */
@@ -127,9 +128,22 @@ public class FinishScriptHelper
 
         Git localGit = Git.cloneRepository().setDirectory(baseDirectory).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
 
-        return new Gits(remoteGit,localGit);
+        Gits gits = new Gits(remoteGit,localGit);
+        
+        remoteGit.checkout().setName("master").call();
+        
+        return gits; 
     }
 
+    public Git remoteGit() throws IOException
+    {
+        File remotesBaseDir = new File(baseDirectory.getParentFile().getParentFile(), "remotes");
+        File remoteProjectDir = new File(remotesBaseDir, baseDirectory.getName());
+
+        return Git.open(remoteProjectDir);
+        
+    }
+    
     public void comparePomFiles(String expectedPath, String actualPath) throws IOException
     {
         String expectedPom = ReleaseUtil.readXmlFile(new File(baseDirectory, expectedPath));

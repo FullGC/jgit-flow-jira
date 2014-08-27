@@ -52,12 +52,6 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
 
     @Parameter( defaultValue = "true", property = "useReleaseProfile" )
     private boolean useReleaseProfile = true;
-
-    @Parameter( defaultValue = "false", property = "pullMaster" )
-    private boolean pullMaster = false;
-
-    @Parameter( defaultValue = "false", property = "pullDevelop" )
-    private boolean pullDevelop = false;
     
     @Parameter( defaultValue = "true", property = "updateDependencies" )
     private boolean updateDependencies = true;

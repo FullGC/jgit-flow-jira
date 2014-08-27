@@ -60,12 +60,6 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Parameter( property = "tagMessage" , defaultValue = "")
     private String tagMessage = "";
 
-    @Parameter( defaultValue = "false", property = "pullMaster" )
-    private boolean pullMaster = false;
-
-    @Parameter( defaultValue = "false", property = "pullDevelop" )
-    private boolean pullDevelop = false;
-
     @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
 

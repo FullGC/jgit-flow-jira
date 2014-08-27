@@ -85,6 +85,12 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "true", property = "alwaysUpdateOrigin")
     protected boolean alwaysUpdateOrigin = true;
 
+    @Parameter( defaultValue = "false", property = "pullMaster" )
+    protected boolean pullMaster = false;
+
+    @Parameter( defaultValue = "false", property = "pullDevelop" )
+    protected boolean pullDevelop = false;
+
     Settings getSettings()
     {
         return settings;

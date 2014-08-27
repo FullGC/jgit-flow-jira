@@ -1,5 +1,7 @@
 package com.atlassian.jgitflow.core.command;
 
+import java.util.List;
+
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
@@ -102,6 +104,7 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
 
         MergeResult developResult = createEmptyMergeResult();
         MergeResult masterResult = createEmptyMergeResult();
+        MergeResult releaseResult = createEmptyMergeResult();
         try
         {
             doFetchIfNeeded(extension);
@@ -137,6 +140,22 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
             {
                 cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
             }
+            
+            //Backmerge to release branch if needed
+            if(releaseBranchExists())
+            {
+                String releaseBranchName = getReleaseBranchName();
+                MergeProcessExtensionWrapper releaseExtension = new MergeProcessExtensionWrapper(extension.beforeReleaseCheckout(), extension.afterReleaseCheckout(), extension.beforeReleaseMerge(), extension.afterReleaseMerge());
+
+                releaseResult = doMerge(gfConfig.getMaster(), releaseBranchName, releaseExtension);
+
+                boolean releaseMergeSuccess = checkMergeResults(releaseResult);
+
+                if (releaseMergeSuccess)
+                {
+                    doPushIfNeeded(extension, !noTag, releaseBranchName);
+                }
+            }
 
             reporter.infoText(getCommandName(), "checking out '" + gfConfig.getDevelop() + "'");
             git.checkout().setName(gfConfig.getDevelop()).call();
@@ -154,6 +173,34 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
             reporter.endCommand();
             reporter.flush();
         }
+    }
+
+    private boolean releaseBranchExists() throws JGitFlowGitAPIException
+    {
+        boolean exists = false;
+        
+        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()), reporter);
+
+        if (!branches.isEmpty())
+        {
+            exists = true;
+        }
+        
+        return exists;
+    }
+
+    private String getReleaseBranchName() throws JGitFlowGitAPIException
+    {
+        String branchName = "";
+
+        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()), reporter);
+
+        if (!branches.isEmpty())
+        {
+            branchName = branches.get(0).getName();
+        }
+
+        return branchName;
     }
 
     /**

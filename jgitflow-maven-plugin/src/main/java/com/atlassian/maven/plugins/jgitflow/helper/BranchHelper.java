@@ -5,7 +5,9 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowConstants;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
+import com.atlassian.jgitflow.core.exception.ReleaseBranchExistsException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
@@ -94,6 +96,50 @@ public class BranchHelper
         {
             throw new MavenJGitFlowException("Error looking up current branch name", e);
         }
+    }
+
+    public String getCurrentReleaseBranchNameOrBlank() throws MavenJGitFlowException
+    {
+        String branchName = "";
+        try
+        {
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+
+            List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix(), flow.getReporter());
+            
+            if (!branches.isEmpty())
+            {
+                branchName = branches.get(0).getName();
+            }
+        }
+        catch (Exception e)
+        {
+            throw new MavenJGitFlowException("Error looking up release branch name", e);
+        }
+        
+        return branchName;
+    }
+
+    public boolean releaseBranchExists() throws MavenJGitFlowException
+    {
+        boolean exists = false;
+        try
+        {
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+
+            List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix(), flow.getReporter());
+
+            if (!branches.isEmpty())
+            {
+                exists = true;
+            }
+        }
+        catch (Exception e)
+        {
+            throw new MavenJGitFlowException("Error looking up release branch", e);
+        }
+
+        return exists;
     }
     
     public BranchType getCurrentBranchType() throws JGitFlowException, IOException

@@ -41,6 +41,10 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
                 .setNoDeploy(false)
                 .setEnableFeatureVersions(true)
                 .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
+                .setPullMaster(pullMaster)
+                .setPullDevelop(pullDevelop)
+                .setDefaultOriginUrl(defaultOriginUrl)
+                .setAllowRemote(isRemoteAllowed())
                 .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
         
         try

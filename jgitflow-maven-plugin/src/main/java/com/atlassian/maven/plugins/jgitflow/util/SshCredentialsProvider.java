@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
+
 import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -15,6 +17,7 @@ import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import com.jcraft.jsch.agentproxy.USocketFactory;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
+
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.util.FS;
@@ -22,11 +25,20 @@ import org.eclipse.jgit.util.FS;
 /**
  * @author a500148
  */
-public class SshCredentialsProvider extends JschConfigSessionFactory {
+public class SshCredentialsProvider extends JschConfigSessionFactory
+{
+    private PrettyPrompter prompter;
+    
+    public SshCredentialsProvider(PrettyPrompter prompter)
+    {
+        this.prompter = prompter;
+    }
+
     @Override
     protected void configure(OpenSshConfig.Host hc, Session session)
     {
         session.setConfig("StrictHostKeyChecking", "no");
+        session.setUserInfo(new SshUserInfo(prompter));
     }
 
     @Override

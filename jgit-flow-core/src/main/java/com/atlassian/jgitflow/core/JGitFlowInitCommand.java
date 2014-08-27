@@ -66,6 +66,10 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
     private InitContext context;
     JGitFlowReporter reporter;
     private String defaultOriginUrl;
+    private boolean allowRemote;
+    private boolean alwaysUpdateOrigin;
+    private boolean pullMaster;
+    private boolean pullDevelop;
 
     /**
      * Create a new init command instance.
@@ -75,6 +79,11 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
     public JGitFlowInitCommand()
     {
         this.force = false;
+        this.alwaysUpdateOrigin = false;
+        this.defaultOriginUrl = "";
+        this.pullMaster = false;
+        this.pullDevelop = false;
+        this.allowRemote = true;
         this.reporter = new JGitFlowReporter();
     }
 
@@ -122,25 +131,14 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
         try
         {
             String currentBranch = repo.getBranch();
+            StoredConfig gitConfig = git.getRepository().getConfig();
+            String originUrl = gitConfig.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url");
+            
+            String finalOriginUrl = setupOriginIfNeeded(git,gitConfig,originUrl);
 
-            //set origin if we need to
-            if (!Strings.isNullOrEmpty(defaultOriginUrl))
+            if(allowRemote && ! Strings.isNullOrEmpty(finalOriginUrl))
             {
-                StoredConfig gitConfig = git.getRepository().getConfig();
-                String newOriginUrl = defaultOriginUrl;
-
-                if (defaultOriginUrl.startsWith("file://"))
-                {
-                    File originFile = new File(defaultOriginUrl.substring(7));
-                    newOriginUrl = "file://" + originFile.getCanonicalPath();
-                }
-                gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", newOriginUrl);
-                gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
-                gitConfig.save();
-
-                gitConfig.load();
                 git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
-
             }
 
             if (!force && gfConfig.gitFlowIsInitialized())
@@ -171,6 +169,14 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
 
             gfConfig.setMaster(context.getMaster());
 
+            if(allowRemote && pullMaster && GitHelper.remoteBranchExists(git, context.getMaster(), reporter))
+            {
+                reporter.debugText("JgitFlowInitCommand", "pulling '" + context.getMaster());
+                reporter.flush();
+
+                git.checkout().setName(context.getMaster()).call();
+                git.pull().call();
+            }
 
             //now setup develop
             if (gfConfig.hasDevelopConfigured() && !force)
@@ -188,6 +194,8 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
             reporter.infoText(SHORT_NAME, "setting develop in config to '" + context.getDevelop() + "'");
             gfConfig.setDevelop(context.getDevelop());
 
+            setupRemotesInConfig(gitConfig,finalOriginUrl);
+            
             //Creation of HEAD
             walk = new RevWalk(repo);
             ObjectId masterBranch = repo.resolve(Constants.R_HEADS + context.getMaster());
@@ -242,8 +250,14 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 }
             }
 
-            //don't do this as it breaks feature finish
-            //git.checkout().setName(context.getDevelop()).call();
+            if(allowRemote && pullDevelop && GitHelper.remoteBranchExists(git, context.getDevelop(), reporter))
+            {
+                reporter.debugText("JgitFlowInitCommand", "pulling '" + context.getDevelop());
+                reporter.flush();
+
+                git.checkout().setName(context.getDevelop()).call();
+                git.pull().call();
+            }
 
             //setup prefixes
             for (String prefixName : gfConfig.getPrefixNames())
@@ -293,6 +307,65 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
         return new JGitFlow(git, gfConfig, reporter);
     }
 
+    private String setupOriginIfNeeded(Git git, StoredConfig gitConfig, String originUrl) throws IOException, ConfigInvalidException
+    {
+        String newOriginUrl = originUrl;
+        
+        //set origin if we need to
+        if ((Strings.isNullOrEmpty(originUrl) || alwaysUpdateOrigin) && !Strings.isNullOrEmpty(defaultOriginUrl))
+        {
+            if (defaultOriginUrl.startsWith("file://"))
+            {
+                File originFile = new File(defaultOriginUrl.substring(7));
+                newOriginUrl = "file://" + originFile.getCanonicalPath();
+            }
+
+            gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", newOriginUrl);
+            gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
+
+            gitConfig.save();
+
+            gitConfig.load();
+        }
+        
+        return newOriginUrl;
+    }
+    
+    private void setupRemotesInConfig(StoredConfig gitConfig, String originUrl) throws IOException, ConfigInvalidException
+    {
+        if (!Strings.isNullOrEmpty(originUrl))
+        {
+            if (Strings.isNullOrEmpty(gitConfig.getString(ConfigConstants.CONFIG_BRANCH_SECTION, context.getMaster(), "remote")))
+            {
+                gitConfig.setString(ConfigConstants.CONFIG_BRANCH_SECTION, context.getMaster(), "remote", Constants.DEFAULT_REMOTE_NAME);
+            }
+
+            if (Strings.isNullOrEmpty(gitConfig.getString(ConfigConstants.CONFIG_BRANCH_SECTION, context.getMaster(), "merge")))
+            {
+                gitConfig.setString(ConfigConstants.CONFIG_BRANCH_SECTION, context.getMaster(), "merge", Constants.R_HEADS + context.getMaster());
+            }
+
+            if (Strings.isNullOrEmpty(gitConfig.getString(ConfigConstants.CONFIG_BRANCH_SECTION, context.getDevelop(), "remote")))
+            {
+                gitConfig.setString(ConfigConstants.CONFIG_BRANCH_SECTION, context.getDevelop(), "remote", Constants.DEFAULT_REMOTE_NAME);
+            }
+
+            if (Strings.isNullOrEmpty(gitConfig.getString(ConfigConstants.CONFIG_BRANCH_SECTION, context.getDevelop(), "merge")))
+            {
+                gitConfig.setString(ConfigConstants.CONFIG_BRANCH_SECTION, context.getDevelop(), "merge", Constants.R_HEADS + context.getDevelop());
+            }
+
+            if (Strings.isNullOrEmpty(gitConfig.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch")))
+            {
+                gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
+            }
+
+            gitConfig.save();
+
+            gitConfig.load();
+        }
+    }
+
 
     /**
      * Sets the project root folder
@@ -333,6 +406,30 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
     public JGitFlowInitCommand setDefaultOriginUrl(String defaultOriginUrl)
     {
         this.defaultOriginUrl = defaultOriginUrl;
+        return this;
+    }
+
+    public JGitFlowInitCommand setAlwaysUpdateOrigin(boolean update)
+    {
+        this.alwaysUpdateOrigin = update;
+        return this;
+    }
+
+    public JGitFlowInitCommand setPullMaster(boolean pull)
+    {
+        this.pullMaster = pull;
+        return this;
+    }
+
+    public JGitFlowInitCommand setPullDevelop(boolean pull)
+    {
+        this.pullDevelop = pull;
+        return this;
+    }
+
+    public JGitFlowInitCommand setAllowRemote(boolean allow)
+    {
+        this.allowRemote = allow;
         return this;
     }
 
