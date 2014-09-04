@@ -3,6 +3,7 @@ package com.atlassian.maven.plugins.jgitflow.mojo;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
@@ -42,6 +43,9 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
     @Parameter(defaultValue = "-build", property = "buildNumberVersionSuffix")
     private String buildNumberVersionSuffix = "-build";
 
+    @Component
+    protected JGitFlowProvider jGitFlowProvider;
+    
     @Component
     protected ProjectHelper projectHelper;
 
@@ -114,7 +118,12 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
 
     protected void setupProviders(MavenSession session, List<MavenProject> projects)
     {
-        contextProvider.setContext(new ReleaseContext(getBasedir()).setAlwaysUpdateOrigin(alwaysUpdateOrigin).setDefaultOriginUrl(defaultOriginUrl));
+        contextProvider.setContext(new ReleaseContext(getBasedir())
+                .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
+                .setDefaultOriginUrl(defaultOriginUrl)
+                .setEnableSshAgent(enableSshAgent)
+                .setUsername(username)
+                .setPassword(password));
         sessionProvider.setSession(session);
         projectsProvider.setReactorProjects(projects);
     }
@@ -122,6 +131,10 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
     public void runPreflight(List<MavenProject> reactorProjects) throws JGitFlowException, MavenJGitFlowException
     {
         setupProviders(session, reactorProjects);
+
+        setupHelper.setupCredentialProviders();
+
+        JGitFlow flow = jGitFlowProvider.gitFlow();
 
         setupHelper.runCommonSetup();
     }
