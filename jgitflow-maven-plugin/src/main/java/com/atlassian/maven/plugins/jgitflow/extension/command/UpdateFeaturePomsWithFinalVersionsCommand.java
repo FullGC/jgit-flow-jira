@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -41,9 +40,9 @@ public class UpdateFeaturePomsWithFinalVersionsCommand implements ExtensionComma
 
     @Requirement
     private BranchHelper branchHelper;
-    
+
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         String unprefixedBranchName = "";
 
@@ -51,7 +50,7 @@ public class UpdateFeaturePomsWithFinalVersionsCommand implements ExtensionComma
         {
             ReleaseContext ctx = contextProvider.getContext();
 
-            if(!ctx.isEnableFeatureVersions())
+            if (!ctx.isEnableFeatureVersions())
             {
                 return;
             }

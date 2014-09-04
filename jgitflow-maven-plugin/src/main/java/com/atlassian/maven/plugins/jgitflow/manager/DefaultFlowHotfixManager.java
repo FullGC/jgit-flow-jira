@@ -2,10 +2,11 @@ package com.atlassian.maven.plugins.jgitflow.manager;
 
 import java.util.List;
 
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.extension.HotfixFinishPluginExtension;
@@ -63,7 +64,7 @@ public class DefaultFlowHotfixManager extends AbstractProductionBranchManager
         {
             if (null != flow)
             {
-                flow.getReporter().flush();
+                JGitFlowReporter.get().flush();
             }
         }
     }
@@ -76,7 +77,7 @@ public class DefaultFlowHotfixManager extends AbstractProductionBranchManager
         try
         {
             finishExtension.init(ctx.getHotfixFinishExtension());
-            String hotfixLabel = getFinishLabelAndRunPreflight(ctx,reactorProjects,session);
+            String hotfixLabel = getFinishLabelAndRunPreflight(ctx, reactorProjects, session);
 
             flow = jGitFlowProvider.gitFlow();
 
@@ -109,7 +110,7 @@ public class DefaultFlowHotfixManager extends AbstractProductionBranchManager
 
                 throw new MavenJGitFlowException("Error while merging hotfix!");
             }
-            
+
         }
         catch (JGitFlowException e)
         {
@@ -119,7 +120,7 @@ public class DefaultFlowHotfixManager extends AbstractProductionBranchManager
         {
             if (null != flow)
             {
-                flow.getReporter().flush();
+                JGitFlowReporter.get().flush();
             }
         }
     }

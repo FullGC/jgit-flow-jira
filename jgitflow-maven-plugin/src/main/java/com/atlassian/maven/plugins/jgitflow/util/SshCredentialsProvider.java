@@ -28,7 +28,7 @@ import org.eclipse.jgit.util.FS;
 public class SshCredentialsProvider extends JschConfigSessionFactory
 {
     private PrettyPrompter prompter;
-    
+
     public SshCredentialsProvider(PrettyPrompter prompter)
     {
         this.prompter = prompter;

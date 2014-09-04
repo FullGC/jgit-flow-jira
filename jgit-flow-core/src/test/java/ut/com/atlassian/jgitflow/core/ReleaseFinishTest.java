@@ -37,7 +37,7 @@ public class ReleaseFinishTest extends BaseGitFlowTest
         flow.releaseStart("1.0").call();
 
         assertEquals(flow.getReleaseBranchPrefix() + "1.0", git.getRepository().getBranch());
-        
+
         ReleaseMergeResult result = flow.releaseFinish("1.0").call();
 
         assertTrue(result.wasSuccessful());
@@ -344,7 +344,7 @@ public class ReleaseFinishTest extends BaseGitFlowTest
         assertTrue(result.wasSuccessful());
 
     }
-    
+
     //TODO: add tests for push and tag flags
     @Test
     public void finishReleaseWithRemoteReleaseAndPush() throws Exception
@@ -359,37 +359,37 @@ public class ReleaseFinishTest extends BaseGitFlowTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
         flow.releaseStart("1.0").call();
-        
+
         flow.git().push().setRemote("origin").call();
 
         //do a commit to the remote develop branch
-        List<Ref> remoteBranches =  remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        List<Ref> remoteBranches = remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
         boolean hasRemoteRelease = false;
-        
-        for(Ref remoteBranch : remoteBranches)
+
+        for (Ref remoteBranch : remoteBranches)
         {
-            if(remoteBranch.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + "1.0"))
+            if (remoteBranch.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + "1.0"))
             {
                 hasRemoteRelease = true;
                 break;
             }
         }
-        
+
         assertTrue(hasRemoteRelease);
-        
+
         File junkFile = new File(flow.git().getRepository().getWorkTree(), "junk.txt");
         FileUtils.writeStringToFile(junkFile, "I am junk");
         flow.git().add().addFilepattern(junkFile.getName()).call();
         RevCommit localcommit = flow.git().commit().setMessage("adding junk file").call();
 
         ReleaseMergeResult result = flow.releaseFinish("1.0").setPush(true).call();
-        
+
         assertTrue(result.wasSuccessful());
-        
+
         assertTrue(GitHelper.isMergedInto(remoteGit, localcommit, flow.getMasterBranchName()));
         assertTrue(GitHelper.isMergedInto(remoteGit, localcommit, flow.getDevelopBranchName()));
-        assertFalse(GitHelper.remoteBranchExists(git,flow.getReleaseBranchPrefix() + "1.0",flow.getReporter()));
-        assertFalse(GitHelper.localBranchExists(remoteGit,flow.getReleaseBranchPrefix() + "1.0"));
+        assertFalse(GitHelper.remoteBranchExists(git, flow.getReleaseBranchPrefix() + "1.0"));
+        assertFalse(GitHelper.localBranchExists(remoteGit, flow.getReleaseBranchPrefix() + "1.0"));
     }
 
 }

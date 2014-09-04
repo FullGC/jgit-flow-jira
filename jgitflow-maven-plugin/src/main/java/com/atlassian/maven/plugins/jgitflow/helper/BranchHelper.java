@@ -5,9 +5,7 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowConstants;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.jgitflow.core.exception.ReleaseBranchExistsException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
@@ -31,7 +29,7 @@ public class BranchHelper
 {
     @Requirement
     private MavenSessionProvider sessionProvider;
-    
+
     @Requirement
     private JGitFlowProvider jGitFlowProvider;
 
@@ -40,12 +38,12 @@ public class BranchHelper
 
     @Requirement
     private ReactorProjectsProvider projectsProvider;
-    
-    
+
+
     public List<MavenProject> getProjectsForCurrentBranch() throws JGitFlowException, IOException, GitAPIException, ReactorReloadException
     {
         JGitFlow flow = jGitFlowProvider.gitFlow();
-        
+
         MavenSession session = sessionProvider.getSession();
 
         String branchName = flow.git().getRepository().getBranch();
@@ -55,7 +53,7 @@ public class BranchHelper
 
         //reload the reactor projects for release
         MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(branchName, ReleaseUtil.getRootProject(projectsProvider.getReactorProjects()), session);
-        
+
         return branchSession.getSortedProjects();
     }
 
@@ -73,9 +71,9 @@ public class BranchHelper
         //reload the reactor projects for release
         MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(branchName, ReleaseUtil.getRootProject(projectsProvider.getReactorProjects()), session);
 
-        return new SessionAndProjects(branchSession,branchSession.getSortedProjects());
+        return new SessionAndProjects(branchSession, branchSession.getSortedProjects());
     }
-    
+
     public String getUnprefixedCurrentBranchName() throws JGitFlowException, IOException
     {
         JGitFlow flow = jGitFlowProvider.gitFlow();
@@ -105,8 +103,8 @@ public class BranchHelper
         {
             JGitFlow flow = jGitFlowProvider.gitFlow();
 
-            List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix(), flow.getReporter());
-            
+            List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix());
+
             if (!branches.isEmpty())
             {
                 branchName = branches.get(0).getName();
@@ -116,7 +114,7 @@ public class BranchHelper
         {
             throw new MavenJGitFlowException("Error looking up release branch name", e);
         }
-        
+
         return branchName;
     }
 
@@ -127,7 +125,7 @@ public class BranchHelper
         {
             JGitFlow flow = jGitFlowProvider.gitFlow();
 
-            List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix(), flow.getReporter());
+            List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix());
 
             if (!branches.isEmpty())
             {
@@ -141,7 +139,7 @@ public class BranchHelper
 
         return exists;
     }
-    
+
     public BranchType getCurrentBranchType() throws JGitFlowException, IOException
     {
         JGitFlow flow = jGitFlowProvider.gitFlow();
@@ -191,7 +189,7 @@ public class BranchHelper
                     throw new MavenJGitFlowException("Unsupported branch type '" + branchType.name() + "' while trying to get the current production branch name");
             }
 
-            List<Ref> topicBranches = GitHelper.listBranchesWithPrefix(flow.git(), branchPrefix, flow.getReporter());
+            List<Ref> topicBranches = GitHelper.listBranchesWithPrefix(flow.git(), branchPrefix);
 
             if (topicBranches.isEmpty())
             {
@@ -205,19 +203,19 @@ public class BranchHelper
             throw new MavenJGitFlowException("Error getting name for production branch", e);
         }
     }
-    
+
     private String stripSlash(String prefix)
     {
-        if(Strings.isNullOrEmpty(prefix))
+        if (Strings.isNullOrEmpty(prefix))
         {
-            return prefix;    
+            return prefix;
         }
-        
-        if(prefix.endsWith("/"))
+
+        if (prefix.endsWith("/"))
         {
-            return prefix.substring(0,prefix.length() - 1);
+            return prefix.substring(0, prefix.length() - 1);
         }
-        
+
         return prefix;
     }
 }

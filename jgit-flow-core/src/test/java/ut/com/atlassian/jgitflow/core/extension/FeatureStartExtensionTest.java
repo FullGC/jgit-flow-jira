@@ -103,5 +103,5 @@ public class FeatureStartExtensionTest extends BaseGitFlowTest
         assertTrue("after was not called", extension.wasCalled(BaseExtensionForTests.AFTER));
 
     }
-    
+
 }

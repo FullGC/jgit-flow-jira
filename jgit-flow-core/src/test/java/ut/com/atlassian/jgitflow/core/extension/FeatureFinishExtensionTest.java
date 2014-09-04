@@ -14,7 +14,9 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.Test;
 
 import ut.com.atlassian.jgitflow.core.BaseGitFlowTest;
-import ut.com.atlassian.jgitflow.core.testutils.*;
+import ut.com.atlassian.jgitflow.core.testutils.BaseExtensionForTests;
+import ut.com.atlassian.jgitflow.core.testutils.FeatureFinishExtensionForTests;
+import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
 import static org.junit.Assert.*;
 
@@ -48,7 +50,7 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         FileUtils.writeStringToFile(junkFile, "I am junk");
         flow.git().add().addFilepattern(junkFile.getName()).call();
         RevCommit localcommit = flow.git().commit().setMessage("adding junk file").call();
-        
+
         flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtension(extension).call();
 
         //we should be on develop branch
@@ -96,7 +98,7 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         FileUtils.writeStringToFile(junkFile, "I am junk");
         flow.git().add().addFilepattern(junkFile.getName()).call();
         RevCommit localcommit = flow.git().commit().setMessage("adding junk file").call();
-        
+
         try
         {
             flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtension(extension).call();
@@ -138,7 +140,7 @@ public class FeatureFinishExtensionTest extends BaseGitFlowTest
         FileUtils.writeStringToFile(junkFile, "I am junk");
         flow.git().add().addFilepattern(junkFile.getName()).call();
         RevCommit localcommit = flow.git().commit().setMessage("adding junk file").call();
-        
+
         flow.featureFinish(MY_FEATURE).setFetch(true).setPush(true).setExtension(extension).call();
 
         //we should be on develop branch

@@ -154,7 +154,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
 
             String shortName = getClass().getSimpleName();
 
-            flow.getReporter().debugText(shortName, "# Maven JGitFlow Plugin")
+            JGitFlowReporter.get().debugText(shortName, "# Maven JGitFlow Plugin")
                 .debugText(shortName, JGitFlowReporter.P)
                 .debugText(shortName, "  ## Configuration")
                 .debugText(shortName, JGitFlowReporter.EOL)
@@ -187,7 +187,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
                 .debugText(shortName, "    use release profile: " + ctx.isUseReleaseProfile())
                 .debugText(shortName, JGitFlowReporter.HR);
 
-            flow.getReporter().flush();
+            JGitFlowReporter.get().flush();
             this.headerWritten = true;
         }
     }
@@ -199,12 +199,12 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
 
         if (!Strings.isNullOrEmpty(ctx.getPassword()) && !Strings.isNullOrEmpty(ctx.getUsername()))
         {
-            flow.getReporter().debugText(getClass().getSimpleName(), "using provided username and password");
+            JGitFlowReporter.get().debugText(getClass().getSimpleName(), "using provided username and password");
             CredentialsProvider.setDefault(new UsernamePasswordCredentialsProvider(ctx.getUsername(), ctx.getPassword()));
         }
         else if (null != System.console())
         {
-            flow.getReporter().debugText(getClass().getSimpleName(), "installing ssh console credentials provider");
+            JGitFlowReporter.get().debugText(getClass().getSimpleName(), "installing ssh console credentials provider");
             CredentialsProvider.setDefault(new ConsoleCredentialsProvider(prompter));
             return true;
         }
@@ -219,7 +219,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
 
         if (ctx.isEnableSshAgent())
         {
-            flow.getReporter().debugText(getClass().getSimpleName(), "installing ssh-agent credentials provider");
+            JGitFlowReporter.get().debugText(getClass().getSimpleName(), "installing ssh-agent credentials provider");
             SshSessionFactory.setInstance(new SshCredentialsProvider(prompter));
             return true;
         }

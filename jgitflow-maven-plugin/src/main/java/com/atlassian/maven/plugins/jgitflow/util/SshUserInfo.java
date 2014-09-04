@@ -19,22 +19,22 @@ public class SshUserInfo implements UserInfo, UIKeyboardInteractive
         this.prompter = prompter;
     }
 
-    public String getPassword() 
-    { 
-        return password; 
+    public String getPassword()
+    {
+        return password;
     }
 
-    public boolean promptYesNo(String str) 
-    { 
-        return true; 
+    public boolean promptYesNo(String str)
+    {
+        return true;
     }
 
-    public String getPassphrase() 
-    { 
-        return passphrase; 
+    public String getPassphrase()
+    {
+        return passphrase;
     }
 
-    public boolean promptPassphrase(String message) 
+    public boolean promptPassphrase(String message)
     {
         try
         {
@@ -44,11 +44,11 @@ public class SshUserInfo implements UserInfo, UIKeyboardInteractive
         {
             //ignore
         }
-        
+
         return (!Strings.isNullOrEmpty(passphrase));
     }
 
-    public boolean promptPassword(String message) 
+    public boolean promptPassword(String message)
     {
         try
         {
@@ -77,7 +77,7 @@ public class SshUserInfo implements UserInfo, UIKeyboardInteractive
     public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo)
     {
         String[] response = new String[prompt.length];
-        
+
         return response;
     }
 }

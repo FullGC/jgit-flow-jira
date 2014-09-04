@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -51,17 +50,17 @@ public class UpdateReleaseWithPreviousVersionsCommand implements ExtensionComman
 
 
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         try
         {
             String releaseBranchName = branchHelper.getCurrentReleaseBranchNameOrBlank();
-            
-            if(Strings.isNullOrEmpty(releaseBranchName))
+
+            if (Strings.isNullOrEmpty(releaseBranchName))
             {
                 return;
             }
-            
+
             ReleaseContext ctx = contextProvider.getContext();
 
             JGitFlow flow = jGitFlowProvider.gitFlow();
@@ -70,8 +69,8 @@ public class UpdateReleaseWithPreviousVersionsCommand implements ExtensionComman
 
             List<MavenProject> releaseProjects = checkoutAndGetProjects.run(releaseBranchName).getProjects();
 
-            pomUpdater.copyPomVersionsFromMap(versionCacheProvider.getCachedVersions(),releaseProjects);
-            projectHelper.commitAllPoms(git,releaseProjects,ctx.getScmCommentPrefix() + "Updating release poms back to pre merge state" + ctx.getScmCommentSuffix());
+            pomUpdater.copyPomVersionsFromMap(versionCacheProvider.getCachedVersions(), releaseProjects);
+            projectHelper.commitAllPoms(git, releaseProjects, ctx.getScmCommentPrefix() + "Updating release poms back to pre merge state" + ctx.getScmCommentSuffix());
 
             flow.git().checkout().setName(originalBranchName).call();
         }

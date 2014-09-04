@@ -9,7 +9,7 @@ public class NoopMavenReleaseFinishExtension implements MavenReleaseFinishExtens
     @Override
     public void onMasterBranchVersionChange(String newVersion, String oldVersion, JGitFlowInfo flow) throws MavenJGitFlowExtensionException
     {
-        
+
     }
 
     @Override

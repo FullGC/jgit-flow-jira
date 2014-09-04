@@ -2,8 +2,8 @@ package com.atlassian.maven.plugins.jgitflow.manager.tasks;
 
 import java.util.List;
 
-import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.BranchType;
+import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
@@ -34,7 +34,7 @@ public class VerifyInitialVersionState
 
     @Requirement
     private ContextProvider contextProvider;
-    
+
     public void run(final BranchType branchType, List<MavenProject> branchProjects) throws MavenJGitFlowException
     {
         try
@@ -83,5 +83,5 @@ public class VerifyInitialVersionState
             throw new MavenJGitFlowException("Error verifying initial version state in poms: " + e.getMessage(), e);
         }
     }
-        
+
 }

@@ -53,12 +53,13 @@ public class PrettyPrompter implements Prompter
         if (mavencolor != null && !mavencolor.equals(""))
         {
             useAnsiColor = Boolean.parseBoolean(mavencolor);
-        } else
+        }
+        else
         {
             useAnsiColor = false;
         }
     }
-    
+
     public void setCygwinTerminal()
     {
         ((ConsoleInputHandler) inputHandler).setCygwinTerminal();
@@ -75,7 +76,8 @@ public class PrettyPrompter implements Prompter
         if (StringUtils.isBlank(defaultValue))
         {
             value = prompt(requiredMessage(message));
-        } else
+        }
+        else
         {
             value = prompt(message, defaultValue);
         }
@@ -94,25 +96,26 @@ public class PrettyPrompter implements Prompter
         {
             ANSIBuffer ansiBuffer = new ANSIBuffer();
             ansiBuffer.append(ANSIBuffer.ANSICodes
-                                        .attrib(PrettyPrompter.BOLD))
+                    .attrib(PrettyPrompter.BOLD))
                       .append(ANSIBuffer.ANSICodes
-                                        .attrib(PrettyPrompter.FG_RED))
+                              .attrib(PrettyPrompter.FG_RED))
                       .append(message)
                       .append(ANSIBuffer.ANSICodes
-                                        .attrib(PrettyPrompter.OFF));
+                              .attrib(PrettyPrompter.OFF));
             formattedMessage = ansiBuffer.toString();
         }
 
         return formattedMessage;
     }
-    
+
     public String prompt(String message)
             throws PrompterException
     {
         try
         {
             writePrompt(message);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new PrompterException("Failed to present prompt", e);
         }
@@ -120,7 +123,8 @@ public class PrettyPrompter implements Prompter
         try
         {
             return StringUtils.trim(inputHandler.readLine());
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new PrompterException("Failed to read user response", e);
         }
@@ -132,7 +136,8 @@ public class PrettyPrompter implements Prompter
         try
         {
             writePrompt(formatMessage(message, null, defaultReply));
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new PrompterException("Failed to present prompt", e);
         }
@@ -147,7 +152,8 @@ public class PrettyPrompter implements Prompter
             }
 
             return StringUtils.trim(line);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new PrompterException("Failed to read user response", e);
         }
@@ -165,7 +171,8 @@ public class PrettyPrompter implements Prompter
             try
             {
                 writePrompt(formattedMessage);
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 throw new PrompterException("Failed to present prompt", e);
             }
@@ -173,7 +180,8 @@ public class PrettyPrompter implements Prompter
             try
             {
                 line = inputHandler.readLine();
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 throw new PrompterException("Failed to read user response", e);
             }
@@ -192,16 +200,17 @@ public class PrettyPrompter implements Prompter
                     {
                         ANSIBuffer ansiBuffer = new ANSIBuffer();
                         ansiBuffer.append(ANSIBuffer.ANSICodes
-                                                    .attrib(FG_RED))
+                                .attrib(FG_RED))
                                   .append(ANSIBuffer.ANSICodes
-                                                    .attrib(BOLD))
+                                          .attrib(BOLD))
                                   .append("Invalid selection.")
                                   .append(ANSIBuffer.ANSICodes
-                                                    .attrib(OFF));
+                                          .attrib(OFF));
                         invalid = ansiBuffer.toString();
                     }
                     outputHandler.writeLine(invalid);
-                } catch (IOException e)
+                }
+                catch (IOException e)
                 {
                     throw new PrompterException("Failed to present feedback", e);
                 }
@@ -214,18 +223,18 @@ public class PrettyPrompter implements Prompter
 
     public String promptNumberedList(String message, List<String> possibleValues) throws PrompterException
     {
-        return promptNumberedList(message,possibleValues,null);
+        return promptNumberedList(message, possibleValues, null);
     }
 
     public String promptNumberedList(String message, List<String> possibleValues, String defaultValue) throws PrompterException
     {
-        MessageAndAnswers ma = formatNumberedMessage(message, possibleValues,defaultValue);
+        MessageAndAnswers ma = formatNumberedMessage(message, possibleValues, defaultValue);
 
         String answer = prompt(ma.message, ma.answers, ma.defaultAnswer);
-        
+
         int answerInt = Integer.parseInt(answer);
-        
-        return possibleValues.get((answerInt -1));
+
+        return possibleValues.get((answerInt - 1));
     }
 
 
@@ -241,7 +250,8 @@ public class PrettyPrompter implements Prompter
         try
         {
             writePrompt(message);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new PrompterException("Failed to present prompt", e);
         }
@@ -249,7 +259,8 @@ public class PrettyPrompter implements Prompter
         try
         {
             return inputHandler.readPassword();
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new PrompterException("Failed to read user response", e);
         }
@@ -260,7 +271,8 @@ public class PrettyPrompter implements Prompter
         if (useAnsiColor)
         {
             return formatAnsiMessage(message, possibleValues, defaultReply);
-        } else
+        }
+        else
         {
             return formatPlainMessage(message, possibleValues, defaultReply);
         }
@@ -271,7 +283,7 @@ public class PrettyPrompter implements Prompter
         if (useAnsiColor)
         {
             return formatNumberedAnsiMessage(message, possibleValues, defaultValue);
-        } 
+        }
         else
         {
             return formatNumberedPlainMessage(message, possibleValues, defaultValue);
@@ -306,14 +318,14 @@ public class PrettyPrompter implements Prompter
         if (defaultReply != null)
         {
             formatted.append(ANSIBuffer.ANSICodes
-                                       .attrib(FG_GREEN))
+                    .attrib(FG_GREEN))
                      .append(ANSIBuffer.ANSICodes
-                                       .attrib(BOLD))
+                             .attrib(BOLD))
                      .append(" [")
                      .append(defaultReply)
                      .append("]")
                      .append(ANSIBuffer.ANSICodes
-                                       .attrib(OFF));
+                             .attrib(OFF));
         }
 
         return formatted.toString();
@@ -332,7 +344,7 @@ public class PrettyPrompter implements Prompter
         {
 
             String answer = String.valueOf(counter);
-            if(val.equals(defaultValue))
+            if (val.equals(defaultValue))
             {
                 formatted.bold(answer);
                 defaultAnswer = answer;
@@ -345,12 +357,13 @@ public class PrettyPrompter implements Prompter
             if (counter < 10)
             {
                 formatted.append(":  ");
-            } else
+            }
+            else
             {
                 formatted.append(": ");
             }
 
-            if(val.equals(defaultValue))
+            if (val.equals(defaultValue))
             {
                 formatted.bold(val).append("\n");
             }
@@ -366,7 +379,7 @@ public class PrettyPrompter implements Prompter
 
         formatted.bold("Choose a number");
 
-        return new MessageAndAnswers(formatted.toString(),answers,defaultAnswer);
+        return new MessageAndAnswers(formatted.toString(), answers, defaultAnswer);
     }
 
     private String formatPlainMessage(String message, List possibleValues, String defaultReply)
@@ -419,7 +432,7 @@ public class PrettyPrompter implements Prompter
             String answer = String.valueOf(counter);
             formatted.append(answer);
 
-            if(val.equals(defaultValue))
+            if (val.equals(defaultValue))
             {
                 defaultAnswer = answer;
             }
@@ -427,11 +440,12 @@ public class PrettyPrompter implements Prompter
             if (counter < 10)
             {
                 formatted.append(":  ");
-            } else
+            }
+            else
             {
                 formatted.append(": ");
             }
-            
+
             formatted.append(val).append("\n");
 
             answers.add(answer);
@@ -441,7 +455,7 @@ public class PrettyPrompter implements Prompter
 
         formatted.append("Choose a number");
 
-        return new MessageAndAnswers(formatted.toString(),answers,defaultAnswer);
+        return new MessageAndAnswers(formatted.toString(), answers, defaultAnswer);
     }
 
     private void writePrompt(String message)
@@ -456,13 +470,14 @@ public class PrettyPrompter implements Prompter
         try
         {
             writePrompt(message);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new PrompterException("Failed to present prompt", e);
         }
 
     }
-    
+
     private class MessageAndAnswers
     {
         private final String message;

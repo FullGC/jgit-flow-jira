@@ -41,16 +41,16 @@ public class GetProjectsForBranch
         {
             JGitFlow flow = jGitFlowProvider.gitFlow();
             ReleaseContext ctx = contextProvider.getContext();
-            
+
             String originalBranchName = branchHelper.getCurrentBranchName();
-            
+
             flow.git().checkout().setName(branchName).call();
 
             //reload the reactor projects for develop
             MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(branchName, ReleaseUtil.getRootProject(originalProjects), sessionProvider.getSession());
 
             flow.git().checkout().setName(originalBranchName).call();
-            
+
             return branchSession.getSortedProjects();
         }
         catch (Exception e)

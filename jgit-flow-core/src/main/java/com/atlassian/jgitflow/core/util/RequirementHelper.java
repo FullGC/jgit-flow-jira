@@ -18,14 +18,13 @@ public class RequirementHelper
 {
     protected final Git git;
     protected final GitFlowConfiguration gfConfig;
-    protected final JGitFlowReporter reporter;
+    protected final JGitFlowReporter reporter = JGitFlowReporter.get();
     protected final String commandName;
 
-    public RequirementHelper(Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter, String commandName)
+    public RequirementHelper(Git git, GitFlowConfiguration gfConfig, String commandName)
     {
         this.git = git;
         this.gfConfig = gfConfig;
-        this.reporter = reporter;
         this.commandName = commandName;
     }
 
@@ -71,7 +70,7 @@ public class RequirementHelper
      */
     public void requireLocalBranchExists(String branch) throws LocalBranchMissingException, JGitFlowGitAPIException
     {
-        if (!GitHelper.localBranchExists(git, branch) && GitHelper.remoteBranchExists(git, branch, reporter))
+        if (!GitHelper.localBranchExists(git, branch) && GitHelper.remoteBranchExists(git, branch))
         {
             try
             {
@@ -105,7 +104,7 @@ public class RequirementHelper
      */
     public void requireRemoteBranchAbsent(String branch) throws RemoteBranchExistsException, JGitFlowGitAPIException
     {
-        if (GitHelper.remoteBranchExists(git, branch, reporter))
+        if (GitHelper.remoteBranchExists(git, branch))
         {
             reporter.errorText(commandName, "requireRemoteBranchAbsent() failed: '" + branch + "' already exists");
             reporter.flush();
@@ -122,7 +121,7 @@ public class RequirementHelper
      */
     public void requireRemoteBranchExists(String branch) throws RemoteBranchMissingException, JGitFlowGitAPIException
     {
-        if (!GitHelper.remoteBranchExists(git, branch, reporter))
+        if (!GitHelper.remoteBranchExists(git, branch))
         {
             reporter.errorText(commandName, "requireRemoteBranchExists() failed: '" + branch + "' does not exist");
             reporter.flush();
@@ -157,7 +156,7 @@ public class RequirementHelper
     public void requireLocalBranchNotBehindRemote(String branch) throws BranchOutOfDateException, JGitFlowIOException
     {
         reporter.debugMethod(commandName, "requireLocalBranchNotBehindRemote");
-        boolean behind = GitHelper.localBranchBehindRemote(git, branch, reporter);
+        boolean behind = GitHelper.localBranchBehindRemote(git, branch);
 
         if (behind)
         {
@@ -179,7 +178,7 @@ public class RequirementHelper
      */
     public void requireCleanWorkingTree(boolean allowUntracked) throws DirtyWorkingTreeException, JGitFlowIOException, JGitFlowGitAPIException
     {
-        CleanStatus cs = GitHelper.workingTreeIsClean(git, allowUntracked, reporter);
+        CleanStatus cs = GitHelper.workingTreeIsClean(git, allowUntracked);
         if (cs.isNotClean())
         {
             reporter.errorText(commandName, cs.getMessage());
@@ -196,7 +195,7 @@ public class RequirementHelper
      */
     public void requireNoExistingReleaseBranches() throws ReleaseBranchExistsException, JGitFlowGitAPIException
     {
-        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()), reporter);
+        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()));
 
         if (!branches.isEmpty())
         {
@@ -214,7 +213,7 @@ public class RequirementHelper
      */
     public void requireNoExistingHotfixBranches() throws HotfixBranchExistsException, JGitFlowGitAPIException
     {
-        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.HOTFIX.configKey()), reporter);
+        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.HOTFIX.configKey()));
 
         if (!branches.isEmpty())
         {

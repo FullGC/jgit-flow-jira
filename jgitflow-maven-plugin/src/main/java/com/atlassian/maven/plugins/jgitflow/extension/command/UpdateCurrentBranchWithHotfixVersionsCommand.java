@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -44,14 +43,14 @@ public class UpdateCurrentBranchWithHotfixVersionsCommand implements ExtensionCo
     private ContextProvider contextProvider;
 
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         try
         {
             ReleaseContext ctx = contextProvider.getContext();
 
             versionCacheProvider.cacheCurrentBranchVersions();
-            
+
             String currentName = branchHelper.getCurrentBranchName();
 
             List<MavenProject> currentProjects = branchHelper.getProjectsForCurrentBranch();

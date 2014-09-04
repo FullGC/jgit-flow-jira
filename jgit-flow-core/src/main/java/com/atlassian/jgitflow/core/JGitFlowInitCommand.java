@@ -84,7 +84,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
         this.pullMaster = false;
         this.pullDevelop = false;
         this.allowRemote = true;
-        this.reporter = new JGitFlowReporter();
+        this.reporter = JGitFlowReporter.get();
     }
 
     /**
@@ -133,10 +133,10 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
             String currentBranch = repo.getBranch();
             StoredConfig gitConfig = git.getRepository().getConfig();
             String originUrl = gitConfig.getString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url");
-            
-            String finalOriginUrl = setupOriginIfNeeded(git,gitConfig,originUrl);
 
-            if(allowRemote && ! Strings.isNullOrEmpty(finalOriginUrl))
+            String finalOriginUrl = setupOriginIfNeeded(git, gitConfig, originUrl);
+
+            if (allowRemote && !Strings.isNullOrEmpty(finalOriginUrl))
             {
                 git.fetch().setRemote(Constants.DEFAULT_REMOTE_NAME).call();
             }
@@ -156,7 +156,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
 
             //TODO: we should set an allowFetch flag and do a complete fetch before the local/remote checks if needed.
             //if no local master exists, but a remote does, check it out
-            if (!GitHelper.localBranchExists(git, context.getMaster()) && GitHelper.remoteBranchExists(git, context.getMaster(), reporter))
+            if (!GitHelper.localBranchExists(git, context.getMaster()) && GitHelper.remoteBranchExists(git, context.getMaster()))
             {
                 reporter.debugText(SHORT_NAME, "creating new local '" + context.getMaster() + "' branch from origin '" + context.getMaster() + "'");
                 git.branchCreate()
@@ -169,7 +169,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
 
             gfConfig.setMaster(context.getMaster());
 
-            if(allowRemote && pullMaster && GitHelper.remoteBranchExists(git, context.getMaster(), reporter))
+            if (allowRemote && pullMaster && GitHelper.remoteBranchExists(git, context.getMaster()))
             {
                 reporter.debugText("JgitFlowInitCommand", "pulling '" + context.getMaster());
                 reporter.flush();
@@ -194,8 +194,8 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
             reporter.infoText(SHORT_NAME, "setting develop in config to '" + context.getDevelop() + "'");
             gfConfig.setDevelop(context.getDevelop());
 
-            setupRemotesInConfig(gitConfig,finalOriginUrl);
-            
+            setupRemotesInConfig(gitConfig, finalOriginUrl);
+
             //Creation of HEAD
             walk = new RevWalk(repo);
             ObjectId masterBranch = repo.resolve(Constants.R_HEADS + context.getMaster());
@@ -231,7 +231,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
             //creation of develop
             if (!GitHelper.localBranchExists(git, context.getDevelop()))
             {
-                if (GitHelper.remoteBranchExists(git, context.getDevelop(), reporter))
+                if (GitHelper.remoteBranchExists(git, context.getDevelop()))
                 {
                     reporter.debugText(SHORT_NAME, "creating new local '" + context.getDevelop() + "' branch from origin '" + context.getDevelop() + "'");
                     git.branchCreate()
@@ -250,7 +250,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 }
             }
 
-            if(allowRemote && pullDevelop && GitHelper.remoteBranchExists(git, context.getDevelop(), reporter))
+            if (allowRemote && pullDevelop && GitHelper.remoteBranchExists(git, context.getDevelop()))
             {
                 reporter.debugText("JgitFlowInitCommand", "pulling '" + context.getDevelop());
                 reporter.flush();
@@ -270,7 +270,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 gfConfig.setPrefix(prefixName, context.getPrefix(prefixName));
             }
 
-            if (!Strings.isNullOrEmpty(currentBranch) && !currentBranch.equals(repo.getBranch()) && (GitHelper.localBranchExists(git, currentBranch) || GitHelper.remoteBranchExists(git, currentBranch, reporter)))
+            if (!Strings.isNullOrEmpty(currentBranch) && !currentBranch.equals(repo.getBranch()) && (GitHelper.localBranchExists(git, currentBranch) || GitHelper.remoteBranchExists(git, currentBranch)))
             {
                 git.checkout().setName(currentBranch).call();
             }
@@ -304,13 +304,13 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
             reporter.endCommand();
         }
 
-        return new JGitFlow(git, gfConfig, reporter);
+        return new JGitFlow(git, gfConfig);
     }
 
     private String setupOriginIfNeeded(Git git, StoredConfig gitConfig, String originUrl) throws IOException, ConfigInvalidException
     {
         String newOriginUrl = originUrl;
-        
+
         //set origin if we need to
         if ((Strings.isNullOrEmpty(originUrl) || alwaysUpdateOrigin) && !Strings.isNullOrEmpty(defaultOriginUrl))
         {
@@ -327,10 +327,10 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
 
             gitConfig.load();
         }
-        
+
         return newOriginUrl;
     }
-    
+
     private void setupRemotesInConfig(StoredConfig gitConfig, String originUrl) throws IOException, ConfigInvalidException
     {
         if (!Strings.isNullOrEmpty(originUrl))

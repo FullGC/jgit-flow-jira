@@ -97,20 +97,20 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
     @Override
     public String getRootVersion(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects)
     {
-        if(reactorProjects.size() < 1)
+        if (reactorProjects.size() < 1)
         {
             return "";
         }
-        
+
         MavenProject rootProject = ReleaseUtil.getRootProject(reactorProjects);
-        
-        return getOriginalVersions(cacheKey,reactorProjects).get(ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
+
+        return getOriginalVersions(cacheKey, reactorProjects).get(ArtifactUtils.versionlessKey(rootProject.getGroupId(), rootProject.getArtifactId()));
     }
 
     @Override
     public String getRootVersion(List<MavenProject> reactorProjects)
     {
-        if(reactorProjects.size() < 1)
+        if (reactorProjects.size() < 1)
         {
             return "";
         }

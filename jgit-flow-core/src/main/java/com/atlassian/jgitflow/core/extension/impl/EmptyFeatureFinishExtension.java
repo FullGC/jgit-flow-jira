@@ -1,7 +1,6 @@
 package com.atlassian.jgitflow.core.extension.impl;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -22,16 +21,16 @@ public class EmptyFeatureFinishExtension extends EmptyDevelopMergingExtension im
         this.afterRebase = newArrayList();
     }
 
-    public void addBeforeRebaseCommands(ExtensionCommand ... commands)
+    public void addBeforeRebaseCommands(ExtensionCommand... commands)
     {
         beforeRebase.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterRebaseCommands(ExtensionCommand ... commands)
+    public void addAfterRebaseCommands(ExtensionCommand... commands)
     {
         afterRebase.addAll(Arrays.asList(commands));
     }
-    
+
     @Override
     public Iterable<ExtensionCommand> beforeRebase()
     {

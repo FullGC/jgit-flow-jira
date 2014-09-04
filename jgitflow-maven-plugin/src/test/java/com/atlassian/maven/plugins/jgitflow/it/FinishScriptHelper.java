@@ -6,8 +6,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
 
-import com.atlassian.maven.plugins.jgitflow.manager.AbstractFlowReleaseManager;
-
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
@@ -27,7 +25,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class FinishScriptHelper
 {
-    
+
     /**
      * The absolute path to the base directory of the test project.
      */
@@ -63,9 +61,9 @@ public class FinishScriptHelper
         //update any @project.version@ vars with our plugin version
         URL url = Resources.getResource("VERSION");
         String flowVersion = Resources.toString(url, Charsets.UTF_8);
-        
+
         Collection<File> masterXmls = FileUtils.listFiles(remoteProjectDir, new WildcardFileFilter("*.xml"), FileFilterUtils.directoryFileFilter());
-        
+
         for (File masterXml : masterXmls)
         {
             String xmlString = FileUtils.readFileToString(masterXml);
@@ -96,12 +94,12 @@ public class FinishScriptHelper
 
         String branchVersion = releaseVersion;
 
-        if("feature/".equals(branchPrefix))
+        if ("feature/".equals(branchPrefix))
         {
             branchVersion = StringUtils.replace(releaseVersion, "-", "_");
             branchVersion = StringUtils.substringBeforeLast(developVersion, "-SNAPSHOT") + "-" + branchVersion + "-SNAPSHOT";
         }
-        
+
         remoteGit.branchCreate().setName(branchPrefix + releaseVersion).call();
         remoteGit.commit().setMessage("added branch " + branchPrefix + releaseVersion).call();
         remoteGit.checkout().setName(branchPrefix + releaseVersion).call();
@@ -110,8 +108,8 @@ public class FinishScriptHelper
         Collection<File> releasePoms = FileUtils.listFiles(remoteProjectDir, FileFilterUtils.nameFileFilter("pom.xml"), FileFilterUtils.directoryFileFilter());
 
         //if the prefix is feature, we need special handling of the version/branch
-        
-        
+
+
         for (File releasePom : releasePoms)
         {
             System.out.println("updating pom for branch: " + releasePom.getAbsolutePath());
@@ -128,11 +126,11 @@ public class FinishScriptHelper
 
         Git localGit = Git.cloneRepository().setDirectory(baseDirectory).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
 
-        Gits gits = new Gits(remoteGit,localGit);
-        
+        Gits gits = new Gits(remoteGit, localGit);
+
         remoteGit.checkout().setName("master").call();
-        
-        return gits; 
+
+        return gits;
     }
 
     public Git remoteGit() throws IOException
@@ -141,9 +139,9 @@ public class FinishScriptHelper
         File remoteProjectDir = new File(remotesBaseDir, baseDirectory.getName());
 
         return Git.open(remoteProjectDir);
-        
+
     }
-    
+
     public void comparePomFiles(String expectedPath, String actualPath) throws IOException
     {
         String expectedPom = ReleaseUtil.readXmlFile(new File(baseDirectory, expectedPath));
@@ -151,15 +149,15 @@ public class FinishScriptHelper
 
         assertEquals("Pom files don't match!!!: \nexpected:\n" + expectedPom + "actual:\n" + actualPom, expectedPom, actualPom);
     }
-    
+
     public void clearOrigin(Git git) throws IOException
     {
         StoredConfig config = git.getRepository().getConfig();
-        config.unsetSection("remote","origin");
+        config.unsetSection("remote", "origin");
         config.save();
     }
 
-    public class Gits 
+    public class Gits
     {
         public final Git remote;
         public final Git local;

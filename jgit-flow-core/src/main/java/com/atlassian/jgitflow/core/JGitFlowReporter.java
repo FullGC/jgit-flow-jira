@@ -26,6 +26,8 @@ import static com.google.common.collect.Lists.newArrayList;
  */
 public class JGitFlowReporter
 {
+    private static JGitFlowReporter INSTANCE;
+
     public static final String EOL = System.getProperty("line.separator");
     public static final String P = EOL.concat(EOL);
     public static final String HR = P.concat(Strings.repeat("-", 80)).concat(P);
@@ -42,7 +44,7 @@ public class JGitFlowReporter
     private List<JGitFlowReportEntry> entries;
     private List<JGitFlowReportEntry> allEntries;
 
-    public JGitFlowReporter()
+    private JGitFlowReporter()
     {
         this.wroteHeader = false;
         this.clearLog = false;
@@ -54,6 +56,17 @@ public class JGitFlowReporter
         this.startTime = displayFormat.format(now);
 
         indent = 0;
+
+    }
+
+    public static JGitFlowReporter get()
+    {
+        if (null == INSTANCE)
+        {
+            INSTANCE = new JGitFlowReporter();
+        }
+
+        return INSTANCE;
     }
 
     public void setGitFlowConfiguration(Git git, GitFlowConfiguration config)
@@ -111,10 +124,10 @@ public class JGitFlowReporter
     public JGitFlowReporter clearLog()
     {
         this.clearLog = true;
-        
+
         return this;
     }
-    
+
     public JGitFlowReporter endMethod()
     {
         indent -= PAD;
@@ -178,11 +191,11 @@ public class JGitFlowReporter
                 }
 
                 Files.touch(logFile);
-                
+
                 clearLog = false;
             }
-            
-            if(!clearLog && null == logDir || !logFile.exists())
+
+            if (!clearLog && null == logDir || !logFile.exists())
             {
                 logDir.mkdirs();
                 Files.touch(logFile);
@@ -233,7 +246,7 @@ public class JGitFlowReporter
 
         try
         {
-            sb.append("    Origin master exists = ").append(GitHelper.remoteBranchExists(git, config.getMaster(), this))
+            sb.append("    Origin master exists = ").append(GitHelper.remoteBranchExists(git, config.getMaster()))
               .append(EOL);
         }
         catch (JGitFlowGitAPIException e)
@@ -246,7 +259,7 @@ public class JGitFlowReporter
 
         try
         {
-            sb.append("    Origin develop exists = ").append(GitHelper.remoteBranchExists(git, config.getDevelop(), this))
+            sb.append("    Origin develop exists = ").append(GitHelper.remoteBranchExists(git, config.getDevelop()))
               .append(EOL);
         }
         catch (JGitFlowGitAPIException e)

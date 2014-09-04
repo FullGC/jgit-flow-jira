@@ -1,7 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow.extension.command;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -26,12 +25,12 @@ public class MavenBuildCommand implements ExtensionCommand
 
     @Requirement
     private BranchHelper branchHelper;
-    
+
     @Requirement
     MavenExecutionHelper mavenExecutionHelper;
-    
+
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         try
         {
@@ -47,7 +46,7 @@ public class MavenBuildCommand implements ExtensionCommand
         }
         catch (Exception e)
         {
-            throw new JGitFlowExtensionException("Error building project from " + this.getClass().getSimpleName(),e);
+            throw new JGitFlowExtensionException("Error building project from " + this.getClass().getSimpleName(), e);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.atlassian.maven.plugins.jgitflow.provider;
 
 import com.atlassian.jgitflow.core.JGitFlow;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 
@@ -19,18 +20,18 @@ public class DefaultJGitFlowProvider implements JGitFlowProvider
     public JGitFlow gitFlow() throws JGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
-        
+
         if (null == jgitFlow)
         {
             jgitFlow = JGitFlow.forceInitCommand(ctx.getBaseDir(), ctx.getFlowInitContext())
-                    .setDefaultOriginUrl(ctx.getDefaultOriginUrl())
-                    .setAllowRemote(ctx.isRemoteAllowed())
-                    .setAlwaysUpdateOrigin(ctx.isAlwaysUpdateOrigin())
-                    .setPullMaster(ctx.isPullMaster())
-                    .setPullDevelop(ctx.isPullDevelop())
-                    .call();
-            
-            jgitFlow.getReporter().clearLog();
+                               .setDefaultOriginUrl(ctx.getDefaultOriginUrl())
+                               .setAllowRemote(ctx.isRemoteAllowed())
+                               .setAlwaysUpdateOrigin(ctx.isAlwaysUpdateOrigin())
+                               .setPullMaster(ctx.isPullMaster())
+                               .setPullDevelop(ctx.isPullDevelop())
+                               .call();
+
+            JGitFlowReporter.get().clearLog();
         }
 
         return jgitFlow;

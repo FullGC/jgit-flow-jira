@@ -1,14 +1,7 @@
 package ut.com.atlassian.maven.plugins.jgitflow.testutils;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
 
-import com.google.common.io.Files;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -26,7 +19,7 @@ public class RepoUtil
 
     public static Git createRepositoryWithMaster(File dir) throws GitAPIException
     {
-        Git git =  Git.init().setDirectory(dir).call();
+        Git git = Git.init().setDirectory(dir).call();
         git.add().addFilepattern(".").call();
         git.commit().setMessage("initial commit").call();
 
@@ -35,7 +28,7 @@ public class RepoUtil
 
     public static Git createRepositoryWithMasterAndDevelop(File dir) throws GitAPIException
     {
-        Git git =  Git.init().setDirectory(dir).call();
+        Git git = Git.init().setDirectory(dir).call();
         git.add().addFilepattern(".").call();
         git.commit().setMessage("initial commit").call();
         git.branchCreate().setName("develop").call();
@@ -44,12 +37,12 @@ public class RepoUtil
         return git;
     }
 
-    public static Git createRepositoryWithBranches(File dir, String ... branches) throws GitAPIException
+    public static Git createRepositoryWithBranches(File dir, String... branches) throws GitAPIException
     {
-        Git git =  Git.init().setDirectory(dir).call();
+        Git git = Git.init().setDirectory(dir).call();
         git.commit().setMessage("initial commit").call();
 
-        for(String branch : branches)
+        for (String branch : branches)
         {
             git.branchCreate().setName(branch).call();
             git.commit().setMessage("added branch " + branch).call();

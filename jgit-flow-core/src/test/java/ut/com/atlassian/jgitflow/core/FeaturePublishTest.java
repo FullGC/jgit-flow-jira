@@ -48,12 +48,12 @@ public class FeaturePublishTest extends BaseGitFlowTest
 
         assertTrue(GitHelper.isMergedInto(remoteGit, commit, flow.getFeatureBranchPrefix() + "my-feature"));
         remoteGit.checkout().setName(flow.getFeatureBranchPrefix() + "my-feature").call();
-        
-        File remoteJunk = new File(remoteGit.getRepository().getWorkTree(),junkFile.getName());
+
+        File remoteJunk = new File(remoteGit.getRepository().getWorkTree(), junkFile.getName());
         assertTrue(remoteJunk.exists());
 
         assertEquals(flow.getFeatureBranchPrefix() + "my-feature", git.getRepository().getBranch());
-        
+
     }
 
     @Test(expected = DirtyWorkingTreeException.class)
@@ -142,7 +142,7 @@ public class FeaturePublishTest extends BaseGitFlowTest
 
         //manually add the feature branch to remote
         remoteGit.branchCreate().setName(flow.getFeatureBranchPrefix() + "my-feature").call();
-        
+
         flow.featurePublish("my-feature").call();
     }
 }

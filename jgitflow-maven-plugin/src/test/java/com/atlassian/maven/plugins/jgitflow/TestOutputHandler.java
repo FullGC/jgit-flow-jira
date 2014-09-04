@@ -27,12 +27,12 @@ public class TestOutputHandler implements OutputHandler
     {
         sb.append(line).append("\n");
     }
-    
+
     public String getValue()
     {
         return sb.toString();
     }
-    
+
     public void clear()
     {
         sb.setLength(0);
