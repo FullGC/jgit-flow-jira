@@ -114,7 +114,7 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
 
     protected void setupProviders(MavenSession session, List<MavenProject> projects)
     {
-        contextProvider.setContext(new ReleaseContext(getBasedir()));
+        contextProvider.setContext(new ReleaseContext(getBasedir()).setAlwaysUpdateOrigin(alwaysUpdateOrigin).setDefaultOriginUrl(defaultOriginUrl));
         sessionProvider.setSession(session);
         projectsProvider.setReactorProjects(projects);
     }
