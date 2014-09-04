@@ -44,6 +44,9 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
            .setPullDevelop(pullDevelop)
            .setDefaultOriginUrl(defaultOriginUrl)
            .setAllowRemote(isRemoteAllowed())
+            .setEnableSshAgent(enableSshAgent)
+            .setUsername(username)
+            .setPassword(password)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
