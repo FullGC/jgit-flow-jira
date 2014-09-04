@@ -144,7 +144,6 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
     protected void writeReportHeader() throws JGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
-        JGitFlow flow = jGitFlowProvider.gitFlow();
 
         if (!headerWritten)
         {
@@ -195,8 +194,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
     private boolean setupUserPasswordCredentialsProvider() throws JGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
-        JGitFlow flow = jGitFlowProvider.gitFlow();
-
+        
         if (!Strings.isNullOrEmpty(ctx.getPassword()) && !Strings.isNullOrEmpty(ctx.getUsername()))
         {
             JGitFlowReporter.get().debugText(getClass().getSimpleName(), "using provided username and password");
@@ -215,8 +213,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
     private boolean setupSshCredentialsProvider() throws JGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
-        JGitFlow flow = jGitFlowProvider.gitFlow();
-
+        
         if (ctx.isEnableSshAgent())
         {
             JGitFlowReporter.get().debugText(getClass().getSimpleName(), "installing ssh-agent credentials provider");
