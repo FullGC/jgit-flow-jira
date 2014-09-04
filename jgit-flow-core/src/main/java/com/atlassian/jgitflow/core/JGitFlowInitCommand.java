@@ -319,6 +319,10 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 File originFile = new File(defaultOriginUrl.substring(7));
                 newOriginUrl = "file://" + originFile.getCanonicalPath();
             }
+            else
+            {
+                newOriginUrl = defaultOriginUrl;
+            }
 
             gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "url", newOriginUrl);
             gitConfig.setString(ConfigConstants.CONFIG_REMOTE_SECTION, Constants.DEFAULT_REMOTE_NAME, "fetch", "+refs/heads/*:refs/remotes/origin/*");
