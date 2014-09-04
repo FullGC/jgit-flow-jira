@@ -38,7 +38,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
     private static final Logger log = LoggerFactory.getLogger(AbstractGitFlowCommand.class);
     protected final Git git;
     protected final GitFlowConfiguration gfConfig;
-    protected final JGitFlowReporter reporter;
+    protected final JGitFlowReporter reporter = JGitFlowReporter.get();
     protected final RequirementHelper requirementHelper;
     private boolean allowUntracked;
     private String scmMessagePrefix;
@@ -47,18 +47,16 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
     private boolean push;
     private final String branchName;
 
-    protected AbstractGitFlowCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    protected AbstractGitFlowCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
     {
         checkNotNull(branchName);
         checkNotNull(git);
         checkNotNull(gfConfig);
-        checkNotNull(reporter);
 
-        this.requirementHelper = new RequirementHelper(git, gfConfig, reporter, getCommandName());
+        this.requirementHelper = new RequirementHelper(git, gfConfig, getCommandName());
 
         this.git = git;
         this.gfConfig = gfConfig;
-        this.reporter = reporter;
         this.allowUntracked = false;
         this.scmMessagePrefix = "";
         this.scmMessageSuffix = "";
@@ -87,7 +85,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
 
             for (String branchToPush : branchesToPush)
             {
-                if (GitHelper.remoteBranchExists(git, branchToPush, reporter))
+                if (GitHelper.remoteBranchExists(git, branchToPush))
                 {
                     reporter.infoText(getCommandName(), "pushing '" + branchToPush + "'");
                     RefSpec branchSpec = new RefSpec(branchToPush);
@@ -118,7 +116,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
     {
         for (String branchToTest : branchesToTest)
         {
-            if (GitHelper.remoteBranchExists(git, branchToTest, reporter))
+            if (GitHelper.remoteBranchExists(git, branchToTest))
             {
                 enforcer().requireLocalBranchNotBehindRemote(branchToTest);
             }
@@ -216,7 +214,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
         {
             try
             {
-                command.execute(gfConfig, git,this, reporter);
+                command.execute(gfConfig, git, this);
             }
             catch (JGitFlowExtensionException e)
             {

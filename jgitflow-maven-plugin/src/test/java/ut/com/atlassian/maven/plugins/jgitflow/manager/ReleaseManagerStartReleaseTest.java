@@ -356,18 +356,18 @@ public class ReleaseManagerStartReleaseTest extends AbstractFlowManagerTest
 
         InitContext init = new InitContext();
         init.setRelease("superguy/");
-        
+
         ReleaseContext ctx = new ReleaseContext(projectRoot);
-        
+
         ctx.setInteractive(false)
            .setNoTag(true)
            .setAllowSnapshots(true)
-            .setFlowInitContext(init)
-        .setDefaultReleaseVersion("1.0");
+           .setFlowInitContext(init)
+           .setDefaultReleaseVersion("1.0");
 
         basicReleaseRewriteTest(projectName, ctx);
     }
-    
+
     @Test
     public void releaseWithFlatParent() throws Exception
     {

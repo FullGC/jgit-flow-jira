@@ -71,7 +71,7 @@ public class ParentReleaseVersionChange implements ProjectChange
     @Override
     public String toString()
     {
-        if(workLog.isEmpty())
+        if (workLog.isEmpty())
         {
             return "[Update Parent Release Version]";
         }

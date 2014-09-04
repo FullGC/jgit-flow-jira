@@ -44,12 +44,12 @@ public class HotfixFinishExtensionTest extends BaseGitFlowTest
         flow.git().push().setRemote("origin").call();
 
         //do a commit to the remote develop branch
-        List<Ref> remoteBranches =  remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        List<Ref> remoteBranches = remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
         boolean hasRemoteRelease = false;
 
-        for(Ref remoteBranch : remoteBranches)
+        for (Ref remoteBranch : remoteBranches)
         {
-            if(remoteBranch.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + "1.0"))
+            if (remoteBranch.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + "1.0"))
             {
                 hasRemoteRelease = true;
                 break;
@@ -102,12 +102,12 @@ public class HotfixFinishExtensionTest extends BaseGitFlowTest
         flow.git().push().setRemote("origin").call();
 
         //do a commit to the remote develop branch
-        List<Ref> remoteBranches =  remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        List<Ref> remoteBranches = remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
         boolean hasRemoteRelease = false;
 
-        for(Ref remoteBranch : remoteBranches)
+        for (Ref remoteBranch : remoteBranches)
         {
-            if(remoteBranch.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + "1.0"))
+            if (remoteBranch.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + "1.0"))
             {
                 hasRemoteRelease = true;
                 break;
@@ -123,7 +123,7 @@ public class HotfixFinishExtensionTest extends BaseGitFlowTest
 
         HotfixFinishExtensionForTests extension = new HotfixFinishExtensionForTests();
         extension.withException(BaseExtensionForTests.BEFORE_DEVELOP_CHECKOUT, ExtensionFailStrategy.ERROR);
-        
+
         try
         {
             ReleaseMergeResult result = flow.hotfixFinish("1.0").setFetch(true).setPush(true).setExtension(extension).call();
@@ -160,12 +160,12 @@ public class HotfixFinishExtensionTest extends BaseGitFlowTest
         flow.git().push().setRemote("origin").call();
 
         //do a commit to the remote develop branch
-        List<Ref> remoteBranches =  remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        List<Ref> remoteBranches = remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
         boolean hasRemoteRelease = false;
 
-        for(Ref remoteBranch : remoteBranches)
+        for (Ref remoteBranch : remoteBranches)
         {
-            if(remoteBranch.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + "1.0"))
+            if (remoteBranch.getName().equals(Constants.R_HEADS + flow.getHotfixBranchPrefix() + "1.0"))
             {
                 hasRemoteRelease = true;
                 break;

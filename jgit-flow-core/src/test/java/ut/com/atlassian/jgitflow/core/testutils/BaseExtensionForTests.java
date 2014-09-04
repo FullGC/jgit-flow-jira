@@ -1,7 +1,6 @@
 package ut.com.atlassian.jgitflow.core.testutils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -35,8 +34,8 @@ public abstract class BaseExtensionForTests<T>
     public static final String AFTER_TOPIC_CHECKOUT = "afterTopicCheckout";
     public static final String BEFORE_TAG = "beforeTag";
     public static final String AFTER_TAG = "afterTag";
-    
-    private final Map<String,WasCalledExtension> methodMap;
+
+    private final Map<String, WasCalledExtension> methodMap;
 
     protected BaseExtensionForTests()
     {
@@ -51,27 +50,27 @@ public abstract class BaseExtensionForTests<T>
 
     public Iterable<ExtensionCommand> beforeFetch()
     {
-        return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE_FETCH));
+        return Lists.<ExtensionCommand>newArrayList(createExtension(BEFORE_FETCH));
     }
 
     public Iterable<ExtensionCommand> afterFetch()
     {
-        return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER_FETCH));
+        return Lists.<ExtensionCommand>newArrayList(createExtension(AFTER_FETCH));
     }
 
     public Iterable<ExtensionCommand> before()
     {
-        return Lists.<ExtensionCommand> newArrayList(createExtension(BEFORE));
+        return Lists.<ExtensionCommand>newArrayList(createExtension(BEFORE));
     }
 
     public Iterable<ExtensionCommand> after()
     {
-        return Lists.<ExtensionCommand> newArrayList(createExtension(AFTER));
+        return Lists.<ExtensionCommand>newArrayList(createExtension(AFTER));
     }
-    
+
     public boolean wasCalled(String methodName)
     {
-        if(methodMap.containsKey(methodName))
+        if (methodMap.containsKey(methodName))
         {
             return methodMap.get(methodName).wasCalled();
         }
@@ -84,18 +83,18 @@ public abstract class BaseExtensionForTests<T>
         WasCalledExtension extension = new WasCalledExtension(true);
         extension.setFailStrategy(failStrategy);
 
-        methodMap.put(methodName,extension);
+        methodMap.put(methodName, extension);
     }
 
     protected ExtensionCommand createExtension(String methodName)
     {
-        if(methodMap.containsKey(methodName))
+        if (methodMap.containsKey(methodName))
         {
             return methodMap.get(methodName);
         }
 
         WasCalledExtension extension = new WasCalledExtension();
-        methodMap.put(methodName,extension);
+        methodMap.put(methodName, extension);
 
         return extension;
     }

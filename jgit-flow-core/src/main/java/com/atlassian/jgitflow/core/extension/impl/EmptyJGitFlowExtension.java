@@ -27,31 +27,31 @@ public abstract class EmptyJGitFlowExtension implements JGitFlowExtension
         this.afterPush = newArrayList();
     }
 
-    public void addBeforeCommands(ExtensionCommand ... commands)
+    public void addBeforeCommands(ExtensionCommand... commands)
     {
-        before.addAll(Arrays.asList(commands));    
+        before.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterCommands(ExtensionCommand ... commands)
+    public void addAfterCommands(ExtensionCommand... commands)
     {
         after.addAll(Arrays.asList(commands));
     }
 
-    public void addBeforeFetchCommands(ExtensionCommand ... commands)
+    public void addBeforeFetchCommands(ExtensionCommand... commands)
     {
         beforeFetch.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterFetchCommands(ExtensionCommand ... commands)
+    public void addAfterFetchCommands(ExtensionCommand... commands)
     {
         afterFetch.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterPushCommands(ExtensionCommand ... commands)
+    public void addAfterPushCommands(ExtensionCommand... commands)
     {
         afterPush.addAll(Arrays.asList(commands));
     }
-    
+
     @Override
     public Iterable<ExtensionCommand> before()
     {

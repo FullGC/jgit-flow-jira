@@ -18,9 +18,7 @@ import org.junit.Test;
 
 import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @since version
@@ -106,8 +104,8 @@ public class ReleaseStartTest extends BaseGitFlowTest
         git.push().setRemote("origin").add("develop").call();
 
         flow.releaseStart("1.0").setFetch(true).setPush(true).call();
-        
-        assertTrue(GitHelper.remoteBranchExists(git,"release/1.0",flow.getReporter()));
+
+        assertTrue(GitHelper.remoteBranchExists(git, "release/1.0"));
 
     }
 
@@ -166,7 +164,7 @@ public class ReleaseStartTest extends BaseGitFlowTest
         //create a new file
         File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
         FileUtils.writeStringToFile(junkFile, "I am junk");
-        
+
         flow.releaseStart("1.0").call();
     }
 
@@ -195,7 +193,7 @@ public class ReleaseStartTest extends BaseGitFlowTest
         git.checkout().setName("develop").call();
         //we should be on develop branch
         assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
-        
+
         //create a new commit
         File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
         FileUtils.writeStringToFile(junkFile, "I am junk");
@@ -204,7 +202,7 @@ public class ReleaseStartTest extends BaseGitFlowTest
 
         //make sure develop has our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
-        
+
         flow.releaseStart("1.0").call();
 
         assertEquals(flow.getReleaseBranchPrefix() + "1.0", git.getRepository().getBranch());
@@ -251,16 +249,16 @@ public class ReleaseStartTest extends BaseGitFlowTest
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         InitContext ctx = new InitContext();
         ctx.setVersiontag("vtag/");
-        
+
         JGitFlow flow = initCommand.setInitContext(ctx).setDirectory(git.getRepository().getWorkTree()).call();
 
         git.tag().setName(flow.getVersionTagPrefix() + "1.0").call();
-        
+
         //just to make sure
         List<Ref> refs = git.tagList().call();
         String name = refs.get(0).getName();
-        
-        assertEquals(Constants.R_TAGS + "vtag/1.0",name);
+
+        assertEquals(Constants.R_TAGS + "vtag/1.0", name);
 
         flow.releaseStart("1.0").call();
     }
@@ -329,7 +327,7 @@ public class ReleaseStartTest extends BaseGitFlowTest
 
         //change the file
         FileUtils.writeStringToFile(junkFile, "I am junk again");
-        
+
         try
         {
             flow.releaseStart("1.0").call();
@@ -339,7 +337,7 @@ public class ReleaseStartTest extends BaseGitFlowTest
             assertEquals("Working tree has uncommitted changes", e.getMessage());
             throw e;
         }
-        
+
 
     }
 
@@ -481,7 +479,7 @@ public class ReleaseStartTest extends BaseGitFlowTest
         //create a new file
         File junk2File = new File(git.getRepository().getWorkTree(), "junk2.txt");
         FileUtils.writeStringToFile(junk2File, "I am junk 2");
-        
+
         flow.releaseStart("1.0").setAllowUntracked(true).call();
 
     }
@@ -514,7 +512,7 @@ public class ReleaseStartTest extends BaseGitFlowTest
 
         //make sure develop has our commit
         assertTrue(GitHelper.isMergedInto(git, commitTwo, flow.getDevelopBranchName()));
-        
+
         flow.releaseStart("1.0").setStartCommit(commitOne.getName()).call();
 
         assertEquals(flow.getReleaseBranchPrefix() + "1.0", git.getRepository().getBranch());
@@ -525,6 +523,6 @@ public class ReleaseStartTest extends BaseGitFlowTest
         assertFalse(GitHelper.isMergedInto(git, commitTwo, flow.getReleaseBranchPrefix() + "1.0"));
 
     }
-    
-    
+
+
 }

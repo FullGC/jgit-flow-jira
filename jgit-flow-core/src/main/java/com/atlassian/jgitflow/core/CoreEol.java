@@ -1,8 +1,8 @@
 package com.atlassian.jgitflow.core;
 
 import org.eclipse.jgit.lib.Config;
-import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Config.ConfigEnum;
+import org.eclipse.jgit.lib.ConfigConstants;
 
 public enum CoreEol implements ConfigEnum
 {
@@ -12,10 +12,10 @@ public enum CoreEol implements ConfigEnum
 
     public static CoreEol DEFAULT = NATIVE;
     public static final String CONFIG_KEY_EOL = "eol";
-    
+
     private final String configValue;
     private final String eol;
-    
+
     private CoreEol(final String configValue, final String eol)
     {
         this.configValue = configValue;
@@ -27,7 +27,7 @@ public enum CoreEol implements ConfigEnum
         return eol;
     }
 
-    public static CoreEol getConfigValue ( final Config gitConfig )
+    public static CoreEol getConfigValue(final Config gitConfig)
     {
         return
                 gitConfig.getEnum(CoreEol.values(),
@@ -38,7 +38,7 @@ public enum CoreEol implements ConfigEnum
     }
 
     @Override
-    public String toConfigValue ( )
+    public String toConfigValue()
     {
         return configValue;
     }

@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyHotfixStartExtension;
@@ -42,9 +41,9 @@ public class HotfixPublishCommand extends AbstractGitFlowCommand<HotfixPublishCo
      * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
      */
-    public HotfixPublishCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public HotfixPublishCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
     {
-        super(branchName, git, gfConfig, reporter);
+        super(branchName, git, gfConfig);
     }
 
     /**

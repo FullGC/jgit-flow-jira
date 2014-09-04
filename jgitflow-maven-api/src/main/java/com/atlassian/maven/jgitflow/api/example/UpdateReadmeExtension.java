@@ -3,8 +3,8 @@ package com.atlassian.maven.jgitflow.api.example;
 import java.io.File;
 
 import com.atlassian.jgitflow.core.JGitFlowInfo;
-import com.atlassian.maven.jgitflow.api.impl.NoopMavenReleaseFinishExtension;
 import com.atlassian.maven.jgitflow.api.exception.MavenJGitFlowExtensionException;
+import com.atlassian.maven.jgitflow.api.impl.NoopMavenReleaseFinishExtension;
 import com.atlassian.maven.jgitflow.api.util.JGitFlowCommitHelper;
 
 import com.google.common.base.Charsets;
@@ -38,7 +38,7 @@ public class UpdateReadmeExtension extends NoopMavenReleaseFinishExtension
 
             //get the README.md file
             File readmeFile = new File(flow.getProjectRoot(), README_MD);
-            
+
             //do the replacement
             //NOTE: This is not performant or scalable. It's only here for example purposes.
             String readmeContent = Files.toString(readmeFile, Charsets.UTF_8);

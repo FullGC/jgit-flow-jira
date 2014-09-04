@@ -14,7 +14,7 @@ public class StartProductionExternalExecutor extends CachedVersionExternalExecut
     @Override
     public void execute(MavenJGitFlowExtension extension, String newVersion, String oldVersion, JGitFlowInfo flow) throws MavenJGitFlowExtensionException
     {
-        if(null == extension || !StartProductionBranchExtension.class.isAssignableFrom(extension.getClass()))
+        if (null == extension || !StartProductionBranchExtension.class.isAssignableFrom(extension.getClass()))
         {
             return;
         }
@@ -24,19 +24,19 @@ public class StartProductionExternalExecutor extends CachedVersionExternalExecut
         {
             BranchType type = branchHelper.getCurrentBranchType();
 
-            switch(type)
+            switch (type)
             {
                 case HOTFIX:
-                    startExtension.onTopicBranchVersionChange(newVersion,oldVersion,flow);
+                    startExtension.onTopicBranchVersionChange(newVersion, oldVersion, flow);
                     break;
                 case RELEASE:
-                    startExtension.onTopicBranchVersionChange(newVersion,oldVersion,flow);
+                    startExtension.onTopicBranchVersionChange(newVersion, oldVersion, flow);
                     break;
             }
         }
         catch (Exception e)
         {
-            throw new MavenJGitFlowExtensionException("Error running external extension",e);
+            throw new MavenJGitFlowExtensionException("Error running external extension", e);
         }
     }
 }

@@ -31,41 +31,41 @@ public abstract class EmptyDevelopMergingExtension extends EmptyJGitFlowExtensio
         this.afterTag = newArrayList();
     }
 
-    public void addBeforeDevelopCheckoutCommands(ExtensionCommand ... commands)
+    public void addBeforeDevelopCheckoutCommands(ExtensionCommand... commands)
     {
         beforeDevelopCheckout.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterDevelopCheckoutCommands(ExtensionCommand ... commands)
+    public void addAfterDevelopCheckoutCommands(ExtensionCommand... commands)
     {
         afterDevelopCheckout.addAll(Arrays.asList(commands));
     }
 
-    public void addBeforeDevelopMergeCommands(ExtensionCommand ... commands)
+    public void addBeforeDevelopMergeCommands(ExtensionCommand... commands)
     {
         beforeDevelopMerge.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterDevelopMergeCommands(ExtensionCommand ... commands)
+    public void addAfterDevelopMergeCommands(ExtensionCommand... commands)
     {
         afterDevelopMerge.addAll(Arrays.asList(commands));
     }
-    
-    public void addAfterTopicCheckoutCommands(ExtensionCommand ... commands)
+
+    public void addAfterTopicCheckoutCommands(ExtensionCommand... commands)
     {
         afterTopicCheckout.addAll(Arrays.asList(commands));
     }
 
-    public void addBeforeTagCommands(ExtensionCommand ... commands)
+    public void addBeforeTagCommands(ExtensionCommand... commands)
     {
         beforeTag.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterTagCommands(ExtensionCommand ... commands)
+    public void addAfterTagCommands(ExtensionCommand... commands)
     {
         afterTag.addAll(Arrays.asList(commands));
     }
-    
+
     @Override
     public Iterable<ExtensionCommand> beforeDevelopCheckout()
     {

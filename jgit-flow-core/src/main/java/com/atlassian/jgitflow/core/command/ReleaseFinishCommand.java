@@ -2,18 +2,15 @@ package com.atlassian.jgitflow.core.command;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.ReleaseFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.MergeProcessExtensionWrapper;
-import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +58,7 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
 public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFinishCommand, ReleaseMergeResult>
 {
     private static final Logger log = LoggerFactory.getLogger(ReleaseFinishCommand.class);
-    
+
     private static final String SHORT_NAME = "release-finish";
     private boolean noTag;
     private boolean squash;
@@ -78,9 +75,9 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
      * @param gfConfig    The GitFlowConfiguration to use
      * @param reporter
      */
-    public ReleaseFinishCommand(String releaseName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public ReleaseFinishCommand(String releaseName, Git git, GitFlowConfiguration gfConfig)
     {
-        super(releaseName, git, gfConfig, reporter);
+        super(releaseName, git, gfConfig);
         checkState(!StringUtils.isEmptyOrNull(releaseName));
         this.noTag = false;
         this.squash = false;
@@ -111,22 +108,22 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
         {
             doFetchIfNeeded(extension);
 
-            
+
             ensureLocalBranchesNotBehindRemotes(prefixedBranchName, gfConfig.getMaster(), gfConfig.getDevelop());
 
             //checkout the branch to merge just so we can run any extensions that need to be on this branch
-            checkoutTopicBranch(prefixedBranchName,extension);
+            checkoutTopicBranch(prefixedBranchName, extension);
 
             boolean mergeSuccess = false;
             if (!noMerge)
             {
-                if(log.isDebugEnabled())
+                if (log.isDebugEnabled())
                 {
                     log.debug("merging topic branch to master...");
                 }
                 //first merge master
                 MergeProcessExtensionWrapper masterExtension = new MergeProcessExtensionWrapper(extension.beforeMasterCheckout(), extension.afterMasterCheckout(), extension.beforeMasterMerge(), extension.afterMasterMerge());
-                
+
                 masterResult = doMerge(prefixedBranchName, gfConfig.getMaster(), masterExtension, squash);
 
                 //now, tag master
@@ -138,11 +135,11 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
                 //IMPORTANT: we need to back-merge master into develop so that git describe works properly
                 MergeProcessExtensionWrapper developExtension = new MergeProcessExtensionWrapper(extension.beforeDevelopCheckout(), extension.afterDevelopCheckout(), extension.beforeDevelopMerge(), extension.afterDevelopMerge());
 
-                if(log.isDebugEnabled())
+                if (log.isDebugEnabled())
                 {
                     log.debug("back merging master to develop...");
                 }
-                
+
                 developResult = doMerge(gfConfig.getMaster(), gfConfig.getDevelop(), developExtension, squash);
 
                 mergeSuccess = checkMergeResults(masterResult, developResult);
@@ -158,11 +155,11 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
                 cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
             }
 
-            if(log.isDebugEnabled())
+            if (log.isDebugEnabled())
             {
                 log.debug("checking out develop...");
             }
-            
+
             reporter.infoText(getCommandName(), "checking out '" + gfConfig.getDevelop() + "'");
             git.checkout().setName(gfConfig.getDevelop()).call();
 

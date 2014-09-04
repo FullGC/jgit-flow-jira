@@ -16,7 +16,7 @@ public class NamingUtilTest
     {
         String expected = "some-feature";
         String test = "someFeature";
-        
+
         assertEquals(expected, NamingUtil.camelCaseOrSpaceToDashed(test));
 
     }

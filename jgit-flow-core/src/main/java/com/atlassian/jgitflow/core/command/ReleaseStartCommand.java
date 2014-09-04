@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.ReleaseStartExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseStartExtension;
@@ -48,9 +47,9 @@ public class ReleaseStartCommand extends AbstractBranchCreatingCommand<ReleaseSt
      * @param gfConfig    The GitFlowConfiguration to use
      * @param reporter
      */
-    public ReleaseStartCommand(String releaseName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public ReleaseStartCommand(String releaseName, Git git, GitFlowConfiguration gfConfig)
     {
-        super(releaseName, git, gfConfig, reporter);
+        super(releaseName, git, gfConfig);
         this.extension = new EmptyReleaseStartExtension();
 
     }

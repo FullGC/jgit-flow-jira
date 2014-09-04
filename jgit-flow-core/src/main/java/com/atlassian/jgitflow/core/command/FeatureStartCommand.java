@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.FeatureStartExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureStartExtension;
@@ -48,9 +47,9 @@ public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureSt
      * @param gfConfig   The GitFlowConfiguration to use
      * @param reporter
      */
-    public FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
     {
-        super(branchName, git, gfConfig, reporter);
+        super(branchName, git, gfConfig);
         this.extension = new EmptyFeatureStartExtension();
     }
 

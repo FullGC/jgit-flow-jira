@@ -83,7 +83,7 @@ public class HotfixStartTest extends BaseGitFlowTest
 
         flow.hotfixStart("1.0").setFetch(true).setPush(true).call();
 
-        assertTrue(GitHelper.remoteBranchExists(git,"hotfix/1.0",flow.getReporter()));
+        assertTrue(GitHelper.remoteBranchExists(git, "hotfix/1.0"));
 
     }
 
@@ -198,7 +198,7 @@ public class HotfixStartTest extends BaseGitFlowTest
 
         //switch to master
         git.checkout().setName("master").call();
-        
+
         //create a new commit
         File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
         FileUtils.writeStringToFile(junkFile, "I am junk");
@@ -263,7 +263,7 @@ public class HotfixStartTest extends BaseGitFlowTest
         List<Ref> refs = git.tagList().call();
         String name = refs.get(0).getName();
 
-        assertEquals(Constants.R_TAGS + "vtag/1.0",name);
+        assertEquals(Constants.R_TAGS + "vtag/1.0", name);
 
         flow.hotfixStart("1.0").call();
     }

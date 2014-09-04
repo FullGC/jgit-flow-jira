@@ -8,8 +8,6 @@ import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowInitCommand;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
-import ut.com.atlassian.maven.plugins.jgitflow.TestFinishExtension;
-
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.helper.JGitFlowSetupHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
@@ -23,11 +21,10 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.junit.Test;
 
+import ut.com.atlassian.maven.plugins.jgitflow.TestFinishExtension;
 import ut.com.atlassian.maven.plugins.jgitflow.testutils.RepoUtil;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @since version
@@ -68,8 +65,8 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
         ctx.setNoBuild(true).setScmCommentPrefix(commentPrefix).setScmCommentSuffix(commentSuffix);
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
-        setupProjectsForMasterAndDevelop(projectRoot,projectName);
-        
+        setupProjectsForMasterAndDevelop(projectRoot, projectName);
+
         FlowReleaseManager relman = getReleaseManager();
 
         relman.start(ctx, projects, session);
@@ -105,7 +102,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
 
         remoteGit = RepoUtil.createRepositoryWithMasterAndDevelop(remoteDir);
         remoteGit.checkout().setName("develop").call();
-        copyTestProject("remote-git-project",null);
+        copyTestProject("remote-git-project", null);
         remoteGit.add().addFilepattern(".").call();
         remoteGit.commit().setMessage("pom commit").call();
 
@@ -126,12 +123,12 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
 
         FlowReleaseManager relman = getReleaseManager();
 
-        relman.start(ctx,projects,session);
+        relman.start(ctx, projects, session);
 
         assertEquals(flow.getReleaseBranchPrefix() + "1.0", git.getRepository().getBranch());
 
         relman.finish(ctx, projects, session);
-        
+
     }
 
     @Test
@@ -170,13 +167,13 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
            .setAllowSnapshots(true)
            .setNoBuild(true);
 
-        setupProjectsForMasterAndDevelop(projectRoot,projectName);
+        setupProjectsForMasterAndDevelop(projectRoot, projectName);
 
         FlowReleaseManager relman = getReleaseManager();
         relman.finish(ctx, projects, session);
-        
+
         fail("release finish should throw if there's no release branch!!!");
-        
+
     }
 
     @Test
@@ -199,7 +196,7 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
            .setNoBuild(true)
            .setReleaseFinishExtension(extension);
 
-        setupProjectsForMasterAndDevelop(projectRoot,projectName);
+        setupProjectsForMasterAndDevelop(projectRoot, projectName);
 
         FlowReleaseManager relman = getReleaseManager();
         relman.start(ctx, projects, session);
@@ -250,16 +247,16 @@ public class ReleaseManagerFinishReleaseTest extends AbstractFlowManagerTest
 
         FlowReleaseManager relman = getReleaseManager();
 
-        relman.start(ctx,projects,session);
+        relman.start(ctx, projects, session);
 
         assertEquals(flow.getReleaseBranchPrefix() + "1.0", git.getRepository().getBranch());
 
         //delete the local release branch
         git.checkout().setName("develop").call();
         git.branchDelete().setBranchNames(flow.getReleaseBranchPrefix() + "1.0").setForce(true).call();
-        
+
         relman.finish(ctx, projects, session);
-        
+
         assertOnDevelop(flow);
 
     }

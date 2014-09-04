@@ -24,7 +24,7 @@ public abstract class CachedVersionExternalExecutor extends ExternalCommandExecu
 
     @Requirement
     protected ReactorProjectsProvider reactorProjectsProvider;
-    
+
     @Override
     public String getOldVersion() throws MavenJGitFlowExtensionException
     {

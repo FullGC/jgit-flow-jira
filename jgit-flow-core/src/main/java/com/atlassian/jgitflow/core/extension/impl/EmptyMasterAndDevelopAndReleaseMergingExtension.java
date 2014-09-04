@@ -27,22 +27,22 @@ public class EmptyMasterAndDevelopAndReleaseMergingExtension extends EmptyMaster
         this.afterReleaseMerge = newArrayList();
     }
 
-    public void addBeforeReleaseCheckoutCommands(ExtensionCommand ... commands)
+    public void addBeforeReleaseCheckoutCommands(ExtensionCommand... commands)
     {
         beforeReleaseCheckout.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterReleaseCheckoutCommands(ExtensionCommand ... commands)
+    public void addAfterReleaseCheckoutCommands(ExtensionCommand... commands)
     {
         afterReleaseCheckout.addAll(Arrays.asList(commands));
     }
 
-    public void addBeforeReleaseMergeCommands(ExtensionCommand ... commands)
+    public void addBeforeReleaseMergeCommands(ExtensionCommand... commands)
     {
         beforeReleaseMerge.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterReleaseMergeCommands(ExtensionCommand ... commands)
+    public void addAfterReleaseMergeCommands(ExtensionCommand... commands)
     {
         afterReleaseMerge.addAll(Arrays.asList(commands));
     }

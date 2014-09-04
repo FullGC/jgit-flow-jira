@@ -83,17 +83,17 @@ public class FlowInitContext
     {
         this.versionTagPrefix = versionTagPrefix;
     }
-    
+
     public InitContext getJGitFlowContext()
     {
         InitContext ctx = new InitContext();
         ctx.setMaster(masterBranchName)
-                .setDevelop(developBranchName)
-                .setFeature(featureBranchPrefix)
-                .setRelease(releaseBranchPrefix)
-                .setHotfix(hotfixBranchPrefix)
-                .setVersiontag(versionTagPrefix);
-        
+           .setDevelop(developBranchName)
+           .setFeature(featureBranchPrefix)
+           .setRelease(releaseBranchPrefix)
+           .setHotfix(hotfixBranchPrefix)
+           .setVersiontag(versionTagPrefix);
+
         return ctx;
     }
 }

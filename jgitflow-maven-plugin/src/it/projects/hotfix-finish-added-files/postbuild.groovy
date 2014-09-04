@@ -18,7 +18,7 @@ import static org.junit.Assert.assertFalse
 
     //make sure hotfix delete was pushed
     branch = "hotfix/1.0.1";
-    assertFalse("remote hotfix should not exist!", GitHelper.remoteBranchExists(flow.git(), branch, flow.getReporter()));
+    assertFalse("remote hotfix should not exist!", GitHelper.remoteBranchExists(flow.git(), branch));
 
     helper.comparePomFiles("expected-develop-pom.xml", "pom.xml")
 

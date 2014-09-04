@@ -29,9 +29,9 @@ public class FeatureManagerFinishFeatureTest extends AbstractFlowManagerTest
         startFeature();
 
         String projectSubdir = "basic-pom";
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir,false);
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir, false);
         File projectRoot = projects.get(0).getBasedir();
-        
+
         FlowReleaseManager relman = getFeatureManager();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
@@ -58,7 +58,7 @@ public class FeatureManagerFinishFeatureTest extends AbstractFlowManagerTest
         JGitFlow flow = startFeature(initContext);
 
         String projectSubdir = "basic-pom";
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir,false);
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir, false);
         File projectRoot = projects.get(0).getBasedir();
 
         FlowReleaseManager relman = getFeatureManager();
@@ -69,15 +69,15 @@ public class FeatureManagerFinishFeatureTest extends AbstractFlowManagerTest
         MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
         relman.finish(ctx, projects, session);
-        
-        assertEquals(developName,flow.git().getRepository().getBranch());
+
+        assertEquals(developName, flow.git().getRepository().getBranch());
         //reload the projects
         projects = createReactorProjectsNoClean("rewrite-for-release", projectSubdir);
 
         String pom = FileUtils.readFileToString(projects.get(0).getFile());
         assertTrue(pom.contains("1.0-SNAPSHOT"));
     }
-    
+
     private JGitFlow startFeature() throws Exception
     {
         return startFeature(new InitContext());
@@ -89,7 +89,7 @@ public class FeatureManagerFinishFeatureTest extends AbstractFlowManagerTest
         List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectSubdir);
         File projectRoot = projects.get(0).getBasedir();
 
-        JGitFlow flow = JGitFlow.forceInit(projectRoot,initContext);
+        JGitFlow flow = JGitFlow.forceInit(projectRoot, initContext);
 
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
@@ -106,7 +106,7 @@ public class FeatureManagerFinishFeatureTest extends AbstractFlowManagerTest
 
         String pom = FileUtils.readFileToString(projects.get(0).getFile());
         assertTrue(pom.contains("1.0-" + UNDERSCORED_FEATURE_NAME + "-SNAPSHOT"));
-        
+
         return flow;
     }
 }
