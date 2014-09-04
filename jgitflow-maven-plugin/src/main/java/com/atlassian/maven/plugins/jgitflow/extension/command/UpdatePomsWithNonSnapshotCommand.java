@@ -2,14 +2,13 @@ package com.atlassian.maven.plugins.jgitflow.extension.command;
 
 import java.util.List;
 
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
@@ -50,7 +49,7 @@ public class UpdatePomsWithNonSnapshotCommand extends AbstractLogEnabled impleme
     private BranchHelper branchHelper;
 
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         ProjectCacheKey cacheKey = null;
         VersionType versionType = null;

@@ -20,7 +20,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.jgit.api.Git;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import ut.com.atlassian.maven.plugins.jgitflow.testutils.RepoUtil;

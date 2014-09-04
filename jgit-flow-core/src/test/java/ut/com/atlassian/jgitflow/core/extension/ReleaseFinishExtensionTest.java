@@ -22,7 +22,6 @@ import ut.com.atlassian.jgitflow.core.testutils.BaseExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.ReleaseFinishExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -45,12 +44,12 @@ public class ReleaseFinishExtensionTest extends BaseGitFlowTest
         flow.git().push().setRemote("origin").call();
 
         //do a commit to the remote develop branch
-        List<Ref> remoteBranches =  remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        List<Ref> remoteBranches = remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
         boolean hasRemoteRelease = false;
 
-        for(Ref remoteBranch : remoteBranches)
+        for (Ref remoteBranch : remoteBranches)
         {
-            if(remoteBranch.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + "1.0"))
+            if (remoteBranch.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + "1.0"))
             {
                 hasRemoteRelease = true;
                 break;
@@ -102,12 +101,12 @@ public class ReleaseFinishExtensionTest extends BaseGitFlowTest
         flow.git().push().setRemote("origin").call();
 
         //do a commit to the remote develop branch
-        List<Ref> remoteBranches =  remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        List<Ref> remoteBranches = remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
         boolean hasRemoteRelease = false;
 
-        for(Ref remoteBranch : remoteBranches)
+        for (Ref remoteBranch : remoteBranches)
         {
-            if(remoteBranch.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + "1.0"))
+            if (remoteBranch.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + "1.0"))
             {
                 hasRemoteRelease = true;
                 break;
@@ -159,12 +158,12 @@ public class ReleaseFinishExtensionTest extends BaseGitFlowTest
         flow.git().push().setRemote("origin").call();
 
         //do a commit to the remote develop branch
-        List<Ref> remoteBranches =  remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        List<Ref> remoteBranches = remoteGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
         boolean hasRemoteRelease = false;
 
-        for(Ref remoteBranch : remoteBranches)
+        for (Ref remoteBranch : remoteBranches)
         {
-            if(remoteBranch.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + "1.0"))
+            if (remoteBranch.getName().equals(Constants.R_HEADS + flow.getReleaseBranchPrefix() + "1.0"))
             {
                 hasRemoteRelease = true;
                 break;

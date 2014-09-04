@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -41,23 +40,23 @@ public class UpdateFeaturePomsWithSnapshotsCommand implements ExtensionCommand
 
     @Requirement
     private BranchHelper branchHelper;
-    
+
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         String unprefixedBranchName = "";
-        
+
         try
         {
             ReleaseContext ctx = contextProvider.getContext();
-            
-            if(!ctx.isEnableFeatureVersions())
+
+            if (!ctx.isEnableFeatureVersions())
             {
-                return;    
+                return;
             }
-            
+
             JGitFlow flow = jGitFlowProvider.gitFlow();
-            
+
             unprefixedBranchName = branchHelper.getUnprefixedCurrentBranchName();
 
             //reload the reactor projects for release
@@ -69,7 +68,7 @@ public class UpdateFeaturePomsWithSnapshotsCommand implements ExtensionCommand
             pomUpdater.addFeatureVersionToSnapshotVersions(ProjectCacheKey.FEATURE_START_LABEL, featureVersion, branchProjects);
 
             projectHelper.commitAllPoms(flow.git(), branchProjects, ctx.getScmCommentPrefix() + "updating poms for " + featureVersion + " version" + ctx.getScmCommentSuffix());
-            
+
         }
         catch (Exception e)
         {

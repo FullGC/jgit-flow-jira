@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.HotfixFinishExtension;
@@ -75,9 +74,9 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
      * @param gfConfig   The GitFlowConfiguration to use
      * @param reporter
      */
-    public HotfixFinishCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public HotfixFinishCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig)
     {
-        super(hotfixName, git, gfConfig, reporter);
+        super(hotfixName, git, gfConfig);
 
         checkState(!StringUtils.isEmptyOrNull(hotfixName));
         this.message = "tagging hotfix " + hotfixName;
@@ -112,7 +111,7 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
             ensureLocalBranchesNotBehindRemotes(prefixedBranchName, gfConfig.getMaster(), gfConfig.getDevelop());
 
             //checkout the branch to merge just so we can run any extensions that need to be on this branch
-            checkoutTopicBranch(prefixedBranchName,extension);
+            checkoutTopicBranch(prefixedBranchName, extension);
 
             //first merge master
             MergeProcessExtensionWrapper masterExtension = new MergeProcessExtensionWrapper(extension.beforeMasterCheckout(), extension.afterMasterCheckout(), extension.beforeMasterMerge(), extension.afterMasterMerge());
@@ -121,7 +120,7 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
             //now, tag master
             if (!noTag && masterResult.getMergeStatus().isSuccessful())
             {
-                doTag(gfConfig.getMaster(), message, masterResult,extension);
+                doTag(gfConfig.getMaster(), message, masterResult, extension);
             }
 
             //IMPORTANT: we need to back-merge master into develop so that git describe works properly
@@ -140,9 +139,9 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
             {
                 cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
             }
-            
+
             //Backmerge to release branch if needed
-            if(releaseBranchExists())
+            if (releaseBranchExists())
             {
                 String releaseBranchName = getReleaseBranchName();
                 MergeProcessExtensionWrapper releaseExtension = new MergeProcessExtensionWrapper(extension.beforeReleaseCheckout(), extension.afterReleaseCheckout(), extension.beforeReleaseMerge(), extension.afterReleaseMerge());
@@ -178,14 +177,14 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
     private boolean releaseBranchExists() throws JGitFlowGitAPIException
     {
         boolean exists = false;
-        
-        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()), reporter);
+
+        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()));
 
         if (!branches.isEmpty())
         {
             exists = true;
         }
-        
+
         return exists;
     }
 
@@ -193,7 +192,7 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
     {
         String branchName = "";
 
-        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()), reporter);
+        List<Ref> branches = GitHelper.listBranchesWithPrefix(git, gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.RELEASE.configKey()));
 
         if (!branches.isEmpty())
         {

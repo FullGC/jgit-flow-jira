@@ -2,7 +2,6 @@ package com.atlassian.maven.plugins.jgitflow.mojo;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -10,9 +9,6 @@ import java.util.*;
 
 import com.atlassian.maven.jgitflow.api.MavenJGitFlowExtension;
 import com.atlassian.maven.plugins.jgitflow.FlowInitContext;
-import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.MavenSessionProvider;
-import com.atlassian.maven.plugins.jgitflow.provider.ReactorProjectsProvider;
 
 import com.google.common.base.Strings;
 
@@ -53,9 +49,8 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
 
     /**
      * Whether to allow SNAPSHOT dependencies. Default is to fail when finding any SNAPSHOT.
-     *
      */
-    @Parameter( defaultValue = "false", property = "allowSnapshots" )
+    @Parameter(defaultValue = "false", property = "allowSnapshots")
     protected boolean allowSnapshots = false;
 
     @Parameter(defaultValue = "false", property = "allowUntracked")
@@ -85,10 +80,10 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "true", property = "alwaysUpdateOrigin")
     protected boolean alwaysUpdateOrigin = true;
 
-    @Parameter( defaultValue = "false", property = "pullMaster" )
+    @Parameter(defaultValue = "false", property = "pullMaster")
     protected boolean pullMaster = false;
 
-    @Parameter( defaultValue = "false", property = "pullDevelop" )
+    @Parameter(defaultValue = "false", property = "pullDevelop")
     protected boolean pullDevelop = false;
 
     Settings getSettings()
@@ -135,14 +130,14 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     {
         return (!offline && !localOnly);
     }
-    
+
     public MavenJGitFlowExtension getExtensionInstance(String classname) throws MojoExecutionException
     {
-        if(Strings.isNullOrEmpty(classname))
+        if (Strings.isNullOrEmpty(classname))
         {
-            return null;    
+            return null;
         }
-        
+
         try
         {
             Class<?> providerClass = Thread.currentThread().getContextClassLoader().loadClass(classname);
@@ -152,7 +147,7 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
         }
         catch (Exception e)
         {
-            throw new MojoExecutionException("Unable to load maven jgitflow extension class '" + classname + "'",e);
+            throw new MojoExecutionException("Unable to load maven jgitflow extension class '" + classname + "'", e);
         }
     }
 
@@ -160,14 +155,14 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     {
         List<String> pathList = Arrays.asList(classpath.split(File.pathSeparator));
 
-        List<URL> urls = new ArrayList<URL>( pathList.size() );
-        for ( String filename : pathList )
+        List<URL> urls = new ArrayList<URL>(pathList.size());
+        for (String filename : pathList)
         {
             try
             {
-                urls.add( new File( filename ).toURL() );
+                urls.add(new File(filename).toURL());
             }
-            catch ( MalformedURLException e )
+            catch (MalformedURLException e)
             {
                 //ignore
             }
@@ -187,13 +182,14 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
             allPaths.addAll(project.getRuntimeClasspathElements());
             allPaths.addAll(project.getSystemClasspathElements());
 
-            URL[] pluginUrls = ((URLClassLoader)Thread.currentThread().getContextClassLoader()).getURLs();
-            for(URL pluginUrl : pluginUrls)
+            URL[] pluginUrls = ((URLClassLoader) Thread.currentThread().getContextClassLoader()).getURLs();
+            for (URL pluginUrl : pluginUrls)
             {
                 allPaths.add(new File(pluginUrl.getFile()).getPath());
             }
 
-            for(String path : allPaths) {
+            for (String path : allPaths)
+            {
                 finalPath.append(File.pathSeparator);
                 finalPath.append(path);
             }

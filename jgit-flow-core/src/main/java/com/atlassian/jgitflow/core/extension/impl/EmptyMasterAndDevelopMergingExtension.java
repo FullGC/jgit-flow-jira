@@ -16,8 +16,8 @@ public abstract class EmptyMasterAndDevelopMergingExtension extends EmptyDevelop
     private final List<ExtensionCommand> afterMasterCheckout;
     private final List<ExtensionCommand> beforeMasterMerge;
     private final List<ExtensionCommand> afterMasterMerge;
-    
-    
+
+
     protected EmptyMasterAndDevelopMergingExtension()
     {
         this.beforeMasterCheckout = newArrayList();
@@ -26,22 +26,22 @@ public abstract class EmptyMasterAndDevelopMergingExtension extends EmptyDevelop
         this.afterMasterMerge = newArrayList();
     }
 
-    public void addBeforeMasterCheckoutCommands(ExtensionCommand ... commands)
+    public void addBeforeMasterCheckoutCommands(ExtensionCommand... commands)
     {
         beforeMasterCheckout.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterMasterCheckoutCommands(ExtensionCommand ... commands)
+    public void addAfterMasterCheckoutCommands(ExtensionCommand... commands)
     {
         afterMasterCheckout.addAll(Arrays.asList(commands));
     }
 
-    public void addBeforeMasterMergeCommands(ExtensionCommand ... commands)
+    public void addBeforeMasterMergeCommands(ExtensionCommand... commands)
     {
         beforeMasterMerge.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterMasterMergeCommands(ExtensionCommand ... commands)
+    public void addAfterMasterMergeCommands(ExtensionCommand... commands)
     {
         afterMasterMerge.addAll(Arrays.asList(commands));
     }

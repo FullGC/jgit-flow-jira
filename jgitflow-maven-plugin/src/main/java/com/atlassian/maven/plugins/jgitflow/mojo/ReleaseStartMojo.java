@@ -34,9 +34,8 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
 
     /**
      * Default version to use for new local working copy.
-     *
      */
-    @Parameter( property = "developmentVersion", defaultValue = "")
+    @Parameter(property = "developmentVersion", defaultValue = "")
     private String developmentVersion = "";
 
     @Parameter(property = "releaseBranchVersionSuffix", defaultValue = "")
@@ -63,9 +62,9 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
         ClassLoader oldClassloader = Thread.currentThread().getContextClassLoader();
 
         Thread.currentThread().setContextClassLoader(getClassloader(getClasspath()));
-        
+
         MavenReleaseStartExtension extensionObject = (MavenReleaseStartExtension) getExtensionInstance(releaseStartExtension);
-        
+
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setAutoVersionSubmodules(autoVersionSubmodules)
            .setInteractive(getSettings().isInteractiveMode())
@@ -89,7 +88,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
            .setPassword(password)
            .setReleaseStartExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
-        
+
         try
         {
             releaseManager.start(ctx, getReactorProjects(), session);

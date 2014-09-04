@@ -24,13 +24,13 @@ public class ProjectReleaseVersionChange implements ProjectChange
     private final Map<String, String> releaseVersions;
 
     private final List<String> workLog;
-    
+
     private ProjectReleaseVersionChange(Map<String, String> releaseVersions)
     {
         this.releaseVersions = releaseVersions;
         this.workLog = new ArrayList<String>();
     }
-    
+
     public static ProjectReleaseVersionChange projectReleaseVersionChange(Map<String, String> releaseVersions)
     {
         return new ProjectReleaseVersionChange(releaseVersions);
@@ -46,28 +46,28 @@ public class ProjectReleaseVersionChange implements ProjectChange
         Element versionElement = root.getChild("version", ns);
         String projectId = ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId());
         String releaseVersion = releaseVersions.get(projectId);
-        
-        if(Strings.isNullOrEmpty(releaseVersion))
+
+        if (Strings.isNullOrEmpty(releaseVersion))
         {
             throw new ProjectRewriteException("Release version for " + project.getName() + " was not found");
         }
-        
-        if(null == versionElement)
+
+        if (null == versionElement)
         {
             String parentVersion = null;
-            if(project.hasParent())
+            if (project.hasParent())
             {
                 MavenProject parent = project.getParent();
                 String parentId = ArtifactUtils.versionlessKey(parent.getGroupId(), parent.getArtifactId());
 
                 parentVersion = releaseVersions.get(parentId);
             }
-            
-            if(!releaseVersion.equals(parentVersion))
+
+            if (!releaseVersion.equals(parentVersion))
             {
                 Element artifactId = root.getChild("artifactId", ns);
                 versionElement = new Element("version");
-                
+
                 workLog.add("setting version to '" + releaseVersion + "'");
                 versionElement.setText(releaseVersion);
                 root.getChildren().add(root.indexOf(artifactId) + 1, versionElement);
@@ -80,14 +80,14 @@ public class ProjectReleaseVersionChange implements ProjectChange
             versionElement.setText(releaseVersion);
             modified = true;
         }
-        
+
         return modified;
     }
 
     @Override
     public String toString()
     {
-        if(workLog.isEmpty())
+        if (workLog.isEmpty())
         {
             return "[Update Project Release Version]";
         }

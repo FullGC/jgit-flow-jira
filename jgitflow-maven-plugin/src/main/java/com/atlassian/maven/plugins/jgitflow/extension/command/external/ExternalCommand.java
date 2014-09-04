@@ -7,6 +7,8 @@ import com.atlassian.maven.jgitflow.api.exception.MavenJGitFlowExtensionExceptio
 public interface ExternalCommand
 {
     void execute(MavenJGitFlowExtension extension, String newVersion, String oldVersion, JGitFlowInfo flow) throws MavenJGitFlowExtensionException;
+
     String getOldVersion() throws MavenJGitFlowExtensionException;
+
     String getNewVersion() throws MavenJGitFlowExtensionException;
 }

@@ -9,9 +9,9 @@ import org.codehaus.plexus.component.annotations.Component;
 public class DefaultReactorProjectsProvider implements ReactorProjectsProvider
 {
     private static final DefaultReactorProjectsProvider INSTANCE = new DefaultReactorProjectsProvider();
-    
+
     private List<MavenProject> projects;
-    
+
     @Override
     public List<MavenProject> getReactorProjects()
     {

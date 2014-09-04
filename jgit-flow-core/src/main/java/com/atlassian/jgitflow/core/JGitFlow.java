@@ -30,17 +30,16 @@ public class JGitFlow
 {
     private Git git;
     private GitFlowConfiguration gfConfig;
-    private JGitFlowReporter reporter;
+    private JGitFlowReporter reporter = JGitFlowReporter.get();
 
     private JGitFlow()
     {
     }
 
-    JGitFlow(Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    JGitFlow(Git git, GitFlowConfiguration gfConfig)
     {
         this.git = git;
         this.gfConfig = gfConfig;
-        this.reporter = reporter;
 
         this.reporter.setGitFlowConfiguration(git, gfConfig);
     }
@@ -225,7 +224,7 @@ public class JGitFlow
             Git gitRepo = Git.open(gitDir);
             GitFlowConfiguration gfConfig = new GitFlowConfiguration(gitRepo);
 
-            return new JGitFlow(gitRepo, gfConfig, new JGitFlowReporter());
+            return new JGitFlow(gitRepo, gfConfig);
         }
         catch (IOException e)
         {
@@ -388,7 +387,7 @@ public class JGitFlow
      */
     public FeatureStartCommand featureStart(String name)
     {
-        return new FeatureStartCommand(name, git, gfConfig, reporter);
+        return new FeatureStartCommand(name, git, gfConfig);
     }
 
     /**
@@ -399,7 +398,7 @@ public class JGitFlow
      */
     public FeatureFinishCommand featureFinish(String name)
     {
-        return new FeatureFinishCommand(name, git, gfConfig, reporter);
+        return new FeatureFinishCommand(name, git, gfConfig);
     }
 
     /**
@@ -410,7 +409,7 @@ public class JGitFlow
      */
     public FeaturePublishCommand featurePublish(String name)
     {
-        return new FeaturePublishCommand(name, git, gfConfig, reporter);
+        return new FeaturePublishCommand(name, git, gfConfig);
     }
 
     /**
@@ -421,7 +420,7 @@ public class JGitFlow
      */
     public ReleaseStartCommand releaseStart(String name)
     {
-        return new ReleaseStartCommand(name, git, gfConfig, reporter);
+        return new ReleaseStartCommand(name, git, gfConfig);
     }
 
     /**
@@ -432,7 +431,7 @@ public class JGitFlow
      */
     public ReleaseFinishCommand releaseFinish(String name)
     {
-        return new ReleaseFinishCommand(name, git, gfConfig, reporter);
+        return new ReleaseFinishCommand(name, git, gfConfig);
     }
 
     /**
@@ -443,7 +442,7 @@ public class JGitFlow
      */
     public ReleasePublishCommand releasePublish(String name)
     {
-        return new ReleasePublishCommand(name, git, gfConfig, reporter);
+        return new ReleasePublishCommand(name, git, gfConfig);
     }
 
     /**
@@ -454,7 +453,7 @@ public class JGitFlow
      */
     public HotfixStartCommand hotfixStart(String name)
     {
-        return new HotfixStartCommand(name, git, gfConfig, reporter);
+        return new HotfixStartCommand(name, git, gfConfig);
     }
 
     /**
@@ -465,7 +464,7 @@ public class JGitFlow
      */
     public HotfixFinishCommand hotfixFinish(String name)
     {
-        return new HotfixFinishCommand(name, git, gfConfig, reporter);
+        return new HotfixFinishCommand(name, git, gfConfig);
     }
 
     /**
@@ -476,7 +475,7 @@ public class JGitFlow
      */
     public HotfixPublishCommand hotfixPublish(String name)
     {
-        return new HotfixPublishCommand(name, git, gfConfig, reporter);
+        return new HotfixPublishCommand(name, git, gfConfig);
     }
 
     /**
@@ -553,7 +552,7 @@ public class JGitFlow
     {
         return gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.VERSIONTAG.configKey());
     }
-    
+
     public String getPrefixForBranch(String branchName)
     {
         return gfConfig.getPrefixForBranch(branchName);
@@ -564,8 +563,4 @@ public class JGitFlow
         return gfConfig.getTypeForBranch(branchName);
     }
 
-    public JGitFlowReporter getReporter()
-    {
-        return reporter;
-    }
 }

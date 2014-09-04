@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.BranchCreatingExtension;
 import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
@@ -26,9 +25,9 @@ public abstract class AbstractBranchCreatingCommand<C, T> extends AbstractGitFlo
     private RevCommit startCommit;
     private String startCommitString;
 
-    protected AbstractBranchCreatingCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    protected AbstractBranchCreatingCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
     {
-        super(branchName, git, gfConfig, reporter);
+        super(branchName, git, gfConfig);
         this.startCommit = null;
         this.startCommitString = null;
     }
@@ -36,7 +35,7 @@ public abstract class AbstractBranchCreatingCommand<C, T> extends AbstractGitFlo
     protected Ref doCreateBranch(String rootBranch, String newBranchName, BranchCreatingExtension extension) throws JGitFlowExtensionException, JGitFlowIOException, LocalBranchMissingException, JGitFlowGitAPIException, BranchOutOfDateException, LocalBranchExistsException, TagExistsException, GitAPIException
     {
         git.checkout().setName(rootBranch).call();
-        
+
         runExtensionCommands(extension.beforeCreateBranch());
 
         RevCommit startPoint = getStartingPoint(rootBranch);
@@ -45,7 +44,7 @@ public abstract class AbstractBranchCreatingCommand<C, T> extends AbstractGitFlo
         reporter.debugText(getCommandName(), "startPoint is: " + startPoint);
         reporter.debugText(getCommandName(), "latestCommit is: " + latest.getName());
 
-        if (GitHelper.remoteBranchExists(git, rootBranch, reporter))
+        if (GitHelper.remoteBranchExists(git, rootBranch))
         {
             enforcer().requireLocalBranchNotBehindRemote(rootBranch);
         }
@@ -92,7 +91,7 @@ public abstract class AbstractBranchCreatingCommand<C, T> extends AbstractGitFlo
             }
             catch (ConfigInvalidException e)
             {
-                throw new JGitFlowGitAPIException("unable to load config",e);
+                throw new JGitFlowGitAPIException("unable to load config", e);
             }
             runExtensionCommands(pushExtension.afterPush());
         }

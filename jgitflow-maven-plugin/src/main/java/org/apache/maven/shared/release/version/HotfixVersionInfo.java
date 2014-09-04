@@ -81,7 +81,8 @@ public class HotfixVersionInfo implements VersionInfo
                     + "([a-zA-Z]*)"            // alpha characters (looking for annotation - alpha, beta, RC, etc.)
                     + "([-_])?"                // optional - or _  (annotation revision separator)
                     + "(\\d*)"                 // digits  (any digits after rc or beta is an annotation revision)
-                    + "(?:([-_])?(.*?))?$" );  // - or _ followed everything else (build specifier)
+                    + "(?:([-_])?(.*?))?$"
+    );  // - or _ followed everything else (build specifier)
 
     /* *
      * cmaki 02242009
@@ -100,15 +101,15 @@ public class HotfixVersionInfo implements VersionInfo
      *
      * @param version
      */
-    public HotfixVersionInfo( String version )
+    public HotfixVersionInfo(String version)
             throws VersionParseException
     {
         strVersion = version;
 
         // FIX for non-digit release numbers, e.g. trunk-SNAPSHOT or just SNAPSHOT
-        Matcher matcher = ALTERNATE_PATTERN.matcher( strVersion );
+        Matcher matcher = ALTERNATE_PATTERN.matcher(strVersion);
         // TODO: hack because it didn't support "SNAPSHOT"
-        if ( matcher.matches() )
+        if (matcher.matches())
         {
             annotation = null;
             digits = null;
@@ -117,46 +118,46 @@ public class HotfixVersionInfo implements VersionInfo
             return;
         }
 
-        Matcher m = STANDARD_PATTERN.matcher( strVersion );
-        if ( m.matches() )
+        Matcher m = STANDARD_PATTERN.matcher(strVersion);
+        if (m.matches())
         {
-            digits = parseDigits( m.group( DIGITS_INDEX ) );
-            if ( !SNAPSHOT_IDENTIFIER.equals( m.group( ANNOTATION_INDEX ) ) )
+            digits = parseDigits(m.group(DIGITS_INDEX));
+            if (!SNAPSHOT_IDENTIFIER.equals(m.group(ANNOTATION_INDEX)))
             {
-                annotationSeparator = m.group( ANNOTATION_SEPARATOR_INDEX );
-                annotation = nullIfEmpty( m.group( ANNOTATION_INDEX ) );
+                annotationSeparator = m.group(ANNOTATION_SEPARATOR_INDEX);
+                annotation = nullIfEmpty(m.group(ANNOTATION_INDEX));
 
-                if ( StringUtils.isNotEmpty( m.group( ANNOTATION_REV_SEPARATOR_INDEX ) )
-                        && StringUtils.isEmpty( m.group( ANNOTATION_REVISION_INDEX ) ) )
+                if (StringUtils.isNotEmpty(m.group(ANNOTATION_REV_SEPARATOR_INDEX))
+                        && StringUtils.isEmpty(m.group(ANNOTATION_REVISION_INDEX)))
                 {
                     // The build separator was picked up as the annotation revision separator
-                    buildSeparator = m.group( ANNOTATION_REV_SEPARATOR_INDEX );
-                    buildSpecifier = nullIfEmpty( m.group( BUILD_SPECIFIER_INDEX ) );
+                    buildSeparator = m.group(ANNOTATION_REV_SEPARATOR_INDEX);
+                    buildSpecifier = nullIfEmpty(m.group(BUILD_SPECIFIER_INDEX));
                 }
                 else
                 {
-                    annotationRevSeparator = m.group( ANNOTATION_REV_SEPARATOR_INDEX );
-                    annotationRevision = nullIfEmpty( m.group( ANNOTATION_REVISION_INDEX ) );
+                    annotationRevSeparator = m.group(ANNOTATION_REV_SEPARATOR_INDEX);
+                    annotationRevision = nullIfEmpty(m.group(ANNOTATION_REVISION_INDEX));
 
-                    buildSeparator = m.group( BUILD_SEPARATOR_INDEX );
-                    buildSpecifier = nullIfEmpty( m.group( BUILD_SPECIFIER_INDEX ) );
+                    buildSeparator = m.group(BUILD_SEPARATOR_INDEX);
+                    buildSpecifier = nullIfEmpty(m.group(BUILD_SPECIFIER_INDEX));
                 }
             }
             else
             {
                 // Annotation was "SNAPSHOT" so populate the build specifier with that data
-                buildSeparator = m.group( ANNOTATION_SEPARATOR_INDEX );
-                buildSpecifier = nullIfEmpty( m.group( ANNOTATION_INDEX ) );
+                buildSeparator = m.group(ANNOTATION_SEPARATOR_INDEX);
+                buildSpecifier = nullIfEmpty(m.group(ANNOTATION_INDEX));
             }
         }
         else
         {
-            throw new VersionParseException( "Unable to parse the version string: \"" + version + "\"" );
+            throw new VersionParseException("Unable to parse the version string: \"" + version + "\"");
         }
     }
 
-    public HotfixVersionInfo( List<String> digits, String annotation, String annotationRevision, String buildSpecifier,
-                               String annotationSeparator, String annotationRevSeparator, String buildSeparator )
+    public HotfixVersionInfo(List<String> digits, String annotation, String annotationRevision, String buildSpecifier,
+                             String annotationSeparator, String annotationRevSeparator, String buildSeparator)
     {
         this.digits = digits;
         this.annotation = annotation;
@@ -165,32 +166,32 @@ public class HotfixVersionInfo implements VersionInfo
         this.annotationSeparator = annotationSeparator;
         this.annotationRevSeparator = annotationRevSeparator;
         this.buildSeparator = buildSeparator;
-        this.strVersion = getVersionString( this, buildSpecifier, buildSeparator );
+        this.strVersion = getVersionString(this, buildSpecifier, buildSeparator);
     }
 
     public boolean isSnapshot()
     {
-        return ArtifactUtils.isSnapshot( strVersion );
+        return ArtifactUtils.isSnapshot(strVersion);
     }
 
     public VersionInfo getNextVersion()
     {
         HotfixVersionInfo version = null;
-        if ( digits != null )
+        if (digits != null)
         {
-            List<String> digits = new ArrayList<String>( this.digits );
+            List<String> digits = new ArrayList<String>(this.digits);
             String annotationRevision = this.annotationRevision;
-            if ( StringUtils.isNumeric( annotationRevision ) )
+            if (StringUtils.isNumeric(annotationRevision))
             {
-                annotationRevision = incrementVersionString( annotationRevision );
+                annotationRevision = incrementVersionString(annotationRevision);
             }
             else
             {
-                digits.set( digits.size() - 1, incrementVersionString( (String) digits.get( digits.size() - 1 ) ) );
+                digits.set(digits.size() - 1, incrementVersionString((String) digits.get(digits.size() - 1)));
             }
 
-            version = new HotfixVersionInfo( digits, annotation, annotationRevision, buildSpecifier,
-                    annotationSeparator, annotationRevSeparator, buildSeparator );
+            version = new HotfixVersionInfo(digits, annotation, annotationRevision, buildSpecifier,
+                    annotationSeparator, annotationRevSeparator, buildSeparator);
         }
         return version;
     }
@@ -203,19 +204,19 @@ public class HotfixVersionInfo implements VersionInfo
      * @return the comparison value
      * @throws IllegalArgumentException if the components differ between the objects or if either of the annotations can not be determined.
      */
-    public int compareTo( VersionInfo obj )
+    public int compareTo(VersionInfo obj)
     {
         HotfixVersionInfo that = (HotfixVersionInfo) obj;
 
         int result;
         // TODO: this is a workaround for a bug in DefaultArtifactVersion - fix there - 1.01 < 1.01.01
-        if ( strVersion.startsWith( that.strVersion ) && !strVersion.equals( that.strVersion )
-                && strVersion.charAt( that.strVersion.length() ) != '-' )
+        if (strVersion.startsWith(that.strVersion) && !strVersion.equals(that.strVersion)
+                && strVersion.charAt(that.strVersion.length()) != '-')
         {
             result = 1;
         }
-        else if ( that.strVersion.startsWith( strVersion ) && !strVersion.equals( that.strVersion )
-                && that.strVersion.charAt( strVersion.length() ) != '-' )
+        else if (that.strVersion.startsWith(strVersion) && !strVersion.equals(that.strVersion)
+                && that.strVersion.charAt(strVersion.length()) != '-')
         {
             result = -1;
         }
@@ -223,22 +224,22 @@ public class HotfixVersionInfo implements VersionInfo
         {
             // TODO: this is a workaround for a bug in DefaultArtifactVersion - fix there - it should not consider case in comparing the qualifier
             // NOTE: The combination of upper-casing and lower-casing is an approximation of String.equalsIgnoreCase()
-            String thisVersion = strVersion.toUpperCase( Locale.ENGLISH ).toLowerCase( Locale.ENGLISH );
-            String thatVersion = that.strVersion.toUpperCase( Locale.ENGLISH ).toLowerCase( Locale.ENGLISH );
+            String thisVersion = strVersion.toUpperCase(Locale.ENGLISH).toLowerCase(Locale.ENGLISH);
+            String thatVersion = that.strVersion.toUpperCase(Locale.ENGLISH).toLowerCase(Locale.ENGLISH);
 
-            result = new DefaultArtifactVersion( thisVersion ).compareTo( new DefaultArtifactVersion( thatVersion ) );
+            result = new DefaultArtifactVersion(thisVersion).compareTo(new DefaultArtifactVersion(thatVersion));
         }
         return result;
     }
 
-    public boolean equals( Object obj )
+    public boolean equals(Object obj)
     {
-        if ( !( obj instanceof HotfixVersionInfo ) )
+        if (!(obj instanceof HotfixVersionInfo))
         {
             return false;
         }
 
-        return compareTo( (VersionInfo) obj ) == 0;
+        return compareTo((VersionInfo) obj) == 0;
     }
 
     /**
@@ -247,28 +248,28 @@ public class HotfixVersionInfo implements VersionInfo
      *
      * @param s
      */
-    protected String incrementVersionString( String s )
+    protected String incrementVersionString(String s)
     {
-        int n = Integer.valueOf( s ).intValue() + 1;
-        String value = String.valueOf( n );
-        if ( value.length() < s.length() )
+        int n = Integer.valueOf(s).intValue() + 1;
+        String value = String.valueOf(n);
+        if (value.length() < s.length())
         {
             // String was left-padded with zeros
-            value = StringUtils.leftPad( value, s.length(), "0" );
+            value = StringUtils.leftPad(value, s.length(), "0");
         }
         return value;
     }
-    
+
     public String getSnapshotVersionString()
     {
-        if ( strVersion.equals( Artifact.SNAPSHOT_VERSION ) )
+        if (strVersion.equals(Artifact.SNAPSHOT_VERSION))
         {
             return strVersion;
         }
 
         String baseVersion = getReleaseVersionString();
 
-        if ( baseVersion.length() > 0 )
+        if (baseVersion.length() > 0)
         {
             baseVersion += "-";
         }
@@ -280,17 +281,17 @@ public class HotfixVersionInfo implements VersionInfo
     {
         String baseVersion = strVersion;
 
-        Matcher m = Artifact.VERSION_FILE_PATTERN.matcher( baseVersion );
-        if ( m.matches() )
+        Matcher m = Artifact.VERSION_FILE_PATTERN.matcher(baseVersion);
+        if (m.matches())
         {
-            baseVersion = m.group( 1 );
+            baseVersion = m.group(1);
         }
         // MRELEASE-623 SNAPSHOT is case-insensitive
-        else if ( StringUtils.right( baseVersion, 9 ).equalsIgnoreCase( "-" + Artifact.SNAPSHOT_VERSION ) )
+        else if (StringUtils.right(baseVersion, 9).equalsIgnoreCase("-" + Artifact.SNAPSHOT_VERSION))
         {
-            baseVersion = baseVersion.substring( 0, baseVersion.length() - Artifact.SNAPSHOT_VERSION.length() - 1 );
+            baseVersion = baseVersion.substring(0, baseVersion.length() - Artifact.SNAPSHOT_VERSION.length() - 1);
         }
-        else if ( baseVersion.equals( Artifact.SNAPSHOT_VERSION ) )
+        else if (baseVersion.equals(Artifact.SNAPSHOT_VERSION))
         {
             baseVersion = "1.0";
         }
@@ -301,31 +302,31 @@ public class HotfixVersionInfo implements VersionInfo
     public String getHotfixVersionString()
     {
         HotfixVersionInfo version = null;
-        if ( digits != null )
+        if (digits != null)
         {
-            List<String> digits = new ArrayList<String>( this.digits );
+            List<String> digits = new ArrayList<String>(this.digits);
 
             // modECG
             // dont know how but will progress that
-            if ( digits.size() == 0)
+            if (digits.size() == 0)
             {
                 digits.add("0");
                 digits.add("0");
                 digits.add("1");
             }
             // found majorVersion
-            else if( digits.size() == 1 )
+            else if (digits.size() == 1)
             {
                 digits.add("0");
                 digits.add("1");
             }
             // found minorVersion (standard)
-            else if ( digits.size() == 2 )
+            else if (digits.size() == 2)
             {
                 digits.add("1");
             }
             // found bugfixVersion
-            else if ( digits.size() == 3 )
+            else if (digits.size() == 3)
             {
                 int newBugfixDigit = Integer.parseInt(digits.get(2)) + 1;
                 digits.set(2, String.valueOf(newBugfixDigit));
@@ -337,9 +338,9 @@ public class HotfixVersionInfo implements VersionInfo
                 digits.add("hotfix");
             }
 
-            version = new HotfixVersionInfo( digits, annotation, annotationRevision, buildSpecifier, annotationSeparator, annotationRevSeparator, buildSeparator );
+            version = new HotfixVersionInfo(digits, annotation, annotationRevision, buildSpecifier, annotationSeparator, annotationRevSeparator, buildSeparator);
         }
-        
+
         return version.getReleaseVersionString();
     }
 
@@ -347,14 +348,14 @@ public class HotfixVersionInfo implements VersionInfo
     public String getDecrementedHotfixVersionString()
     {
         HotfixVersionInfo version = null;
-        if ( digits != null )
+        if (digits != null)
         {
-            List<String> digits = new ArrayList<String>( this.digits );
-            
+            List<String> digits = new ArrayList<String>(this.digits);
+
             String lastDigit = digits.get(digits.size() - 1);
             int n = Integer.valueOf(lastDigit).intValue();
 
-            if(n > 0)
+            if (n > 0)
             {
                 digits.set(digits.size() - 1, Integer.toString(n - 1));
                 digits.add("1");
@@ -363,8 +364,8 @@ public class HotfixVersionInfo implements VersionInfo
             {
                 digits.set(digits.size() - 1, "1");
             }
-            
-            version = new HotfixVersionInfo( digits, annotation, annotationRevision, buildSpecifier,annotationSeparator, annotationRevSeparator, buildSeparator );
+
+            version = new HotfixVersionInfo(digits, annotation, annotationRevision, buildSpecifier, annotationSeparator, annotationRevSeparator, buildSeparator);
         }
         return version.getReleaseVersionString();
     }
@@ -374,38 +375,38 @@ public class HotfixVersionInfo implements VersionInfo
         return strVersion;
     }
 
-    protected static String getVersionString( HotfixVersionInfo info, String buildSpecifier, String buildSeparator )
+    protected static String getVersionString(HotfixVersionInfo info, String buildSpecifier, String buildSeparator)
     {
         StringBuilder sb = new StringBuilder();
 
-        if ( info.digits != null )
+        if (info.digits != null)
         {
-            sb.append( joinDigitString( info.digits ) );
+            sb.append(joinDigitString(info.digits));
         }
 
-        if ( StringUtils.isNotEmpty( info.annotation ) )
+        if (StringUtils.isNotEmpty(info.annotation))
         {
-            sb.append( StringUtils.defaultString( info.annotationSeparator ) );
-            sb.append( info.annotation );
+            sb.append(StringUtils.defaultString(info.annotationSeparator));
+            sb.append(info.annotation);
         }
 
-        if ( StringUtils.isNotEmpty( info.annotationRevision ) )
+        if (StringUtils.isNotEmpty(info.annotationRevision))
         {
-            if ( StringUtils.isEmpty( info.annotation ) )
+            if (StringUtils.isEmpty(info.annotation))
             {
-                sb.append( StringUtils.defaultString( info.annotationSeparator ) );
+                sb.append(StringUtils.defaultString(info.annotationSeparator));
             }
             else
             {
-                sb.append( StringUtils.defaultString( info.annotationRevSeparator ) );
+                sb.append(StringUtils.defaultString(info.annotationRevSeparator));
             }
-            sb.append( info.annotationRevision );
+            sb.append(info.annotationRevision);
         }
 
-        if ( StringUtils.isNotEmpty( buildSpecifier ) )
+        if (StringUtils.isNotEmpty(buildSpecifier))
         {
-            sb.append( StringUtils.defaultString( buildSeparator ) );
-            sb.append( buildSpecifier );
+            sb.append(StringUtils.defaultString(buildSeparator));
+            sb.append(buildSpecifier);
         }
 
         return sb.toString();
@@ -416,9 +417,9 @@ public class HotfixVersionInfo implements VersionInfo
      *
      * @param digits
      */
-    protected static String joinDigitString( List<String> digits )
+    protected static String joinDigitString(List<String> digits)
     {
-        return digits != null ? StringUtils.join( digits.iterator(), DIGIT_SEPARATOR_STRING ) : null;
+        return digits != null ? StringUtils.join(digits.iterator(), DIGIT_SEPARATOR_STRING) : null;
     }
 
     /**
@@ -427,18 +428,18 @@ public class HotfixVersionInfo implements VersionInfo
      *
      * @param strDigits
      */
-    private List<String> parseDigits( String strDigits )
+    private List<String> parseDigits(String strDigits)
     {
-        return Arrays.asList( StringUtils.split( strDigits, DIGIT_SEPARATOR_STRING ) );
+        return Arrays.asList(StringUtils.split(strDigits, DIGIT_SEPARATOR_STRING));
     }
 
     //--------------------------------------------------
     // Getters & Setters
     //--------------------------------------------------
 
-    private static String nullIfEmpty( String s )
+    private static String nullIfEmpty(String s)
     {
-        return StringUtils.isEmpty( s ) ? null : s;
+        return StringUtils.isEmpty(s) ? null : s;
     }
 
     public List<String> getDigits()

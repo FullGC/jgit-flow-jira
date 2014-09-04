@@ -39,9 +39,9 @@ public class ArtifactReleaseVersionChange implements ProjectChange
 
     public static ArtifactReleaseVersionChange artifactReleaseVersionChange(Map<String, String> originalVersions, Map<String, String> releaseVersions, boolean updateDependencies)
     {
-        return new ArtifactReleaseVersionChange(originalVersions,releaseVersions,updateDependencies);    
+        return new ArtifactReleaseVersionChange(originalVersions, releaseVersions, updateDependencies);
     }
-    
+
     @Override
     public boolean applyChange(MavenProject project, Element root) throws ProjectRewriteException
     {
@@ -52,9 +52,9 @@ public class ArtifactReleaseVersionChange implements ProjectChange
         List<Element> artifactContainers = new ArrayList<Element>();
         artifactContainers.add(root);
 
-        artifactContainers.addAll(getElementListOrEmpty(root, "profiles/profile",ns));
-        
-        for(Element artifactContainer : artifactContainers)
+        artifactContainers.addAll(getElementListOrEmpty(root, "profiles/profile", ns));
+
+        for (Element artifactContainer : artifactContainers)
         {
             modified |= rewriteDependencies(artifactContainer, project, properties, ns);
             modified |= rewriteDependencyManagement(artifactContainer, project, properties, ns);
@@ -62,51 +62,51 @@ public class ArtifactReleaseVersionChange implements ProjectChange
             modified |= rewritePluginElements(artifactContainer, project, properties, ns);
             modified |= rewriteReportingPlugins(artifactContainer, project, properties, ns);
         }
-        
+
         return modified;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     private boolean rewriteDependencies(Element artifactContainer, MavenProject project, Element properties, Namespace ns) throws ProjectRewriteException
     {
-        List<Element> artifacts = getElementListOrEmpty(artifactContainer, "dependencies/dependency",ns);
+        List<Element> artifacts = getElementListOrEmpty(artifactContainer, "dependencies/dependency", ns);
         return rewriteArtifactVersions(artifacts, project, properties, ns);
     }
-    
+
     private boolean rewriteDependencyManagement(Element artifactContainer, MavenProject project, Element properties, Namespace ns) throws ProjectRewriteException
     {
-        List<Element> artifacts = getElementListOrEmpty(artifactContainer, "dependencyManagement/dependencies/dependency",ns);
+        List<Element> artifacts = getElementListOrEmpty(artifactContainer, "dependencyManagement/dependencies/dependency", ns);
         return rewriteArtifactVersions(artifacts, project, properties, ns);
     }
 
     private boolean rewriteBuildExtensions(Element artifactContainer, MavenProject project, Element properties, Namespace ns) throws ProjectRewriteException
     {
-        List<Element> artifacts = getElementListOrEmpty(artifactContainer, "build/extensions/extension",ns);
+        List<Element> artifacts = getElementListOrEmpty(artifactContainer, "build/extensions/extension", ns);
         return rewriteArtifactVersions(artifacts, project, properties, ns);
     }
 
     private boolean rewritePluginElements(Element artifactContainer, MavenProject project, Element properties, Namespace ns) throws ProjectRewriteException
     {
         boolean modified = false;
-        
+
         List<Element> pluginElements = new ArrayList<Element>();
-        pluginElements.addAll(getElementListOrEmpty(artifactContainer, "build/plugins/plugin",ns));
-        pluginElements.addAll(getElementListOrEmpty(artifactContainer, "build/pluginManagement/plugins/plugin",ns));
+        pluginElements.addAll(getElementListOrEmpty(artifactContainer, "build/plugins/plugin", ns));
+        pluginElements.addAll(getElementListOrEmpty(artifactContainer, "build/pluginManagement/plugins/plugin", ns));
 
         modified |= rewriteArtifactVersions(pluginElements, project, properties, ns);
-        
-        for(Element pluginElement : pluginElements)
+
+        for (Element pluginElement : pluginElements)
         {
-            List<Element> artifacts = getElementListOrEmpty(pluginElement, "dependencies/dependency",ns);
-            
-            modified |=  rewriteArtifactVersions(artifacts, project, properties,ns);
+            List<Element> artifacts = getElementListOrEmpty(pluginElement, "dependencies/dependency", ns);
+
+            modified |= rewriteArtifactVersions(artifacts, project, properties, ns);
         }
-        
+
         return modified;
     }
 
     private boolean rewriteReportingPlugins(Element artifactContainer, MavenProject project, Element properties, Namespace ns) throws ProjectRewriteException
     {
-        List<Element> artifacts = getElementListOrEmpty(artifactContainer, "reporting/plugins/plugin",ns);
+        List<Element> artifacts = getElementListOrEmpty(artifactContainer, "reporting/plugins/plugin", ns);
         return rewriteArtifactVersions(artifacts, project, properties, ns);
     }
 
@@ -114,29 +114,29 @@ public class ArtifactReleaseVersionChange implements ProjectChange
     {
         boolean modified = false;
         Model projectModel = project.getModel();
-        
-        if(null == artifacts || artifacts.isEmpty())
+
+        if (null == artifacts || artifacts.isEmpty())
         {
             return false;
         }
-        
-        String projectId = ArtifactUtils.versionlessKey(project.getGroupId(),project.getArtifactId());
-        
-        for(Element artifact : artifacts)
+
+        String projectId = ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId());
+
+        for (Element artifact : artifacts)
         {
             Element versionElement = artifact.getChild("version", ns);
-            
-            if(null == versionElement)
+
+            if (null == versionElement)
             {
                 continue;
             }
-            
+
             String rawVersion = versionElement.getTextTrim();
             Element groupIdElement = artifact.getChild("groupId", ns);
-            
-            if(null == groupIdElement)
+
+            if (null == groupIdElement)
             {
-                if("plugin".equals(artifact.getName()))
+                if ("plugin".equals(artifact.getName()))
                 {
                     groupIdElement = new Element("groupId");
                     groupIdElement.setText("org.apache.maven.plugins");
@@ -146,77 +146,77 @@ public class ArtifactReleaseVersionChange implements ProjectChange
                     continue;
                 }
             }
-            
+
             String groupId = null;
             String artifactId = null;
             try
             {
-                groupId = ReleaseUtil.interpolate(groupIdElement.getTextTrim(),projectModel);
+                groupId = ReleaseUtil.interpolate(groupIdElement.getTextTrim(), projectModel);
 
                 Element artifactIdElement = artifact.getChild("artifactId", ns);
-                if(null == artifactIdElement)
+                if (null == artifactIdElement)
                 {
                     continue;
                 }
-                
-                artifactId = ReleaseUtil.interpolate(artifactIdElement.getTextTrim(),projectModel);
+
+                artifactId = ReleaseUtil.interpolate(artifactIdElement.getTextTrim(), projectModel);
             }
             catch (ReleaseExecutionException e)
             {
-                throw new ProjectRewriteException("error interpolating pom variable: " + e.getMessage(),e);
+                throw new ProjectRewriteException("error interpolating pom variable: " + e.getMessage(), e);
             }
 
-            String artifactKey = ArtifactUtils.versionlessKey(groupId,artifactId);
+            String artifactKey = ArtifactUtils.versionlessKey(groupId, artifactId);
             String mappedVersion = releaseVersions.get(artifactKey);
             String originalVersion = originalVersions.get(artifactKey);
-            
-            if(null != mappedVersion 
+
+            if (null != mappedVersion
                     && mappedVersion.endsWith(Artifact.SNAPSHOT_VERSION)
                     && !rawVersion.endsWith(Artifact.SNAPSHOT_VERSION)
                     && !updateDependencies)
             {
                 continue;
             }
-            
-            if(null != mappedVersion)
+
+            if (null != mappedVersion)
             {
-                if(rawVersion.equals(originalVersion))
+                if (rawVersion.equals(originalVersion))
                 {
                     workLog.append(LF).append("updating ").append(artifactId).append(" to ").append(mappedVersion);
                     versionElement.setText(mappedVersion);
                     modified = true;
                 }
-                else if(rawVersion.matches("\\$\\{.+\\}"))
+                else if (rawVersion.matches("\\$\\{.+\\}"))
                 {
-                    String propName = rawVersion.substring(2,rawVersion.length() - 1);
-                    
-                    if(propName.startsWith("project.")
+                    String propName = rawVersion.substring(2, rawVersion.length() - 1);
+
+                    if (propName.startsWith("project.")
                             || propName.startsWith("pom.")
                             || "version".equals(propName)
                             )
                     {
-                        if(!mappedVersion.equals(releaseVersions.get(projectId)))
+                        if (!mappedVersion.equals(releaseVersions.get(projectId)))
                         {
                             workLog.append(LF).append("updating ").append(artifactId).append(" to ").append(mappedVersion);
                             versionElement.setText(mappedVersion);
                             modified = true;
                         }
                     }
-                    else if(null != properties)
+                    else if (null != properties)
                     {
                         Element prop = properties.getChild(propName, ns);
-                        if(null != prop)
+                        if (null != prop)
                         {
                             String propValue = prop.getTextTrim();
-                            if(propValue.equals(originalVersion))
+                            if (propValue.equals(originalVersion))
                             {
                                 workLog.append(LF).append("updating ").append(rawVersion).append(" to ").append(mappedVersion);
                                 prop.setText(mappedVersion);
                                 modified = true;
                             }
-                            else if(!mappedVersion.equals(rawVersion))
+                            else if (!mappedVersion.equals(rawVersion))
                             {
-                                if(!mappedVersion.matches("\\$\\{project.+\\}")
+                                if (!mappedVersion.matches("\\$\\{project.+\\}")
                                         && !mappedVersion.matches("\\$\\{pom.+\\}")
                                         && !"${version}".equals(mappedVersion))
                                 {
@@ -235,7 +235,7 @@ public class ArtifactReleaseVersionChange implements ProjectChange
                 }
             }
         }
-        
+
         return modified;
     }
 

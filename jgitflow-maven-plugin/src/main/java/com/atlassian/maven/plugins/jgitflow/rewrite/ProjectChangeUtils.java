@@ -17,9 +17,9 @@ public class ProjectChangeUtils
     public static boolean definesProperty(String propName, Element root, Namespace ns)
     {
         Element properties = getElementOrNull(root, "properties", ns);
-        if(null != properties)
+        if (null != properties)
         {
-            return null != getElementOrNull(properties,propName,ns);
+            return null != getElementOrNull(properties, propName, ns);
         }
 
         return false;
@@ -33,7 +33,7 @@ public class ProjectChangeUtils
             last = container.getChild(pathName, ns);
             if (last == null)
             {
-                last = new Element(pathName,ns);
+                last = new Element(pathName, ns);
                 container.addContent("    ").addContent(last).addContent("\n  ");
             }
             container = last;
@@ -56,33 +56,33 @@ public class ProjectChangeUtils
     public static Namespace getNamespaceOrNull(Element container)
     {
         Namespace ns = container.getNamespace();
-        if(ns.equals(Namespace.NO_NAMESPACE))
+        if (ns.equals(Namespace.NO_NAMESPACE))
         {
             return null;
         }
-        
+
         return ns;
     }
 
     public static List<Element> getElementListOrEmpty(Element container, String path, Namespace ns)
     {
-        if(null == container)
+        if (null == container)
         {
             return newArrayList();
         }
-        
+
         List<Element> elements = newArrayList();
-        
+
         String[] paths = path.split("/");
         int lastIndex = paths.length - 1;
-        
-        for(int i=0; i<paths.length; i++)
+
+        for (int i = 0; i < paths.length; i++)
         {
             String pathName = paths[i];
-            
-            if(i != lastIndex)
+
+            if (i != lastIndex)
             {
-                if(null != container)
+                if (null != container)
                 {
                     container = container.getChild(pathName, ns);
                 }
@@ -93,17 +93,17 @@ public class ProjectChangeUtils
             }
             else
             {
-                if(null != container)
+                if (null != container)
                 {
-                    List<Element> el = container.getChildren(pathName,ns);
-                    if(null != el)
+                    List<Element> el = container.getChildren(pathName, ns);
+                    if (null != el)
                     {
                         elements = el;
                     }
                 }
             }
         }
-        
+
         return elements;
     }
 

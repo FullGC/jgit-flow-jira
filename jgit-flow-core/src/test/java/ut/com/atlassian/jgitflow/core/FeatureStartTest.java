@@ -29,7 +29,7 @@ public class FeatureStartTest extends BaseGitFlowTest
 
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
         assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
-        
+
         flow.featureStart("my-feature").call();
 
         assertEquals(flow.getFeatureBranchPrefix() + "my-feature", git.getRepository().getBranch());
@@ -59,7 +59,7 @@ public class FeatureStartTest extends BaseGitFlowTest
         //update local
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
         git.pull().call();
-        
+
         flow.featureStart("my-feature").setFetch(true).call();
 
     }
@@ -79,7 +79,7 @@ public class FeatureStartTest extends BaseGitFlowTest
 
         flow.featureStart("myFeature").setFetch(true).setPush(true).call();
 
-        assertTrue(GitHelper.remoteBranchExists(git, "feature/myFeature",flow.getReporter()));
+        assertTrue(GitHelper.remoteBranchExists(git, "feature/myFeature"));
 
     }
 
@@ -95,7 +95,7 @@ public class FeatureStartTest extends BaseGitFlowTest
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
         git.push().setRemote("origin").add("develop").call();
-        
+
         //do a commit to the remote develop branch
         remoteGit.checkout().setName("develop").call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
@@ -126,9 +126,9 @@ public class FeatureStartTest extends BaseGitFlowTest
         git = RepoUtil.createRepositoryWithMaster(newDir());
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
-        
+
         git.branchCreate().setName(flow.getFeatureBranchPrefix() + "my-feature").call();
-        
+
         flow.featureStart("my-feature").call();
     }
 
@@ -156,7 +156,7 @@ public class FeatureStartTest extends BaseGitFlowTest
         assertEquals(flow.getFeatureBranchPrefix() + "my-feature", git.getRepository().getBranch());
 
     }
-    
+
     @Test(expected = NotInitializedException.class)
     public void startFeatureWithoutFlowInit() throws Exception
     {

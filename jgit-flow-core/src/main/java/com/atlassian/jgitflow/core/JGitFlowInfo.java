@@ -11,7 +11,7 @@ import org.eclipse.jgit.api.Git;
 public class JGitFlowInfo
 {
     private final Git git;
-    private final JGitFlowReporter reporter;
+    private final JGitFlowReporter reporter = JGitFlowReporter.get();
     private final String masterBranchName;
     private final String developBranchName;
     private final String featureBranchPrefix;
@@ -20,10 +20,9 @@ public class JGitFlowInfo
     private final String supportBranchPrefix;
     private final String versionTagPrefix;
 
-    public JGitFlowInfo(Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public JGitFlowInfo(Git git, GitFlowConfiguration gfConfig)
     {
         this.git = git;
-        this.reporter = reporter;
         this.developBranchName = gfConfig.getDevelop();
         this.featureBranchPrefix = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.FEATURE.configKey());
         this.hotfixBranchPrefix = gfConfig.getPrefixValue(JGitFlowConstants.PREFIXES.HOTFIX.configKey());
@@ -45,6 +44,7 @@ public class JGitFlowInfo
 
     /**
      * Returns the project root directory as a File
+     *
      * @return
      */
     public File getProjectRoot()

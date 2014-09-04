@@ -14,6 +14,8 @@ import org.apache.maven.project.MavenProject;
 public interface FlowReleaseManager
 {
     void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws MavenJGitFlowException;
+
     void finish(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws MavenJGitFlowException;
+
     void deploy(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session, String buildNumber, String goals) throws MavenJGitFlowException;
 }

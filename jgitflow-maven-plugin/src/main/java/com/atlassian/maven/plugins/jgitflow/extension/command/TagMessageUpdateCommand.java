@@ -1,7 +1,6 @@
 package com.atlassian.maven.plugins.jgitflow.extension.command;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.AbstractBranchMergingCommand;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
@@ -25,20 +24,20 @@ public class TagMessageUpdateCommand implements ExtensionCommand
 
     @Requirement
     private ContextProvider contextProvider;
-    
+
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         try
         {
-            if(AbstractBranchMergingCommand.class.isAssignableFrom(gitFlowCommand.getClass()))
+            if (AbstractBranchMergingCommand.class.isAssignableFrom(gitFlowCommand.getClass()))
             {
                 ReleaseContext ctx = contextProvider.getContext();
-                
+
                 AbstractBranchMergingCommand mergingCommand = (AbstractBranchMergingCommand) gitFlowCommand;
-                
+
                 MavenProject rootProject = ReleaseUtil.getRootProject(branchHelper.getProjectsForCurrentBranch());
-                
+
                 mergingCommand.setMessage(ReleaseUtil.interpolate(ctx.getTagMessage(), rootProject.getModel()));
             }
         }

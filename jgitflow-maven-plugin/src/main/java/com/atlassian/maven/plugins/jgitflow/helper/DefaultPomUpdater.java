@@ -38,7 +38,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
 
     @Requirement
     private ContextProvider contextProvider;
-    
+
     @Requirement
     private BranchHelper branchHelper;
 
@@ -46,14 +46,14 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     public void removeSnapshotFromPomVersions(ProjectCacheKey cacheKey, final String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         getLogger().info("(" + fullBranchName + ") removing snapshot from pom versions...");
         ReleaseContext ctx = contextProvider.getContext();
-        
+
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         final String delimitedVersionSuffix = getDelimitedVersionSuffix(versionSuffix);
-        
+
         Map<String, String> finalVersions = Maps.transformValues(originalVersions, new Function<String, String>()
         {
             @Override
@@ -77,17 +77,17 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     public void addSnapshotToPomVersions(ProjectCacheKey cacheKey, final VersionType versionType, final String versionSuffix, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         getLogger().info("(" + fullBranchName + ") adding snapshot to pom versions...");
-        
+
         final ReleaseContext ctx = contextProvider.getContext();
-        
+
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         Map<String, String> nonSnapshotVersions = versionProvider.getNextVersionsForType(versionType, cacheKey, reactorProjects);
 
         final String delimitedVersionSuffix = getDelimitedVersionSuffix(versionSuffix);
-        
+
         Map<String, String> snapshotVersions = Maps.transformValues(nonSnapshotVersions, new Function<String, String>()
         {
             @Override
@@ -101,14 +101,14 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     }
 
     @Override
-    public void copyPomVersionsFromProject(List<MavenProject> projectsToCopy,List<MavenProject> projectsToUpdate) throws MavenJGitFlowException
+    public void copyPomVersionsFromProject(List<MavenProject> projectsToCopy, List<MavenProject> projectsToUpdate) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         getLogger().info("(" + fullBranchName + ") copying pom versions...");
-        
+
         ReleaseContext ctx = contextProvider.getContext();
-        
+
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(projectsToUpdate);
         Map<String, String> versionsToCopy = versionProvider.getOriginalVersions(projectsToCopy);
 
@@ -116,10 +116,10 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     }
 
     @Override
-    public void copyPomVersionsFromMap(Map<String, String> versionsToCopy,List<MavenProject> projectsToUpdate) throws MavenJGitFlowException
+    public void copyPomVersionsFromMap(Map<String, String> versionsToCopy, List<MavenProject> projectsToUpdate) throws MavenJGitFlowException
     {
         getLogger().info("copying pom versions...");
-        
+
         ReleaseContext ctx = contextProvider.getContext();
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(projectsToUpdate);
 
@@ -130,9 +130,9 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     public void updatePomsWithNextDevelopmentVersion(ProjectCacheKey cacheKey, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         getLogger().info("(" + fullBranchName + ") updating poms with next development version...");
-        
+
         ReleaseContext ctx = contextProvider.getContext();
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
         Map<String, String> developmentVersions = versionProvider.getNextDevelopmentVersions(cacheKey, reactorProjects);
@@ -144,10 +144,10 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     public void addFeatureVersionToSnapshotVersions(ProjectCacheKey cacheKey, final String featureVersion, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         getLogger().info("(" + fullBranchName + ") adding feature versions to poms...");
         ReleaseContext ctx = contextProvider.getContext();
-        
+
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         Map<String, String> featureSuffixedVersions = Maps.transformValues(originalVersions, new Function<String, String>()
@@ -173,10 +173,10 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     public void removeFeatureVersionFromSnapshotVersions(ProjectCacheKey cacheKey, final String featureVersion, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         getLogger().info("(" + fullBranchName + ") removing feature versions to poms...");
         ReleaseContext ctx = contextProvider.getContext();
-        
+
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         final String featureSuffix = "-" + featureVersion + "-SNAPSHOT";
@@ -204,7 +204,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     public void removeSnapshotFromFeatureVersions(ProjectCacheKey cacheKey, final String featureVersion, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
-        
+
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
         Map<String, String> featureVersions = Maps.transformValues(originalVersions, new Function<String, String>()
@@ -229,7 +229,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
     protected void doUpdate(List<MavenProject> reactorProjects, Map<String, String> originalVersions, Map<String, String> finalVersions, boolean updateDependencies) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         getLogger().info("(" + fullBranchName + ") updating poms for all projects...");
         if (!getLogger().isDebugEnabled())
         {

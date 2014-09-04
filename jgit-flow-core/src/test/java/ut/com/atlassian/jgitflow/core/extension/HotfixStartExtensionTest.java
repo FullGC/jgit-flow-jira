@@ -16,9 +16,7 @@ import ut.com.atlassian.jgitflow.core.testutils.BaseExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.HotfixStartExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class HotfixStartExtensionTest extends BaseGitFlowTest
 {
@@ -77,7 +75,7 @@ public class HotfixStartExtensionTest extends BaseGitFlowTest
 
         HotfixStartExtensionForTests extension = new HotfixStartExtensionForTests();
         extension.withException(BaseExtensionForTests.AFTER_CREATE_BRANCH, ExtensionFailStrategy.ERROR);
-        
+
         //do a commit to the remote develop branch
         remoteGit.checkout().setName("master").call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");

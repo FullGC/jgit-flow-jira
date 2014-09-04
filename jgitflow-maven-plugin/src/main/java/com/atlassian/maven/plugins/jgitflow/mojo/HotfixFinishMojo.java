@@ -21,43 +21,41 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     /**
      * Whether to automatically assign submodules the parent version. If set to false, the user will be prompted for the
      * version of each submodules.
-     *
      */
-    @Parameter( defaultValue = "false", property = "autoVersionSubmodules" )
+    @Parameter(defaultValue = "false", property = "autoVersionSubmodules")
     private boolean autoVersionSubmodules = false;
 
     /**
      * Default version to use for new local working copy.
-     *
      */
-    @Parameter( property = "developmentVersion" , defaultValue = "")
+    @Parameter(property = "developmentVersion", defaultValue = "")
     private String developmentVersion = "";
 
-    @Parameter( defaultValue = "false", property = "pushHotfixes" )
+    @Parameter(defaultValue = "false", property = "pushHotfixes")
     private boolean pushHotfixes = false;
 
-    @Parameter( defaultValue = "false", property = "noDeploy" )
+    @Parameter(defaultValue = "false", property = "noDeploy")
     private boolean noDeploy = false;
 
-    @Parameter( defaultValue = "false", property = "keepBranch" )
+    @Parameter(defaultValue = "false", property = "keepBranch")
     private boolean keepBranch = false;
 
-    @Parameter( defaultValue = "false", property = "squash" )
+    @Parameter(defaultValue = "false", property = "squash")
     private boolean squash = false;
 
-    @Parameter( defaultValue = "false", property = "noTag" )
+    @Parameter(defaultValue = "false", property = "noTag")
     private boolean noTag = false;
 
-    @Parameter( defaultValue = "false", property = "noHotfixBuild" )
+    @Parameter(defaultValue = "false", property = "noHotfixBuild")
     private boolean noHotfixBuild = false;
 
-    @Parameter( defaultValue = "true", property = "useReleaseProfile" )
+    @Parameter(defaultValue = "true", property = "useReleaseProfile")
     private boolean useReleaseProfile = true;
 
-    @Parameter( defaultValue = "true", property = "updateDependencies" )
+    @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies = true;
-    
-    @Parameter( property = "tagMessage" , defaultValue = "")
+
+    @Parameter(property = "tagMessage", defaultValue = "")
     private String tagMessage = "";
 
     @Component(hint = "hotfix")
@@ -72,9 +70,9 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
         ClassLoader oldClassloader = Thread.currentThread().getContextClassLoader();
 
         Thread.currentThread().setContextClassLoader(getClassloader(getClasspath()));
-        
+
         MavenHotfixFinishExtension extensionObject = (MavenHotfixFinishExtension) getExtensionInstance(hotfixFinishExtension);
-        
+
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
            .setAutoVersionSubmodules(autoVersionSubmodules)
@@ -105,11 +103,11 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
 
         try
         {
-            releaseManager.finish(ctx, getReactorProjects(),session);
+            releaseManager.finish(ctx, getReactorProjects(), session);
         }
         catch (MavenJGitFlowException e)
         {
-            throw new MojoExecutionException("Error finishing hotfix: " + e.getMessage(),e);
+            throw new MojoExecutionException("Error finishing hotfix: " + e.getMessage(), e);
         }
         finally
         {

@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.FeatureFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureFinishExtension;
@@ -19,7 +18,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.util.FileUtils;
 import org.eclipse.jgit.util.StringUtils;
@@ -70,9 +68,9 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
      * @param gfConfig The GitFlowConfiguration to use
      * @param reporter
      */
-    public FeatureFinishCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public FeatureFinishCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
     {
-        super(branchName, git, gfConfig, reporter);
+        super(branchName, git, gfConfig);
 
         checkState(!StringUtils.isEmptyOrNull(branchName));
         this.rebase = false;
@@ -108,7 +106,7 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
         if (!noMerge && mergeBase.exists())
         {
             reporter.debugText(getCommandName(), "restoring from merge conflict. base: " + mergeBase.getAbsolutePath());
-            if (GitHelper.workingTreeIsClean(git, isAllowUntracked(), reporter).isClean())
+            if (GitHelper.workingTreeIsClean(git, isAllowUntracked()).isClean())
             {
                 //check to see if the merge was done
                 String finishBase = FileHelper.readFirstLine(mergeBase);
@@ -142,12 +140,12 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
             ensureLocalBranchesNotBehindRemotes(prefixedBranchName, prefixedBranchName, gfConfig.getDevelop());
 
             //checkout the branch to merge just so we can run any extensions that need to be on this branch
-            checkoutTopicBranch(prefixedBranchName,extension);
+            checkoutTopicBranch(prefixedBranchName, extension);
 
             if (rebase)
             {
                 runExtensionCommands(extension.beforeRebase());
-                FeatureRebaseCommand rebaseCommand = new FeatureRebaseCommand(getBranchName(), git, gfConfig, reporter);
+                FeatureRebaseCommand rebaseCommand = new FeatureRebaseCommand(getBranchName(), git, gfConfig);
                 rebaseCommand.setAllowUntracked(isAllowUntracked()).call();
                 runExtensionCommands(extension.afterRebase());
             }

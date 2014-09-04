@@ -2,16 +2,18 @@ package com.atlassian.maven.plugins.jgitflow.manager;
 
 import java.util.List;
 
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.extension.FeatureFinishPluginExtension;
 import com.atlassian.maven.plugins.jgitflow.extension.FeatureStartPluginExtension;
-import com.atlassian.maven.plugins.jgitflow.helper.*;
+import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
+import com.atlassian.maven.plugins.jgitflow.helper.SessionAndProjects;
 import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 import com.atlassian.maven.plugins.jgitflow.util.NamingUtil;
@@ -54,11 +56,11 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
     public void start(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws MavenJGitFlowException
     {
         JGitFlow flow = null;
-        
+
         try
         {
-            String featureName = getStartLabelAndRunPreflight(ctx,reactorProjects,session);
-            
+            String featureName = getStartLabelAndRunPreflight(ctx, reactorProjects, session);
+
             flow = jGitFlowProvider.gitFlow();
 
             startExtension.init();
@@ -80,7 +82,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             if (null != flow)
             {
-                flow.getReporter().flush();
+                JGitFlowReporter.get().flush();
             }
         }
 
@@ -95,25 +97,25 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             finishExtension.init();
 
-            String featureLabel = getFinishLabelAndRunPreflight(ctx,reactorProjects,session);
+            String featureLabel = getFinishLabelAndRunPreflight(ctx, reactorProjects, session);
             flow = jGitFlowProvider.gitFlow();
 
-            JGitFlowReporter reporter = flow.getReporter();
+            JGitFlowReporter reporter = JGitFlowReporter.get();
 
             getLogger().info("running jgitflow feature finish...");
-            
+
             MergeResult mergeResult = flow.featureFinish(featureLabel)
-                .setKeepBranch(ctx.isKeepBranch())
-                .setSquash(ctx.isSquash())
-                .setRebase(ctx.isFeatureRebase())
-                .setAllowUntracked(ctx.isAllowUntracked())
-                .setPush(ctx.isPushFeatures())
-                .setNoMerge(ctx.isNoFeatureMerge())
-                .setScmMessagePrefix(ctx.getScmCommentPrefix())
-                .setScmMessageSuffix(ctx.getScmCommentSuffix())
-                .setExtension(finishExtension)
-                .call();
-            
+                                          .setKeepBranch(ctx.isKeepBranch())
+                                          .setSquash(ctx.isSquash())
+                                          .setRebase(ctx.isFeatureRebase())
+                                          .setAllowUntracked(ctx.isAllowUntracked())
+                                          .setPush(ctx.isPushFeatures())
+                                          .setNoMerge(ctx.isNoFeatureMerge())
+                                          .setScmMessagePrefix(ctx.getScmCommentPrefix())
+                                          .setScmMessageSuffix(ctx.getScmCommentSuffix())
+                                          .setExtension(finishExtension)
+                                          .call();
+
             if (!mergeResult.getMergeStatus().isSuccessful())
             {
                 getLogger().error("Error merging into " + flow.getDevelopBranchName() + ":");
@@ -136,7 +138,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             if (null != flow)
             {
-                flow.getReporter().flush();
+                JGitFlowReporter.get().flush();
             }
         }
     }
@@ -148,16 +150,16 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
 
         try
         {
-            String featureLabel = getFinishLabelAndRunPreflight(ctx,reactorProjects,session);
+            String featureLabel = getFinishLabelAndRunPreflight(ctx, reactorProjects, session);
             flow = jGitFlowProvider.gitFlow();
 
-            JGitFlowReporter reporter = flow.getReporter();
+            JGitFlowReporter reporter = JGitFlowReporter.get();
 
             SessionAndProjects sessionAndProjects = checkoutAndGetProjects.run(flow.getFeatureBranchPrefix() + featureLabel);
 
             List<MavenProject> featureProjects = sessionAndProjects.getProjects();
             MavenSession featureSession = sessionAndProjects.getSession();
-            
+
             String featureVersion = NamingUtil.camelCaseOrSpaceToDashed(featureLabel);
             featureVersion = StringUtils.replace(featureVersion, "-", "_");
 
@@ -219,16 +221,15 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         {
             if (null != flow)
             {
-                flow.getReporter().flush();
+                JGitFlowReporter.get().flush();
             }
         }
     }
 
-    
 
     public String getStartLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
     {
-        runPreflight(ctx,reactorProjects,session);
+        runPreflight(ctx, reactorProjects, session);
 
         JGitFlow flow = jGitFlowProvider.gitFlow();
 
@@ -236,14 +237,14 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
         List<MavenProject> branchProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName()).getProjects();
 
         verifyInitialVersionState.run(BranchType.FEATURE, branchProjects);
-        
+
         return labelProvider.getFeatureStartName();
 
     }
 
     public String getFinishLabelAndRunPreflight(ReleaseContext ctx, List<MavenProject> reactorProjects, MavenSession session) throws JGitFlowException, MavenJGitFlowException
     {
-        runPreflight(ctx,reactorProjects,session);
+        runPreflight(ctx, reactorProjects, session);
 
         return labelProvider.getFeatureFinishName();
 

@@ -1,6 +1,5 @@
 package com.atlassian.jgitflow.core;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +9,6 @@ import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -206,30 +204,30 @@ public class GitFlowConfiguration
             if (hasPrefixConfigured(prefixName))
             {
                 String prefix = getPrefixValue(prefixName);
-                
-                if(branchName.startsWith(prefix))
+
+                if (branchName.startsWith(prefix))
                 {
                     branchPrefix = prefix;
                     break;
                 }
             }
         }
-        
+
         return branchPrefix;
     }
 
     public BranchType getTypeForBranch(String branchName)
     {
-        if(getMaster().equals(branchName))
+        if (getMaster().equals(branchName))
         {
             return BranchType.MASTER;
         }
-        
-        if(getDevelop().equals(branchName))
+
+        if (getDevelop().equals(branchName))
         {
             return BranchType.DEVELOP;
         }
-        
+
         String branchPrefix = "";
 
         for (String prefixName : getPrefixNames())
@@ -238,7 +236,7 @@ public class GitFlowConfiguration
             {
                 String prefix = getPrefixValue(prefixName);
 
-                if(branchName.startsWith(prefix))
+                if (branchName.startsWith(prefix))
                 {
                     try
                     {

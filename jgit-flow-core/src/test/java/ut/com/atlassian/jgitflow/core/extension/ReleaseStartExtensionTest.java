@@ -16,7 +16,6 @@ import ut.com.atlassian.jgitflow.core.testutils.BaseExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.ReleaseStartExtensionForTests;
 import ut.com.atlassian.jgitflow.core.testutils.RepoUtil;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
