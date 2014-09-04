@@ -1,6 +1,6 @@
 # JGit-Flow
 
-**Current Version: 1.0-m4**
+**Current Version: 1.0-m4.3**
 
 **Issue Tracker Has Moved To: [https://ecosystem.atlassian.net/browse/MJF](https://ecosystem.atlassian.net/browse/MJF)**
 
@@ -16,7 +16,7 @@ For more information and usage guide, [see the wiki](https://bitbucket.org/atlas
 
 # Maven JGit-Flow Plugin
 
-**Current Version: 1.0-m4**
+**Current Version: 1.0-m4.3**
 
 **The Issue Tracker Has Moved To: [https://ecosystem.atlassian.net/browse/MJF](https://ecosystem.atlassian.net/browse/MJF)**
 
