@@ -54,6 +54,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
            .setPullDevelop(pullDevelop)
            .setScmCommentPrefix(scmCommentPrefix)
            .setScmCommentSuffix(scmCommentSuffix)
+           .setUseReleaseProfile(false)
            .setUsername(username)
            .setPassword(password)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());

@@ -73,6 +73,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
            .setPassword(password)
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
+           .setUseReleaseProfile(false)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

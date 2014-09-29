@@ -122,6 +122,7 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
                 .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
                 .setDefaultOriginUrl(defaultOriginUrl)
                 .setEnableSshAgent(enableSshAgent)
+                .setUseReleaseProfile(false)
                 .setUsername(username)
                 .setPassword(password));
         sessionProvider.setSession(session);
