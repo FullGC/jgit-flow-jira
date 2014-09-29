@@ -19,6 +19,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.util.StringUtils;
 
 public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlowCommand<C, T>
 {
@@ -72,9 +73,18 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
             }
             else
             {
+                MergeCommand mergeCommand = git.merge().setFastForward(ffMode).include(localBranchRef);
+                
+                // check if you want scmCommentSuffix/scmCommentPrefix in the comment (if either is set, it shuold be used for merge messages as well for consistency)
+                boolean isCustomScmMessage = (!StringUtils.isEmptyOrNull(getScmMessagePrefix())) || (!StringUtils.isEmptyOrNull(getScmMessageSuffix()));
+                if(isCustomScmMessage) {
+                  mergeCommand.setCommit(false);
+                }
+                
                 mergeResult = git.merge().setFastForward(ffMode).include(localBranchRef).call();
+                
 
-                if (mergeResult.getMergeStatus().isSuccessful() && MergeCommand.FastForwardMode.FF.equals(ffMode))
+                if (mergeResult.getMergeStatus().isSuccessful() && (MergeCommand.FastForwardMode.FF.equals(ffMode) || isCustomScmMessage))
                 {
                     git.commit().setMessage(getScmMessagePrefix() + "merging '" + branchToMerge + "' into '" + mergeTarget + "'" + getScmMessageSuffix()).call();
                 }
