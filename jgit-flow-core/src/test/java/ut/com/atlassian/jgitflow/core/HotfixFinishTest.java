@@ -155,8 +155,14 @@ public class HotfixFinishTest extends BaseGitFlowTest
         //the develop branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
 
+        //since fast-forward is suppressed the latest commit on develop should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, flow.getDevelopBranchName()).getParentCount());
+
         //the master branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
+
+        //since fast-forward is suppressed the latest commit on master should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, flow.getMasterBranchName()).getParentCount());
     }
 
     @Test
@@ -199,11 +205,20 @@ public class HotfixFinishTest extends BaseGitFlowTest
         //the develop branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
 
+        //since fast-forward is suppressed the latest commit on develop should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, flow.getDevelopBranchName()).getParentCount());
+
         //the master branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
 
+        //since fast-forward is suppressed the latest commit on master should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, flow.getMasterBranchName()).getParentCount());
+
         //the release branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, releaseName));
+
+        //since fast-forward is suppressed the latest commit on the release branch should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, releaseName).getParentCount());
     }
 
     @Test

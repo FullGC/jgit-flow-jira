@@ -38,6 +38,9 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
     @Parameter(defaultValue = "false", property = "pushFeatures")
     private boolean pushFeatures = false;
 
+    @Parameter(defaultValue = "false", property = "suppressFastForward")
+    private boolean suppressFastForward = false;
+
     @Parameter(defaultValue = "false", property = "noFeatureMerge")
     private boolean noFeatureMerge = false;
 
@@ -65,6 +68,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
            .setAllowRemote(isRemoteAllowed())
            .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
            .setNoFeatureMerge(noFeatureMerge)
+           .setSuppressFastForward(suppressFastForward)
            .setNoBuild(noFeatureBuild)
            .setDefaultOriginUrl(defaultOriginUrl)
            .setScmCommentPrefix(scmCommentPrefix)

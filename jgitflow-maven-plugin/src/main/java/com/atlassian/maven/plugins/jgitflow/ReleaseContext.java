@@ -41,6 +41,7 @@ public class ReleaseContext
     private boolean enableSshAgent;
     private boolean noReleaseMerge;
     private boolean noFeatureMerge;
+    private boolean suppressFastForward;
     private boolean allowUntracked;
     private boolean allowRemote;
     private boolean pullMaster;
@@ -407,6 +408,17 @@ public class ReleaseContext
     public ReleaseContext setNoFeatureMerge(boolean merge)
     {
         this.noFeatureMerge = merge;
+        return this;
+    }
+
+    public boolean isSuppressFastForward()
+    {
+        return suppressFastForward;
+    }
+
+    public ReleaseContext setSuppressFastForward(boolean suppressFastForward)
+    {
+        this.suppressFastForward = suppressFastForward;
         return this;
     }
 
