@@ -77,11 +77,12 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
                 
                 // check if you want scmCommentSuffix/scmCommentPrefix in the comment (if either is set, it shuold be used for merge messages as well for consistency)
                 boolean isCustomScmMessage = (!StringUtils.isEmptyOrNull(getScmMessagePrefix())) || (!StringUtils.isEmptyOrNull(getScmMessageSuffix()));
+                
                 if(isCustomScmMessage) {
                   mergeCommand.setCommit(false);
                 }
                 
-                mergeResult = git.merge().setFastForward(ffMode).include(localBranchRef).call();
+                mergeResult = mergeCommand.call();
                 
 
                 if (mergeResult.getMergeStatus().isSuccessful() && (MergeCommand.FastForwardMode.FF.equals(ffMode) || isCustomScmMessage))
