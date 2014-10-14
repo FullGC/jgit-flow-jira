@@ -124,8 +124,8 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
                 .setEnableSshAgent(enableSshAgent)
                 .setUseReleaseProfile(false)
                 .setUsername(username)
-                .setPassword(password))
-                .setAllowRemote(isRemoteAllowed());
+                .setPassword(password)
+                .setAllowRemote(isRemoteAllowed()));
         sessionProvider.setSession(session);
         projectsProvider.setReactorProjects(projects);
     }
