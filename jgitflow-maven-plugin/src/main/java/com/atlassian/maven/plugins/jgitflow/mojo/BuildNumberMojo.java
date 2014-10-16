@@ -102,8 +102,8 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
-                    .with(parentReleaseVersionChange(originalVersions, featureSuffixedVersions))
-                    .with(projectReleaseVersionChange(featureSuffixedVersions))
+                    .with(parentReleaseVersionChange(originalVersions, featureSuffixedVersions, false))
+                    .with(projectReleaseVersionChange(featureSuffixedVersions, false))
                     .with(artifactReleaseVersionChange(originalVersions, featureSuffixedVersions, updateDependencies));
             try
             {

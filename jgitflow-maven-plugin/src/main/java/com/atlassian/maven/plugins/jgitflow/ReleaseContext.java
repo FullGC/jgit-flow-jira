@@ -52,6 +52,7 @@ public class ReleaseContext
     private String username;
     private String password;
     private boolean alwaysUpdateOrigin;
+    private boolean consistentProjectVersions;
     private MavenReleaseStartExtension releaseStartExtension;
     private MavenReleaseFinishExtension releaseFinishExtension;
     private MavenHotfixStartExtension hotfixStartExtension;
@@ -95,6 +96,7 @@ public class ReleaseContext
         this.username = "";
         this.password = "";
         this.alwaysUpdateOrigin = true;
+        this.consistentProjectVersions = false;
         this.releaseStartExtension = null;
         this.releaseFinishExtension = null;
         this.hotfixStartExtension = null;
@@ -517,6 +519,17 @@ public class ReleaseContext
     public ReleaseContext setAlwaysUpdateOrigin(boolean update)
     {
         this.alwaysUpdateOrigin = update;
+        return this;
+    }
+
+    public boolean isConsistentProjectVersions()
+    {
+        return consistentProjectVersions;
+    }
+
+    public ReleaseContext setConsistentProjectVersions(boolean update)
+    {
+        this.consistentProjectVersions = update;
         return this;
     }
 
