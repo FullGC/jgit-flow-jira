@@ -29,7 +29,7 @@ public class BranchHelper
 {
     @Requirement
     private MavenSessionProvider sessionProvider;
-    
+
     @Requirement
     private JGitFlowProvider jGitFlowProvider;
 
@@ -38,12 +38,12 @@ public class BranchHelper
 
     @Requirement
     private ReactorProjectsProvider projectsProvider;
-    
-    
+
+
     public List<MavenProject> getProjectsForCurrentBranch() throws JGitFlowException, IOException, GitAPIException, ReactorReloadException
     {
         JGitFlow flow = jGitFlowProvider.gitFlow();
-        
+
         MavenSession session = sessionProvider.getSession();
 
         String branchName = flow.git().getRepository().getBranch();
@@ -53,7 +53,7 @@ public class BranchHelper
 
         //reload the reactor projects for release
         MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(branchName, ReleaseUtil.getRootProject(projectsProvider.getReactorProjects()), session);
-        
+
         return branchSession.getSortedProjects();
     }
 
@@ -71,9 +71,9 @@ public class BranchHelper
         //reload the reactor projects for release
         MavenSession branchSession = mavenExecutionHelper.getSessionForBranch(branchName, ReleaseUtil.getRootProject(projectsProvider.getReactorProjects()), session);
 
-        return new SessionAndProjects(branchSession,branchSession.getSortedProjects());
+        return new SessionAndProjects(branchSession, branchSession.getSortedProjects());
     }
-    
+
     public String getUnprefixedCurrentBranchName() throws JGitFlowException, IOException
     {
         JGitFlow flow = jGitFlowProvider.gitFlow();
@@ -95,7 +95,51 @@ public class BranchHelper
             throw new MavenJGitFlowException("Error looking up current branch name", e);
         }
     }
-    
+
+    public String getCurrentReleaseBranchNameOrBlank() throws MavenJGitFlowException
+    {
+        String branchName = "";
+        try
+        {
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+
+            List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix());
+
+            if (!branches.isEmpty())
+            {
+                branchName = branches.get(0).getName();
+            }
+        }
+        catch (Exception e)
+        {
+            throw new MavenJGitFlowException("Error looking up release branch name", e);
+        }
+
+        return branchName;
+    }
+
+    public boolean releaseBranchExists() throws MavenJGitFlowException
+    {
+        boolean exists = false;
+        try
+        {
+            JGitFlow flow = jGitFlowProvider.gitFlow();
+
+            List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getReleaseBranchPrefix());
+
+            if (!branches.isEmpty())
+            {
+                exists = true;
+            }
+        }
+        catch (Exception e)
+        {
+            throw new MavenJGitFlowException("Error looking up release branch", e);
+        }
+
+        return exists;
+    }
+
     public BranchType getCurrentBranchType() throws JGitFlowException, IOException
     {
         JGitFlow flow = jGitFlowProvider.gitFlow();
@@ -145,7 +189,7 @@ public class BranchHelper
                     throw new MavenJGitFlowException("Unsupported branch type '" + branchType.name() + "' while trying to get the current production branch name");
             }
 
-            List<Ref> topicBranches = GitHelper.listBranchesWithPrefix(flow.git(), branchPrefix, flow.getReporter());
+            List<Ref> topicBranches = GitHelper.listBranchesWithPrefix(flow.git(), branchPrefix);
 
             if (topicBranches.isEmpty())
             {
@@ -159,19 +203,19 @@ public class BranchHelper
             throw new MavenJGitFlowException("Error getting name for production branch", e);
         }
     }
-    
+
     private String stripSlash(String prefix)
     {
-        if(Strings.isNullOrEmpty(prefix))
+        if (Strings.isNullOrEmpty(prefix))
         {
-            return prefix;    
+            return prefix;
         }
-        
-        if(prefix.endsWith("/"))
+
+        if (prefix.endsWith("/"))
         {
-            return prefix.substring(0,prefix.length() - 1);
+            return prefix.substring(0, prefix.length() - 1);
         }
-        
+
         return prefix;
     }
 }

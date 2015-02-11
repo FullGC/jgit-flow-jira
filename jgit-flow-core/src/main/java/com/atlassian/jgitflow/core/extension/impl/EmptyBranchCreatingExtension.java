@@ -21,16 +21,16 @@ public abstract class EmptyBranchCreatingExtension extends EmptyJGitFlowExtensio
         this.afterCreateBranch = newArrayList();
     }
 
-    public void addBeforeCreateBranchCommands(ExtensionCommand ... commands)
+    public void addBeforeCreateBranchCommands(ExtensionCommand... commands)
     {
         beforeCreateBranch.addAll(Arrays.asList(commands));
     }
 
-    public void addAfterCreateBranchCommands(ExtensionCommand ... commands)
+    public void addAfterCreateBranchCommands(ExtensionCommand... commands)
     {
         afterCreateBranch.addAll(Arrays.asList(commands));
     }
-    
+
     @Override
     public Iterable<ExtensionCommand> beforeCreateBranch()
     {

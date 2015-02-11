@@ -37,12 +37,12 @@ public class FeatureFinishTest extends BaseGitFlowTest
 
         //just in case
         assertEquals(flow.getFeatureBranchPrefix() + "my-feature", git.getRepository().getBranch());
-        
+
         flow.featureFinish("my-feature").call();
 
         //we should be on develop branch
         assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
-        
+
         //feature branch should be gone
         Ref ref2check = git.getRepository().getRef(flow.getFeatureBranchPrefix() + "my-feature");
         assertNull(ref2check);
@@ -57,11 +57,11 @@ public class FeatureFinishTest extends BaseGitFlowTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
         flow.featureStart("my-feature").call();
-        
+
         //create a new file
         File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
         FileUtils.writeStringToFile(junkFile, "I am junk");
-        
+
         //try to finish
         flow.featureFinish("my-feature").call();
     }
@@ -90,7 +90,7 @@ public class FeatureFinishTest extends BaseGitFlowTest
         Git git = RepoUtil.createRepositoryWithMasterAndDevelop(newDir());
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
-        
+
         flow.featureStart("my-feature").call();
 
         //create a new commit
@@ -98,10 +98,10 @@ public class FeatureFinishTest extends BaseGitFlowTest
         FileUtils.writeStringToFile(junkFile, "I am junk");
         git.add().addFilepattern(junkFile.getName()).call();
         RevCommit commit = git.commit().setMessage("committing junk file").call();
-        
+
         //make sure develop doesn't report our commit yet
         assertFalse(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
-        
+
         //try to finish
         flow.featureFinish("my-feature").call();
 
@@ -111,7 +111,7 @@ public class FeatureFinishTest extends BaseGitFlowTest
         //feature branch should be gone
         Ref ref2check = git.getRepository().getRef(flow.getFeatureBranchPrefix() + "my-feature");
         assertNull(ref2check);
-        
+
         //the develop branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
     }
@@ -162,7 +162,7 @@ public class FeatureFinishTest extends BaseGitFlowTest
         //make sure develop doesn't have our commits yet
         assertFalse(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
         assertFalse(GitHelper.isMergedInto(git, commit2, flow.getDevelopBranchName()));
-        
+
         //try to finish
         flow.featureFinish("my-feature").call();
 
@@ -177,7 +177,7 @@ public class FeatureFinishTest extends BaseGitFlowTest
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
         assertTrue(GitHelper.isMergedInto(git, commit2, flow.getDevelopBranchName()));
     }
-    
+
     @Test
     public void finishFeatureWithSquash() throws Exception
     {
@@ -216,7 +216,7 @@ public class FeatureFinishTest extends BaseGitFlowTest
         //the develop branch should NOT have both of our commits now
         assertFalse(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
         assertFalse(GitHelper.isMergedInto(git, commit2, flow.getDevelopBranchName()));
-        
+
         //we should have the feature files
         File developJunk = new File(git.getRepository().getWorkTree(), "junk.txt");
         File developJunk2 = new File(git.getRepository().getWorkTree(), "junk2.txt");
@@ -230,7 +230,7 @@ public class FeatureFinishTest extends BaseGitFlowTest
         Git git = null;
         Git remoteGit = null;
         remoteGit = RepoUtil.createRepositoryWithBranches(newDir(), "develop", "feature/my-feature");
-        
+
         git = Git.cloneRepository().setDirectory(newDir()).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
 
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
@@ -257,7 +257,7 @@ public class FeatureFinishTest extends BaseGitFlowTest
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
         flow.featureStart("my-feature").call();
-        
+
         //go back to develop and do a commit
         git.checkout().setName(flow.getDevelopBranchName()).call();
         File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
@@ -282,12 +282,12 @@ public class FeatureFinishTest extends BaseGitFlowTest
             File mergeBase = new File(gitFlowDir, JGitFlowConstants.MERGE_BASE);
             assertTrue(mergeBase.exists());
             assertEquals(flow.getDevelopBranchName(), FileHelper.readFirstLine(mergeBase));
-            
+
             throw e;
         }
 
     }
-    
+
     @Test
     public void finishFeatureConflictRestore() throws Exception
     {
@@ -324,13 +324,13 @@ public class FeatureFinishTest extends BaseGitFlowTest
             assertTrue(mergeBase.exists());
             assertEquals(flow.getDevelopBranchName(), FileHelper.readFirstLine(mergeBase));
         }
-        
-        if(!gotException)
+
+        if (!gotException)
         {
             fail("Merge Conflict not detected!!");
         }
-        
-        assertEquals(flow.getDevelopBranchName(),git.getRepository().getBranch());
+
+        assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
 
         FileUtils.writeStringToFile(junkFile, "A");
         git.add().addFilepattern(junkFile.getName()).setUpdate(true).call();
@@ -350,6 +350,6 @@ public class FeatureFinishTest extends BaseGitFlowTest
         File gitFlowDir2 = new File(git.getRepository().getDirectory(), JGitFlowConstants.GITFLOW_DIR);
         File mergeBase2 = new File(gitFlowDir2, JGitFlowConstants.MERGE_BASE);
         assertFalse(mergeBase2.exists());
-        
+
     }
 }

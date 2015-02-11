@@ -8,7 +8,6 @@ import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Disposable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
-import org.eclipse.jgit.console.ConsoleText;
 
 import jline.ConsoleReader;
 import jline.UnixTerminal;
@@ -24,7 +23,7 @@ public class ConsoleInputHandler extends AbstractInputHandler implements Initial
 
     public ConsoleInputHandler()
     {
-        if(null == console)
+        if (null == console)
         {
             try
             {
@@ -42,27 +41,28 @@ public class ConsoleInputHandler extends AbstractInputHandler implements Initial
         try
         {
             this.jline = new ConsoleReader(new FileInputStream(FileDescriptor.in)
-                                            ,new PrintWriter(
-                                                    new OutputStreamWriter(System.out,
-                                                            System.getProperty("jline.WindowsTerminal.output.encoding", System.getProperty("file.encoding"))))
-                                            ,null
-                                            ,new UnixTerminal());
+                    , new PrintWriter(
+                    new OutputStreamWriter(System.out,
+                            System.getProperty("jline.WindowsTerminal.output.encoding", System.getProperty("file.encoding")))
+            )
+                    , null
+                    , new UnixTerminal());
         }
         catch (IOException e)
         {
             this.jline = null;
         }
     }
-    
+
     @Override
     public void dispose()
     {
-        if(noConsole())
+        if (noConsole())
         {
             return;
         }
 
-        if(null != console)
+        if (null != console)
         {
             try
             {
@@ -70,7 +70,7 @@ public class ConsoleInputHandler extends AbstractInputHandler implements Initial
             }
             catch (IOException e)
             {
-                getLogger().error( "Error closing input stream must be ignored", e );
+                getLogger().error("Error closing input stream must be ignored", e);
             }
         }
     }
@@ -84,35 +84,35 @@ public class ConsoleInputHandler extends AbstractInputHandler implements Initial
     @Override
     public String readLine() throws IOException
     {
-        if(null != console)
+        if (null != console)
         {
             return console.readLine();
         }
-        
-        if(null != jline)
+
+        if (null != jline)
         {
             return jline.readLine();
         }
-        
+
         return "";
     }
 
     @Override
     public String readPassword() throws IOException
     {
-        if(null != console)
+        if (null != console)
         {
             return new String(console.readPassword());
         }
 
-        if(null != jline)
+        if (null != jline)
         {
             return jline.readLine(new Character('*'));
         }
 
         return "";
     }
-    
+
     private boolean noConsole()
     {
         return (null == console && null == jline);

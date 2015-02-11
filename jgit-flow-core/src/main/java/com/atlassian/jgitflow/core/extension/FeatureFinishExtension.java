@@ -6,5 +6,5 @@ public interface FeatureFinishExtension extends DevelopMergingExtension
 
     Iterable<ExtensionCommand> afterRebase();
 
-    
+
 }

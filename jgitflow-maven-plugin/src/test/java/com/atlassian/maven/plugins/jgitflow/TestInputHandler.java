@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.plexus.components.interactivity.InputHandler;
-import com.atlassian.maven.plugins.jgitflow.ConsoleInputHandler;
 
 /**
  * @since version
@@ -24,7 +23,7 @@ public class TestInputHandler extends ConsoleInputHandler implements InputHandle
     {
         String val = sb.toString();
         sb.setLength(0);
-        
+
         return val;
     }
 
@@ -39,7 +38,7 @@ public class TestInputHandler extends ConsoleInputHandler implements InputHandle
     {
         return new ArrayList();
     }
-    
+
     public void setResponse(String response)
     {
         sb.setLength(0);

@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.HotfixStartExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyHotfixStartExtension;
@@ -48,9 +47,9 @@ public class HotfixStartCommand extends AbstractBranchCreatingCommand<HotfixStar
      * @param gfConfig   The GitFlowConfiguration to use
      * @param reporter
      */
-    public HotfixStartCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    public HotfixStartCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig)
     {
-        super(hotfixName, git, gfConfig, reporter);
+        super(hotfixName, git, gfConfig);
         this.extension = new EmptyHotfixStartExtension();
 
     }

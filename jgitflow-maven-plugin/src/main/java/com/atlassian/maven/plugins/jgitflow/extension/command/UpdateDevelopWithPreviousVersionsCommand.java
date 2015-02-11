@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -28,42 +27,42 @@ public class UpdateDevelopWithPreviousVersionsCommand implements ExtensionComman
 {
     @Requirement
     private JGitFlowProvider jGitFlowProvider;
-    
+
     @Requirement
     private VersionCacheProvider versionCacheProvider;
 
     @Requirement
     private PomUpdater pomUpdater;
-    
+
     @Requirement
     private BranchHelper branchHelper;
-    
+
     @Requirement
     private ProjectHelper projectHelper;
-    
+
     @Requirement
     private CheckoutAndGetProjects checkoutAndGetProjects;
-    
+
     @Requirement
     private ContextProvider contextProvider;
-    
+
 
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         try
         {
             ReleaseContext ctx = contextProvider.getContext();
-            
+
             JGitFlow flow = jGitFlowProvider.gitFlow();
-            
+
             String originalBranchName = branchHelper.getCurrentBranchName();
 
             List<MavenProject> developProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName()).getProjects();
 
-            pomUpdater.copyPomVersionsFromMap(versionCacheProvider.getCachedVersions(),developProjects);
-            projectHelper.commitAllPoms(git,developProjects,ctx.getScmCommentPrefix() + "Updating develop poms back to pre merge state" + ctx.getScmCommentSuffix());
-            
+            pomUpdater.copyPomVersionsFromMap(versionCacheProvider.getCachedVersions(), developProjects);
+            projectHelper.commitAllPoms(git, developProjects, ctx.getScmCommentPrefix() + "Updating develop poms back to pre merge state" + ctx.getScmCommentSuffix());
+
             flow.git().checkout().setName(originalBranchName).call();
         }
         catch (Exception e)

@@ -13,7 +13,7 @@ public class ReleaseStartPluginExtension extends ProductionBranchCreatingPluginE
 {
     @Requirement
     private UpdateDevelopWithNextDevVersionCommand updateDevelopWithNextDevVersionCommand;
-    
+
     @Requirement
     private StartReleaseExternalExecutor releaseExecutor;
 
@@ -21,13 +21,13 @@ public class ReleaseStartPluginExtension extends ProductionBranchCreatingPluginE
     public void init(MavenJGitFlowExtension externalExtension)
     {
         super.init(externalExtension);
-        
+
         releaseExecutor.init(externalExtension);
-        
+
         addAfterCreateBranchCommands(
                 cacheVersionsCommand
-                ,updateDevelopWithNextDevVersionCommand
-                ,releaseExecutor
+                , updateDevelopWithNextDevVersionCommand
+                , releaseExecutor
         );
     }
 }

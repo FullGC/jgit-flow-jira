@@ -52,7 +52,7 @@ public class HotfixFinishTest extends BaseGitFlowTest
     {
         String hfOneLabel = "1.0.1";
         String hfTwoLabel = "1.0.2";
-        
+
         Git git = RepoUtil.createRepositoryWithMaster(newDir());
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
@@ -65,7 +65,7 @@ public class HotfixFinishTest extends BaseGitFlowTest
         FileUtils.writeStringToFile(versionFile, hfOneLabel);
         git.add().addFilepattern(".").call();
         git.commit().setMessage("commiting version 1").call();
-        
+
         flow.hotfixFinish(hfOneLabel).call();
 
         //we should be on develop branch
@@ -73,7 +73,7 @@ public class HotfixFinishTest extends BaseGitFlowTest
         FileUtils.writeStringToFile(versionFile, "develop");
         git.add().addFilepattern(".").call();
         git.commit().setMessage("commiting develop").call();
-        
+
         flow.hotfixStart(hfTwoLabel).call();
 
         assertEquals(flow.getHotfixBranchPrefix() + hfTwoLabel, git.getRepository().getBranch());
@@ -157,6 +157,53 @@ public class HotfixFinishTest extends BaseGitFlowTest
 
         //the master branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
+    }
+
+    @Test
+    public void finishHotfixWithNewCommitAndReleaseBranch() throws Exception
+    {
+        Git git = RepoUtil.createRepositoryWithMasterAndDevelop(newDir());
+        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
+        JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
+
+        flow.releaseStart("1.0").call();
+
+        String releaseName = "release/1.0";
+
+        flow.git().checkout().setName("develop").call();
+
+        flow.hotfixStart("1.0.1").call();
+
+        //create a new commit
+        File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        git.add().addFilepattern(junkFile.getName()).call();
+        RevCommit commit = git.commit().setMessage("committing junk file").call();
+
+        //make sure develop doesn't report our commit yet
+        assertFalse(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
+
+        //make sure release doesn't report our commit yet
+        assertFalse(GitHelper.isMergedInto(git, commit, releaseName));
+
+        //try to finish
+        flow.hotfixFinish("1.0.1").call();
+
+        //we should be on develop branch
+        assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
+
+        //hotfix branch should be gone
+        Ref ref2check = git.getRepository().getRef(flow.getHotfixBranchPrefix() + "1.0.1");
+        assertNull(ref2check);
+
+        //the develop branch should have our commit
+        assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
+
+        //the master branch should have our commit
+        assertTrue(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
+
+        //the release branch should have our commit
+        assertTrue(GitHelper.isMergedInto(git, commit, releaseName));
     }
 
     @Test
@@ -284,7 +331,7 @@ public class HotfixFinishTest extends BaseGitFlowTest
 
         String masterBranchName = flow.getMasterBranchName();
 
-        RevCommit oldMasterHead = GitHelper.getLatestCommit(git, masterBranchName );
+        RevCommit oldMasterHead = GitHelper.getLatestCommit(git, masterBranchName);
 
         flow.hotfixStart("1.0").call();
 
@@ -297,27 +344,27 @@ public class HotfixFinishTest extends BaseGitFlowTest
         git.add().addFilepattern(junkFile.getName()).call();
         git.commit().setMessage("committing junk file").call();
 
-        flow.hotfixFinish("1.0").setNoTag( false ).call();
+        flow.hotfixFinish("1.0").setNoTag(false).call();
 
         //we should be on develop branch
         assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
 
         // There should be a tag reference
-        Ref hotfixTagRef = git.getRepository( ).getTags( ).get( flow.getVersionTagPrefix( ) + "1.0" );
+        Ref hotfixTagRef = git.getRepository().getTags().get(flow.getVersionTagPrefix() + "1.0");
 
-        assertNotNull( hotfixTagRef );
+        assertNotNull(hotfixTagRef);
 
-        RevTag hotfixTag = new RevWalk( git.getRepository( ) ).parseTag( hotfixTagRef.getObjectId( ) );
+        RevTag hotfixTag = new RevWalk(git.getRepository()).parseTag(hotfixTagRef.getObjectId());
 
-        assertNotNull( hotfixTag );
+        assertNotNull(hotfixTag);
 
-        RevCommit newMasterHead = GitHelper.getLatestCommit(git, masterBranchName );
+        RevCommit newMasterHead = GitHelper.getLatestCommit(git, masterBranchName);
 
         // Check that master has moved
-        assertFalse( newMasterHead.equals( oldMasterHead ) );
+        assertFalse(newMasterHead.equals(oldMasterHead));
 
         // Hotfix tag should reference new master
-        assertEquals( newMasterHead, hotfixTag.getObject( ) );
+        assertEquals(newMasterHead, hotfixTag.getObject());
     }
 
     //TODO: add tests for push and tag flags

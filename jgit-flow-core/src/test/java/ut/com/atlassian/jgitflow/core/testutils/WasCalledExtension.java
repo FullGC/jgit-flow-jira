@@ -1,7 +1,6 @@
 package ut.com.atlassian.jgitflow.core.testutils;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -14,7 +13,7 @@ public class WasCalledExtension implements ExtensionCommand
     private boolean methodCalled;
     private boolean withException;
     private ExtensionFailStrategy failStrategy;
-    
+
     public WasCalledExtension()
     {
         this(false);
@@ -28,10 +27,10 @@ public class WasCalledExtension implements ExtensionCommand
     }
 
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         this.methodCalled = true;
-        if(withException)
+        if (withException)
         {
             throw new JGitFlowExtensionException("Exception!!!");
         }

@@ -21,7 +21,7 @@ public interface ProjectHelper
     public static final String AT_PLUGIN_MGNT = "plugin management";
     public static final String AT_REPORT = "report";
     public static final String AT_EXTENSIONS = "extensions";
-    
+
     void commitAllChanges(Git git, String message) throws MavenJGitFlowException;
 
     void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws MavenJGitFlowException;

@@ -1,7 +1,5 @@
 package com.atlassian.maven.plugins.jgitflow.util;
 
-import com.google.common.base.CaseFormat;
-
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -27,13 +25,13 @@ public class NamingUtil
                 "-"
         );
 
-        dashed = dashed.replaceAll("--","-");
-        
+        dashed = dashed.replaceAll("--", "-");
+
         return dashed.toLowerCase();
     }
-    
-    public static String unprefixedBranchName(String prefix,String branchName)
+
+    public static String unprefixedBranchName(String prefix, String branchName)
     {
-        return StringUtils.substringAfter(branchName,prefix);
+        return StringUtils.substringAfter(branchName, prefix);
     }
 }

@@ -13,7 +13,6 @@ import com.atlassian.maven.plugins.jgitflow.manager.FlowReleaseManager;
 
 import com.google.common.base.Strings;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -67,7 +66,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     private static final DefaultContext EMPTY_CONTEXT = new DefaultContext()
     {
-        public Object get( Object key ) throws ContextException
+        public Object get(Object key) throws ContextException
         {
             return null;
         }
@@ -105,8 +104,8 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     @Override
     protected InputStream getCustomConfiguration() throws Exception
     {
-        String configBase = System.getProperty("basedir","");
-        if(!configBase.endsWith("/"))
+        String configBase = System.getProperty("basedir", "");
+        if (!configBase.endsWith("/"))
         {
             configBase = configBase + "/";
         }
@@ -116,17 +115,17 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected SessionAndProjects basicReleaseRewriteTest(String projectName) throws Exception
     {
-        return basicReleaseRewriteTest(projectName,"");
+        return basicReleaseRewriteTest(projectName, "");
     }
 
     protected SessionAndProjects basicReleaseRewriteTest(String projectName, String releaseVersion) throws Exception
     {
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectName);
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectName);
         File projectRoot = projects.get(0).getBasedir();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
 
-        if(!Strings.isNullOrEmpty(releaseVersion))
+        if (!Strings.isNullOrEmpty(releaseVersion))
         {
             ctx.setDefaultReleaseVersion(releaseVersion);
         }
@@ -138,7 +137,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected SessionAndProjects basicReleaseRewriteTest(String projectName, ReleaseContext ctx) throws Exception
     {
-        List<MavenProject> projects = createReactorProjects("rewrite-for-release",projectName);
+        List<MavenProject> projects = createReactorProjects("rewrite-for-release", projectName);
         File projectRoot = ctx.getBaseDir();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
@@ -148,9 +147,9 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         initialCommitAll(flow);
         FlowReleaseManager relman = getReleaseManager();
 
-        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+        MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
-        relman.start(ctx,projects,session);
+        relman.start(ctx, projects, session);
 
         assertOnRelease(flow, ctx.getDefaultReleaseVersion());
 
@@ -161,24 +160,24 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
 
         compareDevPomFiles(projects);
-        
-        return new SessionAndProjects(session,projects);
-        
+
+        return new SessionAndProjects(session, projects);
+
     }
 
     protected void basicHotfixRewriteTest(String projectName) throws Exception
     {
-        basicHotfixRewriteTest(projectName,"");
+        basicHotfixRewriteTest(projectName, "");
     }
 
     protected void basicHotfixRewriteTest(String projectName, String releaseVersion) throws Exception
     {
-        List<MavenProject> projects = createReactorProjects("rewrite-for-hotfix",projectName);
+        List<MavenProject> projects = createReactorProjects("rewrite-for-hotfix", projectName);
         File projectRoot = projects.get(0).getBasedir();
 
         ReleaseContext ctx = new ReleaseContext(projectRoot);
 
-        if(!Strings.isNullOrEmpty(releaseVersion))
+        if (!Strings.isNullOrEmpty(releaseVersion))
         {
             ctx.setDefaultReleaseVersion(releaseVersion);
         }
@@ -190,7 +189,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected void basicHotfixRewriteTest(String projectName, ReleaseContext ctx) throws Exception
     {
-        List<MavenProject> projects = createReactorProjects("rewrite-for-hotfix",projectName);
+        List<MavenProject> projects = createReactorProjects("rewrite-for-hotfix", projectName);
         File projectRoot = ctx.getBaseDir();
 
         JGitFlow flow = JGitFlow.getOrInit(projectRoot);
@@ -200,11 +199,11 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         initialCommitAll(flow);
         FlowReleaseManager relman = getHotfixManager();
 
-        MavenSession session = new MavenSession(getContainer(),new Settings(),localRepository,null,null,null,projectRoot.getAbsolutePath(),new Properties(),new Properties(), null);
+        MavenSession session = new MavenSession(getContainer(), new Settings(), localRepository, null, null, null, projectRoot.getAbsolutePath(), new Properties(), new Properties(), null);
 
         ctx.setInteractive(false);
-        
-        relman.start(ctx,projects,session);
+
+        relman.start(ctx, projects, session);
 
         assertOnHotfix(flow);
 
@@ -236,7 +235,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected void assertOnRelease(JGitFlow flow, String version) throws Exception
     {
-        if(Strings.isNullOrEmpty(version))
+        if (Strings.isNullOrEmpty(version))
         {
             assertTrue(flow.git().getRepository().getBranch().startsWith(flow.getReleaseBranchPrefix()));
         }
@@ -248,7 +247,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected void assertOnFeature(JGitFlow flow, String feature) throws Exception
     {
-        if(Strings.isNullOrEmpty(feature))
+        if (Strings.isNullOrEmpty(feature))
         {
             assertTrue(flow.git().getRepository().getBranch().startsWith(flow.getFeatureBranchPrefix()));
         }
@@ -265,17 +264,17 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     protected FlowReleaseManager getReleaseManager() throws Exception
     {
-        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"release");
+        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(), "release");
     }
-    
+
     protected FlowReleaseManager getHotfixManager() throws Exception
     {
-        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"hotfix");
+        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(), "hotfix");
     }
 
     protected FlowReleaseManager getFeatureManager() throws Exception
     {
-        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(),"feature");
+        return (FlowReleaseManager) lookup(FlowReleaseManager.class.getName(), "feature");
     }
 
     protected String readTestProjectFile(String fileName) throws IOException
@@ -288,19 +287,20 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         File testResourcesDir = getTestFile(PROJECT_BASEDIR + "src/test/resources/");
         File resourceDir = null;
         File targetDir = null;
-        if(Strings.isNullOrEmpty(subpath))
+        if (Strings.isNullOrEmpty(subpath))
         {
-            resourceDir = new File( testResourcesDir, "projects/" + path + "/" );
-            targetDir = new File( testFileBase, "projects/" + path + "/" );
+            resourceDir = new File(testResourcesDir, "projects/" + path + "/");
+            targetDir = new File(testFileBase, "projects/" + path + "/");
         }
         else
         {
-            resourceDir = new File( testResourcesDir, "projects/" + path + "/" + subpath + "/" );
-            targetDir = new File( testFileBase, "projects/" + path + "/" + subpath + "/" );
+            resourceDir = new File(testResourcesDir, "projects/" + path + "/" + subpath + "/");
+            targetDir = new File(testFileBase, "projects/" + path + "/" + subpath + "/");
         }
 
         FileUtils.copyDirectoryStructure(resourceDir, targetDir);
     }
+
     protected List<MavenProject> createReactorProjects(String path, String subpath) throws Exception
     {
         return createReactorProjects(path, path, subpath, true);
@@ -316,41 +316,41 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         return createReactorProjects(path, path, subpath, false);
     }
 
-    protected List<MavenProject> createReactorProjects( String path, String targetPath, String subpath, boolean clean )
+    protected List<MavenProject> createReactorProjects(String path, String targetPath, String subpath, boolean clean)
             throws Exception
     {
         File testFile = null;
 
-        if(Strings.isNullOrEmpty(subpath))
+        if (Strings.isNullOrEmpty(subpath))
         {
-            testFile = new File( testFileBase, "projects/" + path + "/pom.xml" );
+            testFile = new File(testFileBase, "projects/" + path + "/pom.xml");
         }
         else
         {
-            testFile = new File( testFileBase, "projects/" + path + "/" + subpath + "/pom.xml" );
+            testFile = new File(testFileBase, "projects/" + path + "/" + subpath + "/pom.xml");
         }
 
         Stack<File> projectFiles = new Stack<File>();
-        projectFiles.push( testFile );
+        projectFiles.push(testFile);
 
         List<DefaultArtifactRepository> repos =
-                Collections.singletonList( new DefaultArtifactRepository( "central", getRemoteRepositoryURL(), new DefaultRepositoryLayout() ) );
+                Collections.singletonList(new DefaultArtifactRepository("central", getRemoteRepositoryURL(), new DefaultRepositoryLayout()));
 
         Repository repository = new Repository();
-        repository.setId( "central" );
-        repository.setUrl( getRemoteRepositoryURL() );
+        repository.setId("central");
+        repository.setUrl(getRemoteRepositoryURL());
 
-        ProfileManager profileManager = new DefaultProfileManager( getContainer() );
+        ProfileManager profileManager = new DefaultProfileManager(getContainer());
         Profile profile = new Profile();
-        profile.setId( "profile" );
-        profile.addRepository( repository );
-        profileManager.addProfile( profile );
-        profileManager.activateAsDefault( profile.getId() );
+        profile.setId("profile");
+        profile.addRepository(repository);
+        profileManager.addProfile(profile);
+        profileManager.activateAsDefault(profile.getId());
 
         List<MavenProject> reactorProjects = new ArrayList<MavenProject>();
         String cleaned = "";
 
-        while ( !projectFiles.isEmpty() )
+        while (!projectFiles.isEmpty())
         {
             File file = (File) projectFiles.pop();
 
@@ -358,96 +358,99 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
             //FileUtils.copyDirectory(srcDir,file.getParentFile());
             String filePath = file.getPath();
-            int index = filePath.indexOf( "projects" );
-            filePath = filePath.substring( index ).replace( '\\', '/' );
+            int index = filePath.indexOf("projects");
+            filePath = filePath.substring(index).replace('\\', '/');
 
-            File newFile = new File( testFileBase, StringUtils.replace( filePath, path, targetPath ) );
+            File newFile = new File(testFileBase, StringUtils.replace(filePath, path, targetPath));
 
-            if(clean && !cleaned.equals(newFile.getParentFile().getName()))
+            if (clean && !cleaned.equals(newFile.getParentFile().getName()))
             {
                 //clean the parent dir
                 newFile.mkdirs();
                 FileUtils.cleanDirectory(newFile.getParentFile());
 
-                File srcDir = new File(getTestFile(PROJECT_BASEDIR + "src/test/resources/"),filePath).getParentFile();
+                File srcDir = new File(getTestFile(PROJECT_BASEDIR + "src/test/resources/"), filePath).getParentFile();
                 FileUtils.copyDirectoryStructure(srcDir, newFile.getParentFile());
 
                 cleaned = newFile.getParentFile().getName();
             }
 
-            MavenProject project = projectBuilder.build( newFile, localRepository, profileManager );
+            MavenProject project = projectBuilder.build(newFile, localRepository, profileManager);
 
-            for ( Iterator i = project.getModules().iterator(); i.hasNext(); )
+            for (Iterator i = project.getModules().iterator(); i.hasNext(); )
             {
                 String module = (String) i.next();
-                File moduleFile = new File( file.getParentFile(), module);
-                if(moduleFile.isFile()){
-                    projectFiles.push( moduleFile );
-                }else{
-                    projectFiles.push( new File( moduleFile, "/pom.xml" ) );
+                File moduleFile = new File(file.getParentFile(), module);
+                if (moduleFile.isFile())
+                {
+                    projectFiles.push(moduleFile);
+                }
+                else
+                {
+                    projectFiles.push(new File(moduleFile, "/pom.xml"));
                 }
             }
 
-            reactorProjects.add( project );
+            reactorProjects.add(project);
         }
 
-        ProjectSorter sorter = new ProjectSorter( reactorProjects );
+        ProjectSorter sorter = new ProjectSorter(reactorProjects);
 
         reactorProjects = sorter.getSortedProjects();
 
-        ArtifactFactory artifactFactory = (ArtifactFactory) lookup( ArtifactFactory.ROLE );
-        ArtifactCollector artifactCollector = (ArtifactCollector) lookup( ArtifactCollector.class.getName() );
-        ArtifactMetadataSource artifactMetadataSource = (ArtifactMetadataSource) lookup( ArtifactMetadataSource.ROLE );
+        ArtifactFactory artifactFactory = (ArtifactFactory) lookup(ArtifactFactory.ROLE);
+        ArtifactCollector artifactCollector = (ArtifactCollector) lookup(ArtifactCollector.class.getName());
+        ArtifactMetadataSource artifactMetadataSource = (ArtifactMetadataSource) lookup(ArtifactMetadataSource.ROLE);
 
         // pass back over and resolve dependencies - can't be done earlier as the order may not be correct
-        for ( Iterator i = reactorProjects.iterator(); i.hasNext(); )
+        for (Iterator i = reactorProjects.iterator(); i.hasNext(); )
         {
             MavenProject project = (MavenProject) i.next();
 
-            project.setRemoteArtifactRepositories( repos );
-            project.setPluginArtifactRepositories( repos );
+            project.setRemoteArtifactRepositories(repos);
+            project.setPluginArtifactRepositories(repos);
 
             Artifact projectArtifact = project.getArtifact();
 
             Map managedVersions = createManagedVersionMap(
                     ArtifactUtils.versionlessKey(projectArtifact.getGroupId(), projectArtifact.getArtifactId()),
-                    project.getDependencyManagement(), artifactFactory );
+                    project.getDependencyManagement(), artifactFactory);
 
-            project.setDependencyArtifacts( project.createArtifacts( artifactFactory, null, null ) );
+            project.setDependencyArtifacts(project.createArtifacts(artifactFactory, null, null));
 
-            ArtifactResolutionResult result = artifactCollector.collect( project.getDependencyArtifacts(),
+            ArtifactResolutionResult result = artifactCollector.collect(project.getDependencyArtifacts(),
                     projectArtifact, managedVersions,
                     localRepository, repos, artifactMetadataSource,
-                    null, Collections.EMPTY_LIST );
+                    null, Collections.EMPTY_LIST);
 
-            project.setArtifacts( result.getArtifacts() );
+            project.setArtifacts(result.getArtifacts());
         }
 
         return reactorProjects;
     }
 
-    private Map<String,Artifact> createManagedVersionMap(String projectId, DependencyManagement dependencyManagement, ArtifactFactory artifactFactory) throws ProjectBuildingException
+    private Map<String, Artifact> createManagedVersionMap(String projectId, DependencyManagement dependencyManagement, ArtifactFactory artifactFactory) throws ProjectBuildingException
     {
-        Map<String,Artifact> map;
-        if ( dependencyManagement != null && dependencyManagement.getDependencies() != null )
+        Map<String, Artifact> map;
+        if (dependencyManagement != null && dependencyManagement.getDependencies() != null)
         {
-            map = new HashMap<String,Artifact>();
-            for ( Iterator i = dependencyManagement.getDependencies().iterator(); i.hasNext(); )
+            map = new HashMap<String, Artifact>();
+            for (Iterator i = dependencyManagement.getDependencies().iterator(); i.hasNext(); )
             {
                 Dependency d = (Dependency) i.next();
 
                 try
                 {
-                    VersionRange versionRange = VersionRange.createFromVersionSpec( d.getVersion() );
-                    Artifact artifact = artifactFactory.createDependencyArtifact( d.getGroupId(), d.getArtifactId(),
+                    VersionRange versionRange = VersionRange.createFromVersionSpec(d.getVersion());
+                    Artifact artifact = artifactFactory.createDependencyArtifact(d.getGroupId(), d.getArtifactId(),
                             versionRange, d.getType(),
-                            d.getClassifier(), d.getScope() );
-                    map.put( d.getManagementKey(), artifact );
+                            d.getClassifier(), d.getScope());
+                    map.put(d.getManagementKey(), artifact);
                 }
-                catch ( InvalidVersionSpecificationException e )
+                catch (InvalidVersionSpecificationException e)
                 {
-                    throw new ProjectBuildingException( projectId, "Unable to parse version '" + d.getVersion() +
-                            "' for dependency '" + d.getManagementKey() + "': " + e.getMessage(), e );
+                    throw new ProjectBuildingException(projectId, "Unable to parse version '" + d.getVersion() +
+                            "' for dependency '" + d.getManagementKey() + "': " + e.getMessage(), e);
                 }
             }
         }
@@ -460,15 +463,15 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     private String getRemoteRepositoryURL() throws IOException
     {
-        File testFile = getTestFile(PROJECT_BASEDIR + "src/test/remote-repository" );
-        if (testFile.getAbsolutePath().equals( testFile.getCanonicalPath() ) )
+        File testFile = getTestFile(PROJECT_BASEDIR + "src/test/remote-repository");
+        if (testFile.getAbsolutePath().equals(testFile.getCanonicalPath()))
         {
-            return "file://" + getTestFile(PROJECT_BASEDIR + "src/test/remote-repository" ).getAbsolutePath().replace( '\\', '/' );
+            return "file://" + getTestFile(PROJECT_BASEDIR + "src/test/remote-repository").getAbsolutePath().replace('\\', '/');
         }
-        return "file://" + getTestFile(PROJECT_BASEDIR + "src/test/remote-repository" ).getCanonicalPath().replace( '\\', '/' );
+        return "file://" + getTestFile(PROJECT_BASEDIR + "src/test/remote-repository").getCanonicalPath().replace('\\', '/');
     }
 
-    protected void comparePomFiles(List<MavenProject> reactorProjects)throws IOException
+    protected void comparePomFiles(List<MavenProject> reactorProjects) throws IOException
     {
         for (MavenProject project : reactorProjects)
         {
@@ -476,7 +479,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         }
     }
 
-    protected void compareDevPomFiles(List<MavenProject> reactorProjects)throws IOException
+    protected void compareDevPomFiles(List<MavenProject> reactorProjects) throws IOException
     {
         for (MavenProject project : reactorProjects)
         {
@@ -484,7 +487,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         }
     }
 
-    protected void compareSnapPomFiles(List<MavenProject> reactorProjects)throws IOException
+    protected void compareSnapPomFiles(List<MavenProject> reactorProjects) throws IOException
     {
         for (MavenProject project : reactorProjects)
         {
@@ -495,21 +498,21 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     protected void comparePomFiles(MavenProject project) throws IOException
     {
         File actualFile = project.getFile();
-        File expectedFile = new File(actualFile.getParentFile(), "expected-nosnap-"+actualFile.getName() );
+        File expectedFile = new File(actualFile.getParentFile(), "expected-nosnap-" + actualFile.getName());
         comparePomFiles(expectedFile, actualFile);
     }
 
     protected void compareDevPomFiles(MavenProject project) throws IOException
     {
         File actualFile = project.getFile();
-        File expectedFile = new File(actualFile.getParentFile(), "expected-dev-"+actualFile.getName() );
+        File expectedFile = new File(actualFile.getParentFile(), "expected-dev-" + actualFile.getName());
         comparePomFiles(expectedFile, actualFile);
     }
 
     protected void compareSnapPomFiles(MavenProject project) throws IOException
     {
         File actualFile = project.getFile();
-        File expectedFile = new File(actualFile.getParentFile(), "expected-snap-"+actualFile.getName() );
+        File expectedFile = new File(actualFile.getParentFile(), "expected-snap-" + actualFile.getName());
         comparePomFiles(expectedFile, actualFile);
     }
 
@@ -518,10 +521,10 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
         String expectedPom = ReleaseUtil.readXmlFile(expectedFile);
         String actualPom = ReleaseUtil.readXmlFile(actualFile);
 
-        assertEquals(expectedPom,actualPom);
+        assertEquals(expectedPom, actualPom);
     }
-    
-    public void updatePomVersion(File pomFile, String oldVersion,String newVersion) throws IOException
+
+    public void updatePomVersion(File pomFile, String oldVersion, String newVersion) throws IOException
     {
         String xmlString = org.apache.commons.io.FileUtils.readFileToString(pomFile);
         String updatedXml = org.apache.commons.lang.StringUtils.replace(xmlString, "<version>" + oldVersion + "</version>", "<version>" + newVersion + "</version>");
@@ -532,7 +535,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
     {
         File baseDir = new File(System.getProperty("java.io.tmpdir"));
         String name = randomName("mvngf-");
-        File tmp = new File(baseDir,name);
+        File tmp = new File(baseDir, name);
 
         tmp.mkdirs();
 
@@ -541,7 +544,7 @@ public abstract class AbstractFlowManagerTest extends PlexusJUnit4TestCase
 
     public File newDir(String name)
     {
-        return new File(testFileBase,name);
+        return new File(testFileBase, name);
     }
 
     public File newDir()

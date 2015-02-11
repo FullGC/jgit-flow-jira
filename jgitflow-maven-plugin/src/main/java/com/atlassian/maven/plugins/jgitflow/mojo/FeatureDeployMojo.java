@@ -16,15 +16,14 @@ import org.apache.maven.plugins.annotations.Parameter;
 @Mojo(name = "feature-deploy", aggregator = true)
 public class FeatureDeployMojo extends AbstractJGitFlowMojo
 {
-    
+
     /**
      * Default name of the feature. This option is primarily useful when starting the goal in non-interactive mode.
-     *
      */
-    @Parameter( property = "featureName", defaultValue = "")
+    @Parameter(property = "featureName", defaultValue = "")
     private String featureName = "";
 
-    @Parameter( property = "goals", defaultValue = "")
+    @Parameter(property = "goals", defaultValue = "")
     private String goals = "";
 
     @Parameter(property = "buildNumber", defaultValue = "")
@@ -32,28 +31,32 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
 
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
-    
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setInteractive(getSettings().isInteractiveMode())
-                .setNoDeploy(false)
-                .setEnableFeatureVersions(true)
-                .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
-                .setPullMaster(pullMaster)
-                .setPullDevelop(pullDevelop)
-                .setDefaultOriginUrl(defaultOriginUrl)
-                .setAllowRemote(isRemoteAllowed())
-                .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
-        
+           .setNoDeploy(false)
+           .setEnableFeatureVersions(true)
+           .setAlwaysUpdateOrigin(alwaysUpdateOrigin)
+           .setPullMaster(pullMaster)
+           .setPullDevelop(pullDevelop)
+           .setDefaultOriginUrl(defaultOriginUrl)
+           .setAllowRemote(isRemoteAllowed())
+           .setEnableSshAgent(enableSshAgent)
+           .setUsername(username)
+           .setPassword(password)
+           .setUseReleaseProfile(false)
+           .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
+
         try
         {
             releaseManager.deploy(ctx, getReactorProjects(), session, buildNumber, goals);
         }
         catch (MavenJGitFlowException e)
         {
-            throw new MojoExecutionException("Error finishing feature: " + e.getMessage(),e);
+            throw new MojoExecutionException("Error finishing feature: " + e.getMessage(), e);
         }
     }
 }

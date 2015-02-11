@@ -2,11 +2,11 @@ package com.atlassian.maven.plugins.jgitflow.manager;
 
 import java.util.List;
 
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.ReleaseMergeResult;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
-import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.extension.ReleaseFinishPluginExtension;
@@ -45,7 +45,7 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
             String releaseLabel = getStartLabelAndRunPreflight(ctx, reactorProjects, session);
 
             flow = jGitFlowProvider.gitFlow();
-            
+
             startExtension.init(ctx.getReleaseStartExtension());
 
             flow.releaseStart(releaseLabel)
@@ -65,7 +65,7 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
         {
             if (null != flow)
             {
-                flow.getReporter().flush();
+                JGitFlowReporter.get().flush();
             }
         }
     }
@@ -79,10 +79,10 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
         try
         {
             finishExtension.init(ctx.getReleaseFinishExtension());
-            String releaseLabel = getFinishLabelAndRunPreflight(ctx,reactorProjects,session);
+            String releaseLabel = getFinishLabelAndRunPreflight(ctx, reactorProjects, session);
 
             flow = jGitFlowProvider.gitFlow();
-            JGitFlowReporter reporter = flow.getReporter();
+            JGitFlowReporter reporter = JGitFlowReporter.get();
             MavenProject originalRootProject = ReleaseUtil.getRootProject(reactorProjects);
 
             getLogger().info("running jgitflow release finish...");
@@ -116,7 +116,7 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
 
                 throw new MavenJGitFlowException("Error while merging release!");
             }
-            
+
         }
         catch (JGitFlowException e)
         {
@@ -126,7 +126,7 @@ public class DefaultFlowReleaseManager extends AbstractProductionBranchManager
         {
             if (null != flow)
             {
-                flow.getReporter().flush();
+                JGitFlowReporter.get().flush();
             }
         }
     }

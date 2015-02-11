@@ -2,7 +2,6 @@ package com.atlassian.jgitflow.core.command;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
@@ -14,13 +13,13 @@ import com.atlassian.jgitflow.core.util.GitHelper;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.util.StringUtils;
 
 public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlowCommand<C, T>
 {
@@ -28,9 +27,9 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
     private boolean forceDeleteBranch;
     private String message;
 
-    protected AbstractBranchMergingCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JGitFlowReporter reporter)
+    protected AbstractBranchMergingCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
     {
-        super(branchName, git, gfConfig, reporter);
+        super(branchName, git, gfConfig);
         this.forceDeleteBranch = true;
         this.message = "tagging release " + branchName;
     }
@@ -60,7 +59,7 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
             reporter.infoText(getCommandName(), "merging '" + branchToMerge + "' into '" + mergeTarget + "'...");
 
             runExtensionCommands(extension.beforeMerge());
-            
+
             Ref localBranchRef = GitHelper.getLocalBranch(git, branchToMerge);
             if (squash)
             {
@@ -74,9 +73,19 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
             }
             else
             {
-                mergeResult = git.merge().setFastForward(ffMode).include(localBranchRef).call();
+                MergeCommand mergeCommand = git.merge().setFastForward(ffMode).include(localBranchRef);
+                
+                // check if you want scmCommentSuffix/scmCommentPrefix in the comment (if either is set, it shuold be used for merge messages as well for consistency)
+                boolean isCustomScmMessage = (!StringUtils.isEmptyOrNull(getScmMessagePrefix())) || (!StringUtils.isEmptyOrNull(getScmMessageSuffix()));
+                
+                if(isCustomScmMessage) {
+                  mergeCommand.setCommit(false);
+                }
+                
+                mergeResult = mergeCommand.call();
+                
 
-                if (mergeResult.getMergeStatus().isSuccessful() && MergeCommand.FastForwardMode.FF.equals(ffMode))
+                if (mergeResult.getMergeStatus().isSuccessful() && (MergeCommand.FastForwardMode.FF.equals(ffMode) || isCustomScmMessage))
                 {
                     git.commit().setMessage(getScmMessagePrefix() + "merging '" + branchToMerge + "' into '" + mergeTarget + "'" + getScmMessageSuffix()).call();
                 }
@@ -140,7 +149,7 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
                     git.branchDelete().setForce(forceDeleteBranch).setBranchNames(branchToDelete).call();
                 }
 
-                if (isPush() && GitHelper.remoteBranchExists(git, branchToDelete, reporter))
+                if (isPush() && GitHelper.remoteBranchExists(git, branchToDelete))
                 {
                     reporter.infoText(getCommandName(), "pushing deleted branch: :" + branchToDelete);
                     RefSpec deleteSpec = new RefSpec().setSource(null).setDestination(Constants.R_HEADS + branchToDelete);
@@ -153,9 +162,9 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
     protected void checkoutTopicBranch(String branchName, BranchMergingExtension extension) throws GitAPIException, JGitFlowExtensionException
     {
         git.checkout().setName(branchName).call();
-        runExtensionCommands(extension.afterTopicCheckout());    
+        runExtensionCommands(extension.afterTopicCheckout());
     }
-    
+
     protected MergeResult createEmptyMergeResult()
     {
         return new MergeResult(null, null, new ObjectId[]{null, null}, MergeResult.MergeStatus.ALREADY_UP_TO_DATE, MergeStrategy.RESOLVE, null);

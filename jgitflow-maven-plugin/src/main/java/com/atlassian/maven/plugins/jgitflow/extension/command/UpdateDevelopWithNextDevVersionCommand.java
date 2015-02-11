@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlow;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -16,7 +15,10 @@ import com.atlassian.maven.plugins.jgitflow.helper.PomUpdater;
 import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.SessionAndProjects;
 import com.atlassian.maven.plugins.jgitflow.manager.tasks.CheckoutAndGetProjects;
-import com.atlassian.maven.plugins.jgitflow.provider.*;
+import com.atlassian.maven.plugins.jgitflow.provider.BranchLabelProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
+import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.annotations.Component;
@@ -31,7 +33,7 @@ public class UpdateDevelopWithNextDevVersionCommand implements ExtensionCommand
 
     @Requirement
     private ProjectHelper projectHelper;
-    
+
     @Requirement
     private JGitFlowProvider jGitFlowProvider;
 
@@ -43,20 +45,20 @@ public class UpdateDevelopWithNextDevVersionCommand implements ExtensionCommand
 
     @Requirement
     private PomUpdater pomUpdater;
-    
+
     @Requirement
     private ContextProvider contextProvider;
-    
+
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         try
         {
             JGitFlow flow = jGitFlowProvider.gitFlow();
             ReleaseContext ctx = contextProvider.getContext();
-            
+
             String originalBranchName = branchHelper.getCurrentBranchName();
-            
+
             //check out develop and reload the reactor
             SessionAndProjects sessionAndProjects = checkoutAndGetProjects.run(flow.getDevelopBranchName());
             List<MavenProject> developProjects = sessionAndProjects.getProjects();
@@ -66,9 +68,9 @@ public class UpdateDevelopWithNextDevVersionCommand implements ExtensionCommand
             pomUpdater.updatePomsWithNextDevelopmentVersion(ProjectCacheKey.DEVELOP_BRANCH, developProjects);
 
             projectHelper.commitAllPoms(flow.git(), developProjects, ctx.getScmCommentPrefix() + "updating poms for " + developLabel + " development" + ctx.getScmCommentSuffix());
-            
+
             flow.git().checkout().setName(originalBranchName).call();
-            
+
         }
         catch (Exception e)
         {

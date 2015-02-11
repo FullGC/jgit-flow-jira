@@ -1,7 +1,6 @@
 package ut.com.atlassian.jgitflow.core;
 
 import java.io.File;
-import java.util.List;
 
 import com.atlassian.jgitflow.core.InitContext;
 import com.atlassian.jgitflow.core.JGitFlow;
@@ -28,7 +27,7 @@ public class GitFlowInitTest extends BaseGitFlowTest
 
         flow.git().checkout().setName("develop").call();
         assertEquals(flow.getDevelopBranchName(), flow.git().getRepository().getBranch());
-        
+
         File gitDir = new File(workDir, ".git");
         File gitConfig = new File(gitDir, "config");
 
@@ -90,7 +89,7 @@ public class GitFlowInitTest extends BaseGitFlowTest
 
         flow.git().checkout().setName("develop").call();
         assertEquals(flow.getDevelopBranchName(), flow.git().getRepository().getBranch());
-        
+
         File gitDir = git.getRepository().getDirectory();
         File gitConfig = new File(gitDir, "config");
 
@@ -124,7 +123,7 @@ public class GitFlowInitTest extends BaseGitFlowTest
 
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
         assertEquals(flow.getDevelopBranchName(), flow.git().getRepository().getBranch());
-        
+
         File gitDir = git.getRepository().getDirectory();
         File gitConfig = new File(gitDir, "config");
 
@@ -160,7 +159,7 @@ public class GitFlowInitTest extends BaseGitFlowTest
 
         flow.git().checkout().setName("develop").call();
         assertEquals(flow.getDevelopBranchName(), flow.git().getRepository().getBranch());
-        
+
         File gitDir = gfGit.getRepository().getDirectory();
         File gitConfig = new File(gitDir, "config");
 
@@ -199,7 +198,7 @@ public class GitFlowInitTest extends BaseGitFlowTest
 
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
         assertEquals(flow.getDevelopBranchName(), flow.git().getRepository().getBranch());
-        
+
         File gitDir = gfGit.getRepository().getDirectory();
         File gitConfig = new File(gitDir, "config");
 
@@ -238,7 +237,7 @@ public class GitFlowInitTest extends BaseGitFlowTest
 
         flow.git().checkout().setName(flow.getDevelopBranchName()).call();
         assertEquals(flow.getDevelopBranchName(), flow.git().getRepository().getBranch());
-        
+
         File gitDir = gfGit.getRepository().getDirectory();
         File gitConfig = new File(gitDir, "config");
 
@@ -364,11 +363,11 @@ public class GitFlowInitTest extends BaseGitFlowTest
         git = RepoUtil.createRepositoryWithMaster(newDir());
 
         File root = git.getRepository().getWorkTree();
-        File nested1 = new File(root,"nested1");
-        File nested2 = new File(nested1,"nested2");
-        
+        File nested1 = new File(root, "nested1");
+        File nested2 = new File(nested1, "nested2");
+
         nested2.mkdirs();
-        
+
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(nested2).call();
 
@@ -414,16 +413,16 @@ public class GitFlowInitTest extends BaseGitFlowTest
         remoteGit.branchDelete().setBranchNames("master").setForce(true).call();
 
         remoteGit.branchCreate().setName(featureBranch).call();
-        
+
         git = Git.cloneRepository().setDirectory(workDir).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).setBranch(featureBranch).setCloneAllBranches(false).call();
 
-        assertEquals(featureBranch,git.getRepository().getBranch());
-        
+        assertEquals(featureBranch, git.getRepository().getBranch());
+
         JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
         JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
 
         //make sure we're STILL on the feature
-        assertEquals(featureBranch,git.getRepository().getBranch());
+        assertEquals(featureBranch, git.getRepository().getBranch());
 
     }
 }

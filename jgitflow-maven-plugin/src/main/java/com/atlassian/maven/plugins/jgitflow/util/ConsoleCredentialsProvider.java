@@ -1,7 +1,9 @@
 package com.atlassian.maven.plugins.jgitflow.util;
 
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
+
 import com.google.common.base.Strings;
+
 import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.transport.CredentialItem;
@@ -18,32 +20,36 @@ public class ConsoleCredentialsProvider extends CredentialsProvider
     private String userName;
     private String password;
 
-    public ConsoleCredentialsProvider(PrettyPrompter prompter) {
+    public ConsoleCredentialsProvider(PrettyPrompter prompter)
+    {
         this.prompter = prompter;
     }
 
     @Override
-    public boolean isInteractive() {
+    public boolean isInteractive()
+    {
         return true;
     }
 
     @Override
-    public boolean supports(CredentialItem... items) {
-        for (CredentialItem i : items) {
+    public boolean supports(CredentialItem... items)
+    {
+        for (CredentialItem i : items)
+        {
             if (i instanceof CredentialItem.StringType)
-                continue;
+            { continue; }
 
             else if (i instanceof CredentialItem.CharArrayType)
-                continue;
+            { continue; }
 
             else if (i instanceof CredentialItem.YesNoType)
-                continue;
+            { continue; }
 
             else if (i instanceof CredentialItem.InformationalMessage)
-                continue;
+            { continue; }
 
             else
-                return false;
+            { return false; }
         }
         return true;
     }
@@ -75,7 +81,8 @@ public class ConsoleCredentialsProvider extends CredentialsProvider
         return ok;
     }
 
-    private boolean get(CredentialItem.StringType item) {
+    private boolean get(CredentialItem.StringType item)
+    {
         if (item.isValueSecure())
         {
             String v = askPassword(item.getPromptText());
@@ -88,7 +95,9 @@ public class ConsoleCredentialsProvider extends CredentialsProvider
             {
                 return false;
             }
-        } else {
+        }
+        else
+        {
             String v = askUser(item.getPromptText());
             if (v != null)
             {
@@ -102,7 +111,8 @@ public class ConsoleCredentialsProvider extends CredentialsProvider
         }
     }
 
-    private boolean get(CredentialItem.CharArrayType item) {
+    private boolean get(CredentialItem.CharArrayType item)
+    {
         if (item.isValueSecure())
         {
             String v = askPassword(item.getPromptText());
@@ -115,7 +125,9 @@ public class ConsoleCredentialsProvider extends CredentialsProvider
             {
                 return false;
             }
-        } else {
+        }
+        else
+        {
             String v = askUser(item.getPromptText());
             if (v != null)
             {
@@ -129,35 +141,49 @@ public class ConsoleCredentialsProvider extends CredentialsProvider
         }
     }
 
-    private boolean get(CredentialItem.InformationalMessage item) {
-        try {
+    private boolean get(CredentialItem.InformationalMessage item)
+    {
+        try
+        {
             prompter.promptForPassword(item.getPromptText());
-        } catch (PrompterException e) {
+        }
+        catch (PrompterException e)
+        {
             e.printStackTrace();
         }
         return true;
     }
 
-    private String askPassword(String prompted) {
-        try {
-            if (this.password == null) {
+    private String askPassword(String prompted)
+    {
+        try
+        {
+            if (this.password == null)
+            {
                 this.password = Strings.emptyToNull(prompter.promptForPassword(prompted));
             }
             return this.password;
-        } catch (PrompterException e) {
+        }
+        catch (PrompterException e)
+        {
             e.printStackTrace();
         }
 
         return null;
     }
 
-    private String askUser(String prompted) {
-        try {
-            if (this.userName == null) {
+    private String askUser(String prompted)
+    {
+        try
+        {
+            if (this.userName == null)
+            {
                 this.userName = Strings.emptyToNull(prompter.prompt(prompted));
             }
             return this.userName;
-        } catch (PrompterException e) {
+        }
+        catch (PrompterException e)
+        {
             e.printStackTrace();
         }
 

@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
@@ -22,8 +21,8 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.eclipse.jgit.api.Git;
 
-@Component(role = UpdateDevelopWithHotfixVersionsCommand.class)
-public class UpdateDevelopWithHotfixVersionsCommand implements ExtensionCommand
+@Component(role = UpdateCurrentBranchWithHotfixVersionsCommand.class)
+public class UpdateCurrentBranchWithHotfixVersionsCommand implements ExtensionCommand
 {
     @Requirement
     private VersionCacheProvider versionCacheProvider;
@@ -44,7 +43,7 @@ public class UpdateDevelopWithHotfixVersionsCommand implements ExtensionCommand
     private ContextProvider contextProvider;
 
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         try
         {
@@ -52,16 +51,18 @@ public class UpdateDevelopWithHotfixVersionsCommand implements ExtensionCommand
 
             versionCacheProvider.cacheCurrentBranchVersions();
 
-            List<MavenProject> developProjects = branchHelper.getProjectsForCurrentBranch();
+            String currentName = branchHelper.getCurrentBranchName();
+
+            List<MavenProject> currentProjects = branchHelper.getProjectsForCurrentBranch();
 
             List<MavenProject> hotfixProjects = branchHelper.getProjectsForTopicBranch(BranchType.HOTFIX);
 
-            pomUpdater.copyPomVersionsFromProject(hotfixProjects, developProjects);
-            projectHelper.commitAllPoms(git, developProjects, ctx.getScmCommentPrefix() + "Updating develop poms to hotfix version to avoid merge conflicts" + ctx.getScmCommentSuffix());
+            pomUpdater.copyPomVersionsFromProject(hotfixProjects, currentProjects);
+            projectHelper.commitAllPoms(git, currentProjects, ctx.getScmCommentPrefix() + "Updating " + currentName + " poms to hotfix version to avoid merge conflicts" + ctx.getScmCommentSuffix());
         }
         catch (Exception e)
         {
-            throw new JGitFlowExtensionException("Error updating develop poms to hotfix version", e);
+            throw new JGitFlowExtensionException("Error updating current branch poms to hotfix version", e);
         }
 
     }

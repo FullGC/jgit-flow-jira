@@ -18,22 +18,22 @@ public class VersionCacheProvider
 {
     private static final VersionCacheProvider INSTANCE = new VersionCacheProvider();
     private Map<String, String> cache;
-    
+
     @Requirement
     BranchHelper branchHelper;
-    
+
     @Requirement
     VersionProvider versionProvider;
-    
-    public Map<String,String> cacheCurrentBranchVersions() throws GitAPIException, JGitFlowException, ReactorReloadException, IOException
+
+    public Map<String, String> cacheCurrentBranchVersions() throws GitAPIException, JGitFlowException, ReactorReloadException, IOException
     {
         List<MavenProject> projects = branchHelper.getProjectsForCurrentBranch();
         INSTANCE.cache = versionProvider.getOriginalVersions(projects);
-        
+
         return INSTANCE.cache;
     }
-    
-    public Map<String,String> getCachedVersions()
+
+    public Map<String, String> getCachedVersions()
     {
         return INSTANCE.cache;
     }

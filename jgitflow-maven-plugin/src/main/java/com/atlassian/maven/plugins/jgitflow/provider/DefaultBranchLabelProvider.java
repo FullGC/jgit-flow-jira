@@ -5,12 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
+import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.util.GitHelper;
-import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
@@ -137,24 +138,24 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
             {
                 String rheadPrefix = Constants.R_HEADS + flow.getFeatureBranchPrefix();
                 String rOriginPrefix = JGitFlowConstants.R_REMOTE_ORIGIN + flow.getFeatureBranchPrefix();
-                
-                List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getFeatureBranchPrefix(), flow.getReporter());
+
+                List<Ref> branches = GitHelper.listBranchesWithPrefix(flow.git(), flow.getFeatureBranchPrefix());
 
                 for (Ref branch : branches)
                 {
                     String simpleName = "";
-                    
-                    if(branch.getName().contains(rheadPrefix))
+
+                    if (branch.getName().contains(rheadPrefix))
                     {
                         simpleName = branch.getName().substring(branch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
                     }
 
-                    if(branch.getName().contains(rOriginPrefix))
+                    if (branch.getName().contains(rOriginPrefix))
                     {
                         simpleName = branch.getName().substring(branch.getName().indexOf(rOriginPrefix) + rOriginPrefix.length());
                     }
-                    
-                    if(!Strings.isNullOrEmpty(simpleName) && !possibleValues.contains(simpleName))
+
+                    if (!Strings.isNullOrEmpty(simpleName) && !possibleValues.contains(simpleName))
                     {
                         possibleValues.add(simpleName);
                     }
@@ -200,27 +201,27 @@ public class DefaultBranchLabelProvider extends AbstractLogEnabled implements Br
                     throw new MavenJGitFlowException("Unsupported branch type '" + branchType.name() + "' while trying to get the current production branch label");
             }
 
-            List<Ref> productionBranches = GitHelper.listBranchesWithPrefix(flow.git(), branchPrefix, flow.getReporter());
+            List<Ref> productionBranches = GitHelper.listBranchesWithPrefix(flow.git(), branchPrefix);
 
             if (productionBranches.isEmpty())
             {
                 throw new MavenJGitFlowException("Could not find current production branch of type " + branchType.name());
             }
-            
+
             String rheadPrefix = Constants.R_HEADS + branchPrefix;
             String rOriginPrefix = JGitFlowConstants.R_REMOTE_ORIGIN + branchPrefix;
             Ref productionBranch = productionBranches.get(0);
-            
-            if(productionBranch.getName().contains(rheadPrefix))
+
+            if (productionBranch.getName().contains(rheadPrefix))
             {
                 return productionBranch.getName().substring(productionBranch.getName().indexOf(rheadPrefix) + rheadPrefix.length());
             }
 
-            if(productionBranch.getName().contains(rOriginPrefix))
+            if (productionBranch.getName().contains(rOriginPrefix))
             {
                 return productionBranch.getName().substring(productionBranch.getName().indexOf(rOriginPrefix) + rOriginPrefix.length());
             }
-            
+
             throw new JGitFlowException(productionBranch.getName() + " does not match " + rheadPrefix + " or " + rOriginPrefix);
         }
         catch (JGitFlowException e)

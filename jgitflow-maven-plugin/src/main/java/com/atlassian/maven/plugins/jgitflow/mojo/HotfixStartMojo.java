@@ -21,25 +21,23 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
     /**
      * Whether to automatically assign submodules the parent version. If set to false, the user will be prompted for the
      * version of each submodules.
-     *
      */
-    @Parameter( defaultValue = "false", property = "autoVersionSubmodules" )
+    @Parameter(defaultValue = "false", property = "autoVersionSubmodules")
     private boolean autoVersionSubmodules = false;
 
     /**
      * Default version to use when preparing a release
-     *
      */
-    @Parameter( property = "releaseVersion", defaultValue = "")
+    @Parameter(property = "releaseVersion", defaultValue = "")
     private String releaseVersion = "";
 
-    @Parameter( defaultValue = "true", property = "updateDependencies" )
+    @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies = true;
 
-    @Parameter( defaultValue = "false", property = "pushHotfixes" )
+    @Parameter(defaultValue = "false", property = "pushHotfixes")
     private boolean pushHotfixes = false;
 
-    @Parameter( property = "startCommit", defaultValue = "")
+    @Parameter(property = "startCommit", defaultValue = "")
     private String startCommit = "";
 
     @Component(hint = "hotfix")
@@ -54,9 +52,9 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
         ClassLoader oldClassloader = Thread.currentThread().getContextClassLoader();
 
         Thread.currentThread().setContextClassLoader(getClassloader(getClasspath()));
-        
+
         MavenHotfixStartExtension extensionObject = (MavenHotfixStartExtension) getExtensionInstance(hotfixStartExtension);
-        
+
         ReleaseContext ctx = new ReleaseContext(getBasedir());
         ctx.setAutoVersionSubmodules(autoVersionSubmodules)
            .setInteractive(getSettings().isInteractiveMode())
@@ -81,11 +79,11 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
 
         try
         {
-            releaseManager.start(ctx, getReactorProjects(),session);
+            releaseManager.start(ctx, getReactorProjects(), session);
         }
         catch (MavenJGitFlowException e)
         {
-            throw new MojoExecutionException("Error starting hotfix: " + e.getMessage(),e);
+            throw new MojoExecutionException("Error starting hotfix: " + e.getMessage(), e);
         }
         finally
         {

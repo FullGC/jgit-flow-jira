@@ -2,18 +2,17 @@ package com.atlassian.maven.plugins.jgitflow.extension.command;
 
 import java.util.List;
 
+import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.jgitflow.core.GitFlowConfiguration;
-import com.atlassian.jgitflow.core.JGitFlowReporter;
 import com.atlassian.jgitflow.core.command.JGitFlowCommand;
 import com.atlassian.jgitflow.core.exception.JGitFlowExtensionException;
 import com.atlassian.jgitflow.core.extension.ExtensionCommand;
 import com.atlassian.jgitflow.core.extension.ExtensionFailStrategy;
-import com.atlassian.jgitflow.core.BranchType;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.exception.UnresolvedSnapshotsException;
-import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.helper.BranchHelper;
+import com.atlassian.maven.plugins.jgitflow.helper.ProjectHelper;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 
@@ -28,7 +27,7 @@ import org.eclipse.jgit.api.Git;
 public class VerifyReleaseVersionStateAndDepsCommand implements ExtensionCommand
 {
     private static final String ls = System.getProperty("line.separator");
-    
+
     @Requirement
     private ContextProvider contextProvider;
 
@@ -37,16 +36,16 @@ public class VerifyReleaseVersionStateAndDepsCommand implements ExtensionCommand
 
     @Requirement
     private BranchHelper branchHelper;
-    
-    
+
+
     @Override
-    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand, JGitFlowReporter reporter) throws JGitFlowExtensionException
+    public void execute(GitFlowConfiguration configuration, Git git, JGitFlowCommand gitFlowCommand) throws JGitFlowExtensionException
     {
         try
         {
             BranchType branchType = branchHelper.getCurrentBranchType();
             ProjectCacheKey cacheKey = null;
-            
+
             switch (branchType)
             {
                 case RELEASE:
@@ -56,11 +55,11 @@ public class VerifyReleaseVersionStateAndDepsCommand implements ExtensionCommand
                 case HOTFIX:
                     cacheKey = ProjectCacheKey.HOTFIX_BRANCH;
                     break;
-                
+
                 case DEVELOP:
                     cacheKey = ProjectCacheKey.DEVELOP_BRANCH;
                     break;
-                
+
                 case MASTER:
                     cacheKey = ProjectCacheKey.MASTER_BRANCH;
                     break;
@@ -72,7 +71,7 @@ public class VerifyReleaseVersionStateAndDepsCommand implements ExtensionCommand
                 default:
                     throw new JGitFlowExtensionException("Unsupported branch type '" + branchType.name() + "' while running " + this.getClass().getSimpleName() + " command");
             }
-            
+
             ReleaseContext ctx = contextProvider.getContext();
             List<MavenProject> branchProjects = branchHelper.getProjectsForCurrentBranch();
 

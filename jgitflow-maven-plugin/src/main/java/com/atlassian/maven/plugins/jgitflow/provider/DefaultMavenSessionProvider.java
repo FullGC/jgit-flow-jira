@@ -7,9 +7,9 @@ import org.codehaus.plexus.component.annotations.Component;
 public class DefaultMavenSessionProvider implements MavenSessionProvider
 {
     private static final DefaultMavenSessionProvider INSTANCE = new DefaultMavenSessionProvider();
-    
+
     private MavenSession session;
-    
+
     @Override
     public MavenSession getSession()
     {

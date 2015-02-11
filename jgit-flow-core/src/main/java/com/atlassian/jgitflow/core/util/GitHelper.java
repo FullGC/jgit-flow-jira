@@ -214,8 +214,9 @@ public class GitHelper
      * @return if the branch exists or not
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */
-    public static boolean remoteBranchExists(Git git, final String branch, JGitFlowReporter reporter) throws JGitFlowGitAPIException
+    public static boolean remoteBranchExists(Git git, final String branch) throws JGitFlowGitAPIException
     {
+        JGitFlowReporter reporter = JGitFlowReporter.get();
         reporter.debugMethod(getName(), "remoteBranchExists");
         reporter.debugText(getName(), "checking for branch: " + branch);
         boolean exists = false;
@@ -264,8 +265,9 @@ public class GitHelper
         }
     }
 
-    public static boolean localBranchBehindRemote(Git git, final String branch, JGitFlowReporter reporter) throws JGitFlowIOException
+    public static boolean localBranchBehindRemote(Git git, final String branch) throws JGitFlowIOException
     {
+        JGitFlowReporter reporter = JGitFlowReporter.get();
         final RevWalk walk = new RevWalk(git.getRepository());
         walk.setRetainBody(true);
         boolean behind = false;
@@ -393,8 +395,9 @@ public class GitHelper
      * @return A list of branch references matching the given prefix
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */
-    public static List<Ref> listBranchesWithPrefix(Git git, String prefix, JGitFlowReporter reporter) throws JGitFlowGitAPIException
+    public static List<Ref> listBranchesWithPrefix(Git git, String prefix) throws JGitFlowGitAPIException
     {
+        JGitFlowReporter reporter = JGitFlowReporter.get();
         List<Ref> branches = new ArrayList<Ref>();
         reporter.debugMethod(getName(), "listBranchesWithPrefix");
 
@@ -450,8 +453,10 @@ public class GitHelper
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */
-    public static CleanStatus workingTreeIsClean(Git git, boolean allowUntracked, JGitFlowReporter reporter) throws JGitFlowIOException, JGitFlowGitAPIException
+    public static CleanStatus workingTreeIsClean(Git git, boolean allowUntracked) throws JGitFlowIOException, JGitFlowGitAPIException
     {
+        JGitFlowReporter reporter = JGitFlowReporter.get();
+
         reporter.debugMethod(getName(), "workingTreeIsClean");
         try
         {
@@ -476,23 +481,23 @@ public class GitHelper
 
                 reporter.debugText(getName(), "diffIndex.diff() returned diffs. working tree is dirty!");
                 reporter.debugText(getName(), "added size: " + addedSize);
-                reportDirtyDetails(getName(), "added", diffIndex.getAdded(), reporter);
+                reportDirtyDetails(getName(), "added", diffIndex.getAdded());
                 reporter.debugText(getName(), "assume unchanged size: " + assumedSize);
                 reporter.debugText(getName(), "changed size: " + changedSize);
-                reportDirtyDetails(getName(), "changed", diffIndex.getChanged(), reporter);
+                reportDirtyDetails(getName(), "changed", diffIndex.getChanged());
                 reporter.debugText(getName(), "conflicting size: " + conflictSize);
-                reportDirtyDetails(getName(), "conflicting", diffIndex.getConflicting(), reporter);
+                reportDirtyDetails(getName(), "conflicting", diffIndex.getConflicting());
                 reporter.debugText(getName(), "ignored not in index size: " + ignoredSize);
                 reporter.debugText(getName(), "missing size: " + missingSize);
-                reportDirtyDetails(getName(), "missing", diffIndex.getMissing(), reporter);
+                reportDirtyDetails(getName(), "missing", diffIndex.getMissing());
                 reporter.debugText(getName(), "modified size: " + modifiedSize);
-                reportDirtyDetails(getName(), "modified", diffIndex.getModified(), reporter);
+                reportDirtyDetails(getName(), "modified", diffIndex.getModified());
                 reporter.debugText(getName(), "removed size: " + removedSize);
-                reportDirtyDetails(getName(), "removed", diffIndex.getRemoved(), reporter);
+                reportDirtyDetails(getName(), "removed", diffIndex.getRemoved());
                 reporter.debugText(getName(), "untracked size: " + untrackedSize);
-                reportDirtyDetails(getName(), "untracked", diffIndex.getUntracked(), reporter);
+                reportDirtyDetails(getName(), "untracked", diffIndex.getUntracked());
                 reporter.debugText(getName(), "untracked folders size: " + untrackedFolderSize);
-                reportDirtyDetails(getName(), "untracked folders", diffIndex.getUntrackedFolders(), reporter);
+                reportDirtyDetails(getName(), "untracked folders", diffIndex.getUntrackedFolders());
                 reporter.endMethod();
 
                 if (addedSize > 0 || changedSize > 0 || conflictSize > 0 || missingSize > 0 || modifiedSize > 0 || removedSize > 0)
@@ -555,8 +560,9 @@ public class GitHelper
         }
     }
 
-    private static void reportDirtyDetails(String cmdName, String reason, Set<String> files, JGitFlowReporter reporter)
+    private static void reportDirtyDetails(String cmdName, String reason, Set<String> files)
     {
+        JGitFlowReporter reporter = JGitFlowReporter.get();
         if (files.size() > 0)
         {
             reporter.debugText(cmdName, reason + " details: ");

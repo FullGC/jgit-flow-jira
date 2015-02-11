@@ -10,7 +10,6 @@ import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.provider.ProjectCacheKey;
 import com.atlassian.maven.plugins.jgitflow.provider.VersionProvider;
-
 import com.google.common.base.Strings;
 
 import org.apache.maven.artifact.Artifact;
@@ -76,7 +75,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     public void commitAllPoms(Git git, List<MavenProject> reactorProjects, String message) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         try
         {
             Status status = git.status().call();
@@ -86,7 +85,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             {
                 getLogger().debug("(" + fullBranchName + ") committing all poms on branch '" + repository.getBranch() + "'");
             }
-            
+
             File canonicalRepoDir;
 
             {
@@ -184,7 +183,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
     public void checkPomForVersionState(VersionState state, List<MavenProject> reactorProjects) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         getLogger().info("(" + fullBranchName + ") Checking for " + state.name() + " version in projects...");
         boolean hasSnapshotProject = false;
         for (MavenProject project : reactorProjects)
@@ -220,7 +219,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         List<String> snapshots = newArrayList();
 
         String fullBranchName = branchHelper.getCurrentBranchName();
-        
+
         getLogger().info("(" + fullBranchName + ") Checking dependencies and plugins for snapshots ...");
         Map<String, String> originalReactorVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
 
@@ -239,7 +238,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         Map<String, Artifact> artifactMap = ArtifactUtils.artifactMapByVersionlessId(project.getArtifacts());
         if (project.getParentArtifact() != null)
         {
-            String parentSnap = checkArtifact(getArtifactFromMap(project.getParentArtifact(), artifactMap), originalReactorVersions, AT_PARENT);
+            String parentSnap = checkArtifact(getArtifactFromMap(project.getParentArtifact(), artifactMap), originalReactorVersions, AT_PARENT, project);
             if (!Strings.isNullOrEmpty(parentSnap))
             {
                 snapshots.add(parentSnap);
@@ -250,7 +249,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         try
         {
             Set<Artifact> dependencyArtifacts = project.createArtifacts(artifactFactory, null, null);
-            snapshots.addAll(checkArtifacts(dependencyArtifacts, originalReactorVersions, AT_DEPENDENCY));
+            snapshots.addAll(checkArtifacts(dependencyArtifacts, originalReactorVersions, AT_DEPENDENCY, project));
         }
         catch (InvalidDependencyVersionException e)
         {
@@ -266,7 +265,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
             {
                 for (Dependency dep : mgntDependencies)
                 {
-                    String depSnap = checkArtifact(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), originalReactorVersions, AT_DEPENDENCY_MGNT);
+                    String depSnap = checkArtifact(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), originalReactorVersions, AT_DEPENDENCY_MGNT, project);
                     if (!Strings.isNullOrEmpty(depSnap))
                     {
                         snapshots.add(depSnap);
@@ -277,7 +276,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
         //Plugins
         Set<Artifact> pluginArtifacts = project.getPluginArtifacts();
-        snapshots.addAll(checkArtifacts(pluginArtifacts, originalReactorVersions, AT_PLUGIN));
+        snapshots.addAll(checkArtifacts(pluginArtifacts, originalReactorVersions, AT_PLUGIN, project));
 
 //Plugin Management
         PluginManagement pmgnt = project.getPluginManagement();
@@ -287,7 +286,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
             for (Plugin plugin : mgntPlugins)
             {
-                String pluginSnap = checkArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), originalReactorVersions, AT_PLUGIN_MGNT);
+                String pluginSnap = checkArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), originalReactorVersions, AT_PLUGIN_MGNT, project);
                 if (!Strings.isNullOrEmpty(pluginSnap))
                 {
                     snapshots.add(pluginSnap);
@@ -297,22 +296,22 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
         //Reports
         Set<Artifact> reportArtifacts = project.getReportArtifacts();
-        snapshots.addAll(checkArtifacts(reportArtifacts, originalReactorVersions, AT_REPORT));
+        snapshots.addAll(checkArtifacts(reportArtifacts, originalReactorVersions, AT_REPORT, project));
 
 //Extensions
         Set<Artifact> extensionArtifacts = project.getExtensionArtifacts();
-        snapshots.addAll(checkArtifacts(extensionArtifacts, originalReactorVersions, AT_EXTENSIONS));
+        snapshots.addAll(checkArtifacts(extensionArtifacts, originalReactorVersions, AT_EXTENSIONS, project));
 
         return snapshots;
     }
 
-    private List<String> checkArtifacts(Set<Artifact> artifacts, Map<String, String> originalReactorVersions, String type)
+    private List<String> checkArtifacts(Set<Artifact> artifacts, Map<String, String> originalReactorVersions, String type, MavenProject project)
     {
         List<String> snapshots = newArrayList();
 
         for (Artifact artifact : artifacts)
         {
-            String snap = checkArtifact(artifact, originalReactorVersions, type);
+            String snap = checkArtifact(artifact, originalReactorVersions, type, project);
 
             if (!Strings.isNullOrEmpty(snap))
             {
@@ -323,7 +322,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
         return snapshots;
     }
 
-    private String checkArtifact(Artifact artifact, Map<String, String> originalReactorVersions, String type)
+    private String checkArtifact(Artifact artifact, Map<String, String> originalReactorVersions, String type, MavenProject project)
     {
         String versionlessArtifactKey = ArtifactUtils.versionlessKey(artifact.getGroupId(), artifact.getArtifactId());
 
@@ -331,13 +330,13 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
         if (isSnapshot)
         {
-            return type + " - " + versionlessArtifactKey;
+            return type + " - " + versionlessArtifactKey + " (at " + project + ")";
         }
 
         return null;
     }
 
-    private String checkArtifact(String groupId, String artifactId, String version, Map<String, String> originalReactorVersions, String type)
+    private String checkArtifact(String groupId, String artifactId, String version, Map<String, String> originalReactorVersions, String type, MavenProject project)
     {
         String versionlessArtifactKey = ArtifactUtils.versionlessKey(groupId, artifactId);
 
@@ -345,7 +344,7 @@ public class DefaultProjectHelper extends AbstractLogEnabled implements ProjectH
 
         if (isSnapshot)
         {
-            return type + " - " + versionlessArtifactKey;
+            return type + " - " + versionlessArtifactKey + " (at " + project + ")";
         }
 
         return null;

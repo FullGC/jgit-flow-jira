@@ -62,6 +62,8 @@ public abstract class AbstractFlowReleaseManager extends AbstractLogEnabled impl
     {
         setupProviders(ctx, session, reactorProjects);
 
+        setupHelper.setupCredentialProviders();
+
         JGitFlow flow = jGitFlowProvider.gitFlow();
 
         setupHelper.runCommonSetup();
