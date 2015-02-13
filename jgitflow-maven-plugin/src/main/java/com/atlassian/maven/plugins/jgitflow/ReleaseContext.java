@@ -1,14 +1,13 @@
 package com.atlassian.maven.plugins.jgitflow;
 
-import java.io.File;
-
 import com.atlassian.jgitflow.core.InitContext;
 import com.atlassian.maven.jgitflow.api.MavenHotfixFinishExtension;
 import com.atlassian.maven.jgitflow.api.MavenHotfixStartExtension;
 import com.atlassian.maven.jgitflow.api.MavenReleaseFinishExtension;
 import com.atlassian.maven.jgitflow.api.MavenReleaseStartExtension;
-
 import com.google.common.base.Strings;
+
+import java.io.File;
 
 /**
  * @since version
@@ -31,6 +30,7 @@ public class ReleaseContext
     private boolean useReleaseProfile;
     private boolean enableFeatureVersions;
     private String args;
+    private String goals;
     private String tagMessage;
     private String defaultReleaseVersion;
     private String defaultDevelopmentVersion;
@@ -77,6 +77,7 @@ public class ReleaseContext
         this.featureRebase = false;
         this.useReleaseProfile = true;
         this.args = "";
+        this.goals = "clean deploy";
         this.startCommit = "";
         this.releaseBranchVersionSuffix = "release";
         this.enableFeatureVersions = false;
@@ -319,6 +320,15 @@ public class ReleaseContext
     public ReleaseContext setArgs(String args)
     {
         this.args = args;
+        return this;
+    }
+
+    public String getGoals() {
+        return goals;
+    }
+
+    public ReleaseContext setGoals(String goals) {
+        this.goals = goals;
         return this;
     }
 

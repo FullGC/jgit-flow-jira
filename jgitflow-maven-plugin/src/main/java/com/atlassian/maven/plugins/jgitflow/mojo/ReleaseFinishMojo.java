@@ -64,6 +64,9 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter(property = "arguments", defaultValue = "")
     private String arguments = "";
 
+    @Parameter(property = "goals", defaultValue = "clean deploy")
+    private String goals = "";
+
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
 
@@ -103,6 +106,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
            .setArgs(arguments)
+           .setGoals(goals)
            .setReleaseFinishExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
