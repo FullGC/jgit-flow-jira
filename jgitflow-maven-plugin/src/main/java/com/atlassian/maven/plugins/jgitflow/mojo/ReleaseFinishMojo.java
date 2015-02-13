@@ -61,6 +61,9 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter(defaultValue = "")
     private String releaseFinishExtension = "";
 
+    @Parameter(property = "arguments", defaultValue = "")
+    private String arguments = "";
+
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
 
@@ -99,6 +102,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
            .setPassword(password)
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
+           .setArgs(arguments)
            .setReleaseFinishExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
