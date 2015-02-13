@@ -7,6 +7,7 @@ import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.model.Profile;
@@ -72,10 +73,14 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
 
         List<String> argList = new ArrayList<String>();
 
-        String additionalArgs;
+
+        if (ctx.isUseReleaseProfile())
+        {
+            argList.add("-DperformRelease=true");
+        }
 
         String args = ctx.getArgs();
-        if (args.isEmpty())
+        if (Strings.isNullOrEmpty(args))
         {
 
             // use default user properties + default profiles
@@ -87,25 +92,20 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
                 argList.add("-D" + key + "=" + userProps.getProperty(key));
             }
 
-            if (ctx.isUseReleaseProfile())
-            {
-                argList.add("-DperformRelease=true");
-            }
-
             for (String profileId : getActiveProfileIds(project, session))
             {
                 argList.add("-P" + profileId);
             }
 
-            additionalArgs = Joiner.on(" ").join(argList);
-
         } else
         {
 
-            // use specific arguments
-            additionalArgs = args.trim();
+            // use user specific release arguments
+            argList.add(args.trim());
 
         }
+
+        String additionalArgs = Joiner.on(" ").join(argList);;
 
         ReleaseResult result = new ReleaseResult();
         ReleaseEnvironment env = new DefaultReleaseEnvironment();
