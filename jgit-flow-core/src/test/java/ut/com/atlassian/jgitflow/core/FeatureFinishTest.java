@@ -114,6 +114,40 @@ public class FeatureFinishTest extends BaseGitFlowTest
 
         //the develop branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
+
+        //since fast-forward is not suppressed the latest commit should not be a merge commit
+        assertEquals(1, GitHelper.getLatestCommit(git, flow.getDevelopBranchName()).getParentCount());
+    }
+
+    @Test
+    public void finishFeatureWithNewCommitAndSuppressFastForward() throws Exception
+    {
+        Git git = RepoUtil.createRepositoryWithMasterAndDevelop(newDir());
+        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
+        JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
+
+        flow.featureStart("my-feature").call();
+
+        //create a new commit
+        File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        git.add().addFilepattern(junkFile.getName()).call();
+        RevCommit commit = git.commit().setMessage("committing junk file").call();
+
+        //make sure develop doesn't report our commit yet
+        assertFalse(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
+
+        //try to finish
+        flow.featureFinish("my-feature").setSuppressFastForward(true).call();
+
+        //we should be on develop branch
+        assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
+
+        //the develop branch should have our commit
+        assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
+
+        //since fast-forward is suppressed the latest commit should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, flow.getDevelopBranchName()).getParentCount());
     }
 
     @Test

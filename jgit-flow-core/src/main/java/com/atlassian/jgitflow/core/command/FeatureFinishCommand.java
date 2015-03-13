@@ -56,6 +56,7 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     private boolean rebase;
     private boolean squash;
     private boolean noMerge;
+    private boolean suppressFastForward;
     private FeatureFinishExtension extension;
 
     /**
@@ -161,7 +162,8 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
                 MergeProcessExtensionWrapper developExtension = new MergeProcessExtensionWrapper(extension.beforeDevelopCheckout(), extension.afterDevelopCheckout(), extension.beforeDevelopMerge(), extension.afterDevelopMerge());
                 if (commitList.size() < 2)
                 {
-                    mergeResult = doMerge(prefixedBranchName, gfConfig.getDevelop(), developExtension, false, MergeCommand.FastForwardMode.FF);
+                    MergeCommand.FastForwardMode ffMode = suppressFastForward ? MergeCommand.FastForwardMode.NO_FF : MergeCommand.FastForwardMode.FF;
+                    mergeResult = doMerge(prefixedBranchName, gfConfig.getDevelop(), developExtension, false, ffMode);
                 }
                 else
                 {
@@ -236,6 +238,12 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     public FeatureFinishCommand setNoMerge(boolean noMerge)
     {
         this.noMerge = noMerge;
+        return this;
+    }
+
+    public FeatureFinishCommand setSuppressFastForward(boolean suppressFastForward)
+    {
+        this.suppressFastForward = suppressFastForward;
         return this;
     }
 

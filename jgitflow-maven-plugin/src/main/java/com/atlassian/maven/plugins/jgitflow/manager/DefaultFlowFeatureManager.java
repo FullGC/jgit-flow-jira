@@ -111,6 +111,7 @@ public class DefaultFlowFeatureManager extends AbstractFlowReleaseManager
                                           .setAllowUntracked(ctx.isAllowUntracked())
                                           .setPush(ctx.isPushFeatures())
                                           .setNoMerge(ctx.isNoFeatureMerge())
+                                          .setSuppressFastForward(ctx.isSuppressFastForward())
                                           .setScmMessagePrefix(ctx.getScmCommentPrefix())
                                           .setScmMessageSuffix(ctx.getScmCommentSuffix())
                                           .setExtension(finishExtension)

@@ -121,8 +121,14 @@ public class ReleaseFinishTest extends BaseGitFlowTest
         //the develop branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
 
+        //since fast-forward is suppressed the latest commit on develop should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, flow.getDevelopBranchName()).getParentCount());
+
         //the master branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
+
+        //since fast-forward is suppressed the latest commit on master should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, flow.getMasterBranchName()).getParentCount());
     }
 
     @Test
