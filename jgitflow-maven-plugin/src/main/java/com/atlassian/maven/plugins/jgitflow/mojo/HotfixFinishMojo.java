@@ -58,6 +58,9 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Parameter(property = "tagMessage", defaultValue = "")
     private String tagMessage = "";
 
+    @Parameter(property = "goals", defaultValue = "clean deploy")
+    private String goals = "";
+
     @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
 
@@ -98,6 +101,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setPassword(password)
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
+           .setGoals(goals)
            .setHotfixFinishExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
