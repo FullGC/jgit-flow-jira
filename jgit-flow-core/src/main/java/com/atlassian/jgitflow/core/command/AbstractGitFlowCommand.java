@@ -18,6 +18,7 @@ import com.atlassian.jgitflow.core.util.RequirementHelper;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,13 +90,22 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
                 {
                     reporter.infoText(getCommandName(), "pushing '" + branchToPush + "'");
                     RefSpec branchSpec = new RefSpec(branchToPush);
-                    git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(branchSpec).call();
+                    Iterable<PushResult> i = git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setRefSpecs(branchSpec).call();
+                    for (PushResult pr : i)
+                    {
+                        reporter.infoText(getCommandName(), "messages: '" + pr.getMessages() + "'");
+                        if (pr.getMessages() != null && pr.getMessages().length() > 0) {
+                            // TODO: not sure if a message always means an error, so we may need to create a parameter to let the user control this
+                            throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - " + pr.getMessages());
+                        }
+                    }
                 }
             }
 
             if (includeTags)
             {
                 reporter.infoText(getCommandName(), "pushing tags");
+                // TODO: check for errors or at least log error messages received
                 git.push().setRemote(Constants.DEFAULT_REMOTE_NAME).setPushTags().call();
             }
 
