@@ -56,7 +56,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     {
         ReleaseContext ctx = contextProvider.getContext();
 
-        String goal = "clean deploy";
+        String goal = ctx.getGoals();
 
         if (ctx.isNoDeploy())
         {
@@ -105,7 +105,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
 
         }
 
-        String additionalArgs = Joiner.on(" ").join(argList);;
+        String additionalArgs = Joiner.on(" ").join(argList);
 
         ReleaseResult result = new ReleaseResult();
         ReleaseEnvironment env = new DefaultReleaseEnvironment();
