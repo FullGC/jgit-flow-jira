@@ -217,7 +217,7 @@ public class DefaultJGitFlowSetupHelper extends AbstractLogEnabled implements JG
         if (ctx.isEnableSshAgent())
         {
             JGitFlowReporter.get().debugText(getClass().getSimpleName(), "installing ssh-agent credentials provider");
-            SshSessionFactory.setInstance(new SshCredentialsProvider(prompter));
+            SshSessionFactory.setInstance(new SshCredentialsProvider(prompter, getLogger()));
             return true;
         }
 
