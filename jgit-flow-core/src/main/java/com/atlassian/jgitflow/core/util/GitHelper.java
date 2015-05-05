@@ -449,7 +449,6 @@ public class GitHelper
      *
      * @param git            The git instance to use
      * @param allowUntracked
-     * @param reporter       @return if the branch is clean or not
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */

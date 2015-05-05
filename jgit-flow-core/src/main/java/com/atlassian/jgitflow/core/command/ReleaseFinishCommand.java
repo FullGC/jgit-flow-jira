@@ -22,35 +22,35 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * <p>
  * This will merge the release into both master and develop and create a tag for the release
  * </p>
- * <p/>
- * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p/>
+ * <p></p>
+ * Examples ({@code flow} is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
+ * <p></p>
  * Finish a release:
- * <p/>
+ * <p></p>
  * <pre>
  * flow.releaseFinish(&quot;1.0&quot;).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Don't delete the local release branch
- * <p/>
+ * <p></p>
  * <pre>
  * flow.releaseFinish(&quot;1.0&quot;).setKeepBranch(true).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Squash all commits on the release branch into one before merging
- * <p/>
+ * <p></p>
  * <pre>
  * flow.releaseFinish(&quot;1.0&quot;).setSquash(true).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Push changes to the remote origin
- * <p/>
+ * <p></p>
  * <pre>
  * flow.releaseFinish(&quot;1.0&quot;).setPush(true).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Don't create a tag for the release
- * <p/>
+ * <p></p>
  * <pre>
  * flow.releaseFinish(&quot;1.0&quot;).setNoTag(true).call();
  * </pre>
@@ -73,7 +73,6 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
      * @param releaseName The name/version of the release
      * @param git         The git instance to use
      * @param gfConfig    The GitFlowConfiguration to use
-     * @param reporter
      */
     public ReleaseFinishCommand(String releaseName, Git git, GitFlowConfiguration gfConfig)
     {
@@ -182,7 +181,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
     /**
      * Set whether to turn off tagging
      *
-     * @param noTag <code>true</code> to turn off tagging, <code>false</code>(default) otherwise
+     * @param noTag {@code true} to turn off tagging, {@code false}(default) otherwise
      * @return {@code this}
      */
     public ReleaseFinishCommand setNoTag(boolean noTag)
@@ -194,7 +193,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
     /**
      * Set whether to squash all commits into a single commit before the merge
      *
-     * @param squash <code>true</code> to squash, <code>false</code>(default) otherwise
+     * @param squash {@code true} to squash, {@code false}(default) otherwise
      * @return {@code this}
      */
     public ReleaseFinishCommand setSquash(boolean squash)
@@ -206,7 +205,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
     /**
      * Set whether to turn off merging
      *
-     * @param noMerge <code>true</code> to turn off merging, <code>false</code>(default) otherwise
+     * @param noMerge {@code true} to turn off merging, {@code false}(default) otherwise
      * @return {@code this}
      */
     public ReleaseFinishCommand setNoMerge(boolean noMerge)

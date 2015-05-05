@@ -24,7 +24,6 @@ public interface VersionProvider
      *
      * @param cacheKey        The cacheKey to use when looking for versions so we don't have to loop over the reactor everytime
      * @param reactorProjects The set of reactorProjects to loop over
-     * @param ctx             The ReleaseContext for JGitFlow
      * @return A Map<String,String> where the key is the project/module key and the value is the release version
      * @throws com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException
      */
@@ -38,7 +37,6 @@ public interface VersionProvider
      *
      * @param cacheKey        The cacheKey to use when looking for versions so we don't have to loop over the reactor everytime
      * @param reactorProjects The set of reactorProjects to loop over
-     * @param ctx             The ReleaseContext for JGitFlow
      * @return A Map<String,String> where the key is the project/module key and the value is the hotfix version
      * @throws com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException
      */
@@ -52,7 +50,6 @@ public interface VersionProvider
      *
      * @param cacheKey        The cacheKey to use when looking for versions so we don't have to loop over the reactor everytime
      * @param reactorProjects The set of reactorProjects to loop over
-     * @param ctx             The ReleaseContext for JGitFlow
      * @return A Map<String,String> where the key is the project/module key and the value is the release version
      * @throws com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException
      */
@@ -61,9 +58,6 @@ public interface VersionProvider
     /**
      * Returns the last release versions for all of the projects in the reactor.
      *
-     * @param cacheKey        The cacheKey to use when looking for versions so we don't have to loop over the reactor everytime
-     * @param reactorProjects The set of reactorProjects to loop over
-     * @param ctx             The ReleaseContext for JGitFlow
      * @return A Map<String,String> where the key is the project/module key and the value is the release version
      * @throws com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException
      */
