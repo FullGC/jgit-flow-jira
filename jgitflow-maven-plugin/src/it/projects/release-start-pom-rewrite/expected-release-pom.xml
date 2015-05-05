@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>jgitflow.it</groupId>
+    <artifactId>parent-pom</artifactId>
+    <version>1.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>subproject1</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <configuration>
+                    <allowSnapshots>true</allowSnapshots>
+                    <pushReleases>true</pushReleases>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <noDeploy>true</noDeploy>
+                    <noReleaseBuild>true</noReleaseBuild>
+                    <enableFeatureVersions>true</enableFeatureVersions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
