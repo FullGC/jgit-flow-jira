@@ -17,17 +17,17 @@ import org.eclipse.jgit.lib.Ref;
  * <p>
  * This will create a new branch using the hotfix prefix and release name from the tip of develop
  * </p>
- * <p/>
- * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p/>
+ * <p></p>
+ * Examples ({@code flow} is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
+ * <p></p>
  * Start a feature:
- * <p/>
+ * <p></p>
  * <pre>
  * flow.hotfixStart(&quot;1.0.1&quot;).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Perform a fetch of develop before branching
- * <p/>
+ * <p></p>
  * <pre>
  * flow.hotfixStart(&quot;1.0.1&quot;).setFetch(true).call();
  * </pre>
@@ -45,7 +45,6 @@ public class HotfixStartCommand extends AbstractBranchCreatingCommand<HotfixStar
      * @param hotfixName The name of the hotfix
      * @param git        The git instance to use
      * @param gfConfig   The GitFlowConfiguration to use
-     * @param reporter
      */
     public HotfixStartCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig)
     {

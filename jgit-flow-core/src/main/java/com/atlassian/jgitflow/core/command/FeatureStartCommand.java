@@ -17,17 +17,17 @@ import org.eclipse.jgit.lib.Ref;
  * <p>
  * This will create a new branch using the feature prefix and feature name from the tip of develop
  * </p>
- * <p/>
- * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p/>
+ * <p></p>
+ * Examples ({@code flow} is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
+ * <p></p>
  * Start a feature:
- * <p/>
+ * <p></p>
  * <pre>
  * flow.featureStart(&quot;feature&quot;).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Perform a fetch of develop before branching
- * <p/>
+ * <p></p>
  * <pre>
  * flow.featureStart(&quot;feature&quot;).setFetch(true).call();
  * </pre>
@@ -45,7 +45,6 @@ public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureSt
      * @param branchName The name of the feature
      * @param git        The git instance to use
      * @param gfConfig   The GitFlowConfiguration to use
-     * @param reporter
      */
     public FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
     {

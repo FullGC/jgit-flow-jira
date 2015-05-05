@@ -63,7 +63,7 @@ public class MavenProjectRewriter implements ProjectRewriter
 
         boolean pomWasModified = false;
 
-        pomWasModified |= applyAllChanges(project, root, changes.getItems());
+        pomWasModified |= applyAllChanges(project, root, changes.getItems(), eol);
 
         if (pomWasModified)
         {
@@ -109,13 +109,13 @@ public class MavenProjectRewriter implements ProjectRewriter
 
     }
 
-    private boolean applyAllChanges(MavenProject project, Element root, Iterable<ProjectChange> items) throws ProjectRewriteException
+    private boolean applyAllChanges(MavenProject project, Element root, Iterable<ProjectChange> items, String eol) throws ProjectRewriteException
     {
         boolean modified = false;
 
         for (ProjectChange change : items)
         {
-            boolean result = change.applyChange(project, root);
+            boolean result = change.applyChange(project, root, eol);
 
             if (!modified)
             {

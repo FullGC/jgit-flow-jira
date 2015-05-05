@@ -18,11 +18,11 @@ import org.eclipse.jgit.transport.RefSpec;
 
 /**
  * Publishes release branch to the remote repository
- * <p/>
- * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p/>
+ * <p></p>
+ * Examples ({@code flow} is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
+ * <p></p>
  * Publish a hotfix:
- * <p/>
+ * <p></p>
  * <pre>
  * flow.releasePublish(&quot;release&quot;).call();
  * </pre>
@@ -37,7 +37,6 @@ public class ReleasePublishCommand extends AbstractGitFlowCommand<ReleasePublish
      * An instance of this class is usually obtained by calling
      * {@link com.atlassian.jgitflow.core.JGitFlow#hotfixPublish(String)}
      *
-     * @param name     The name of the feature
      * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
      */

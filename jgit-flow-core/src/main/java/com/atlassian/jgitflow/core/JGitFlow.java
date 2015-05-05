@@ -14,14 +14,14 @@ import org.eclipse.jgit.lib.RepositoryBuilder;
 
 /**
  * Offers a Git Flow API to interact with a git repository.
- * <p/>
+ * <p></p>
  * This class only offers methods to construct so-called command classes. Each
  * command is represented by one command class.<br>
  * Example: this class offers a {@code featureStart} method returning an instance of
  * the {@code FeatureStartCommand} class. The {@code FeatureStartCommand} class has setters
  * for all the arguments and options. The {@code FeatureStartCommand} class also has a
  * {@code call} method to actually execute the command.
- * <p/>
+ * <p></p>
  * All mandatory parameters for commands have to be specified in the methods of
  * this class, the optional parameters have to be specified by the
  * setter-methods of the Command class.

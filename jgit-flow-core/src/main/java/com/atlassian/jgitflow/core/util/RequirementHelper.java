@@ -228,8 +228,6 @@ public class RequirementHelper
      *
      * @param commit the commit to test
      * @param branch the name of the branch to check
-     * @throws com.atlassian.jgitflow.core.exception.LocalBranchMissingException
-     * @throws com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException
      */
     public void requireCommitOnBranch(RevCommit commit, String branch) throws LocalBranchExistsException, JGitFlowGitAPIException, JGitFlowIOException
     {
