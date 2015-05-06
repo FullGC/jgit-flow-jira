@@ -8,7 +8,7 @@ try
     FinishScriptHelper.Gits gits = helper.createAndCloneRepo("1.0","1.1-SNAPSHOT","my-feature","feature/")
 
     Git localGit = gits.local;
-    localGit.checkout().setName("develop");
+    localGit.checkout().setName("develop").call();
     
     return true
 }

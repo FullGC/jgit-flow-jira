@@ -134,11 +134,6 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
                 doPushIfNeeded(extension, !noTag, gfConfig.getDevelop(), gfConfig.getMaster(), prefixedBranchName);
             }
 
-            if (mergeSuccess)
-            {
-                cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
-            }
-
             //Backmerge to release branch if needed
             if (releaseBranchExists())
             {
@@ -155,6 +150,11 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
                 }
             }
 
+            if (mergeSuccess)
+            {
+                cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
+            }
+            
             reporter.infoText(getCommandName(), "checking out '" + gfConfig.getDevelop() + "'");
             git.checkout().setName(gfConfig.getDevelop()).call();
 

@@ -193,7 +193,7 @@ public class HotfixFinishTest extends BaseGitFlowTest
         assertFalse(GitHelper.isMergedInto(git, commit, releaseName));
 
         //try to finish
-        flow.hotfixFinish("1.0.1").call();
+        flow.hotfixFinish("1.0.1").setKeepBranch(false).call();
 
         //we should be on develop branch
         assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
