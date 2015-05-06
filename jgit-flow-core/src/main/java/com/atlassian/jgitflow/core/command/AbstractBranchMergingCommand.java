@@ -194,7 +194,7 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
     /**
      * Set whether to use the force flag when deleting the local feature branch
      *
-     * @param force <code>true</code> to force, <code>false</code>(default) otherwise
+     * @param force {@code true} to force, {@code false}(default) otherwise
      * @return {@code this}
      */
     public C setForceDeleteBranch(boolean force)

@@ -175,7 +175,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
     /**
      * Set whether to perform a git fetch of the remote branches before doing the merge
      *
-     * @param fetch <code>true</code> to do the fetch, <code>false</code>(default) otherwise
+     * @param fetch {@code true} to do the fetch, {@code false}(default) otherwise
      * @return {@code this}
      */
     @Override
@@ -194,7 +194,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
     /**
      * Set whether to push the changes to the remote repository
      *
-     * @param push <code>true</code> to do the push, <code>false</code>(default) otherwise
+     * @param push {@code true} to do the push, {@code false}(default) otherwise
      * @return {@code this}
      */
     @Override

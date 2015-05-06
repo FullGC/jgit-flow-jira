@@ -10,5 +10,5 @@ import org.jdom2.Element;
  */
 public interface ProjectChange
 {
-    boolean applyChange(MavenProject project, Element root) throws ProjectRewriteException;
+    boolean applyChange(MavenProject project, Element root, String eol) throws ProjectRewriteException;
 }

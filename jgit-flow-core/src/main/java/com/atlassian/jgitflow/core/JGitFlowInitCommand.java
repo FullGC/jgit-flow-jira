@@ -25,32 +25,32 @@ import org.eclipse.jgit.revwalk.RevWalk;
 
 /**
  * Initializes a project for use with git flow
- * <p/>
+ * <p></p>
  * Examples:
- * <p/>
+ * <p></p>
  * Initialize with the defaults or throw an exception if it's already initialized
- * <p/>
+ * <p></p>
  * <pre>
  * JGitFlow flow = JGitFlow.init(new File(&quot;some dir&quot;));
  * </pre>
- * <p/>
+ * <p></p>
  * Initialize with the defaults or return the instance if it's already initialized
- * <p/>
+ * <p></p>
  * <pre>
  * JGitFlow flow = JGitFlow.getOrInit(new File(&quot;some dir&quot;));
  * </pre>
- * <p/>
+ * <p></p>
  * Initialize with custom overrides or return the instance if it's already initialized
- * <p/>
+ * <p></p>
  * <pre>
  * InitContext ctx = new InitContext();
  * ctx.setMaster("GA");
  *
  * JGitFlow flow = JGitFlow.getOrInit(new File(&quot;some dir&quot;), ctx);
  * </pre>
- * <p/>
+ * <p></p>
  * Initialize with custom overrides replacing any existing configuration
- * <p/>
+ * <p></p>
  * <pre>
  * InitContext ctx = new InitContext();
  * ctx.setMaster("GA");
@@ -398,7 +398,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
     /**
      * Whether to override the current configuration
      *
-     * @param force <code>true</code> to override, <code>false</code>(default) otherwise
+     * @param force {@code true} to override, {@code false}(default) otherwise
      * @return {@code this}
      */
     public JGitFlowInitCommand setForce(boolean force)

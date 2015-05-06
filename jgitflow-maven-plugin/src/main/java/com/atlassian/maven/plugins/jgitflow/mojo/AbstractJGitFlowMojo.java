@@ -99,7 +99,7 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     /**
      * Sets the base directory of the build.
      *
-     * @param basedir The build's base directory, must not be <code>null</code>.
+     * @param basedir The build's base directory, must not be {@code null}.
      */
     public void setBasedir(File basedir)
     {
@@ -109,7 +109,7 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     /**
      * Gets the list of projects in the build reactor.
      *
-     * @return The list of reactor project, never <code>null</code>.
+     * @return The list of reactor project, never {@code null}.
      */
     public List<MavenProject> getReactorProjects()
     {

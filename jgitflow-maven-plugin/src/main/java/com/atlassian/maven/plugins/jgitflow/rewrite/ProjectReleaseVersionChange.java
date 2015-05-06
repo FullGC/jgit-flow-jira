@@ -6,13 +6,17 @@ import java.util.Map;
 
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
 
+import com.atlassian.maven.plugins.jgitflow.util.NamingUtil;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.project.MavenProject;
+import org.jdom2.Content;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
+import org.jdom2.Text;
 
 import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectChangeUtils.getNamespaceOrNull;
 
@@ -37,7 +41,7 @@ public class ProjectReleaseVersionChange implements ProjectChange
     }
 
     @Override
-    public boolean applyChange(MavenProject project, Element root) throws ProjectRewriteException
+    public boolean applyChange(MavenProject project, Element root, String eol) throws ProjectRewriteException
     {
         boolean modified = false;
 
@@ -66,11 +70,32 @@ public class ProjectReleaseVersionChange implements ProjectChange
             if (!releaseVersion.equals(parentVersion))
             {
                 Element artifactId = root.getChild("artifactId", ns);
-                versionElement = new Element("version");
-
+                versionElement = new Element("version", ns);
+                Text indent = new Text("");
+                
                 workLog.add("setting version to '" + releaseVersion + "'");
                 versionElement.setText(releaseVersion);
-                root.getChildren().add(root.indexOf(artifactId) + 1, versionElement);
+                
+                int index = root.indexOf(artifactId);
+                List<Content> cList = root.getContent();
+                
+                //get the previous sibling if it exists
+                if(index > 0 && index < cList.size()) {
+                    Content prevSibling = cList.get(index - 1);
+                    if(Text.class.isInstance(prevSibling))
+                    {
+                        String siblingText = ((Text)prevSibling).getText();
+
+                        if(siblingText.matches("^\\s*$"))
+                        {
+                            indent = new Text("");
+                            indent.setText(eol + NamingUtil.afterLastNewline(siblingText));
+                        }
+                    }
+                }
+                
+                root.addContent(index + 1, indent);
+                root.addContent(index + 2, versionElement);
                 modified = true;
             }
         }

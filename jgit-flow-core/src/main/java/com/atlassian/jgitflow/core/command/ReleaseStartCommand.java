@@ -17,17 +17,17 @@ import org.eclipse.jgit.lib.Ref;
  * <p>
  * This will create a new branch using the release prefix and release name from the tip of develop
  * </p>
- * <p/>
- * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p/>
+ * <p></p>
+ * Examples ({@code flow} is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
+ * <p></p>
  * Start a feature:
- * <p/>
+ * <p></p>
  * <pre>
  * flow.releaseStart(&quot;1.0&quot;).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Perform a fetch of develop before branching
- * <p/>
+ * <p></p>
  * <pre>
  * flow.releaseStart(&quot;1.0&quot;).setFetch(true).call();
  * </pre>
@@ -45,7 +45,6 @@ public class ReleaseStartCommand extends AbstractBranchCreatingCommand<ReleaseSt
      * @param releaseName The name of the release
      * @param git         The git instance to use
      * @param gfConfig    The GitFlowConfiguration to use
-     * @param reporter
      */
     public ReleaseStartCommand(String releaseName, Git git, GitFlowConfiguration gfConfig)
     {

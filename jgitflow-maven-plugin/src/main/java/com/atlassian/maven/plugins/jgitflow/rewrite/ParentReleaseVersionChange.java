@@ -37,7 +37,7 @@ public class ParentReleaseVersionChange implements ProjectChange
     }
 
     @Override
-    public boolean applyChange(MavenProject project, Element root) throws ProjectRewriteException
+    public boolean applyChange(MavenProject project, Element root, String eol) throws ProjectRewriteException
     {
         boolean modified = false;
 

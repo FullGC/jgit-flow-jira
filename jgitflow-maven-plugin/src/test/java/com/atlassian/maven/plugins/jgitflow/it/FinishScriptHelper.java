@@ -147,6 +147,13 @@ public class FinishScriptHelper
         String expectedPom = ReleaseUtil.readXmlFile(new File(baseDirectory, expectedPath));
         String actualPom = ReleaseUtil.readXmlFile(new File(baseDirectory, actualPath));
 
+        System.out.println("EXPECTED");
+        System.out.println("--------------------------------");
+        System.out.println(expectedPom);
+        System.out.println("--------------------------------");
+        System.out.println("ACTUAL");
+        System.out.println(actualPom);
+        System.out.println("--------------------------------");
         assertEquals("Pom files don't match!!!: \nexpected:\n" + expectedPom + "actual:\n" + actualPom, expectedPom, actualPom);
     }
 

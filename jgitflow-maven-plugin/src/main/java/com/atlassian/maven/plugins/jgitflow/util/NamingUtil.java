@@ -34,4 +34,10 @@ public class NamingUtil
     {
         return StringUtils.substringAfter(branchName, prefix);
     }
+    
+    public static String afterLastNewline(String str)
+    {
+        String[] lines = str.split("\\r\\n|\\r|\\n");
+        return lines[lines.length - 1];
+    }
 }
