@@ -13,7 +13,6 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.agentproxy.AgentProxy;
 import com.jcraft.jsch.agentproxy.AgentProxyException;
 import com.jcraft.jsch.agentproxy.Connector;
-import com.jcraft.jsch.agentproxy.Identity;
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import com.jcraft.jsch.agentproxy.USocketFactory;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
@@ -132,13 +131,13 @@ public class SshCredentialsProvider extends JschConfigSessionFactory
         final File sshdir = new File(home, ".ssh");
         if (sshdir.isDirectory())
         {
-            loadIdentity(sch, ap, new File(sshdir, "identity"));
-            loadIdentity(sch, ap, new File(sshdir, "id_rsa"));
-            loadIdentity(sch, ap, new File(sshdir, "id_dsa"));
+            loadIdentity(sch, new File(sshdir, "identity"));
+            loadIdentity(sch, new File(sshdir, "id_rsa"));
+            loadIdentity(sch, new File(sshdir, "id_dsa"));
         }
     }
 
-    private void loadIdentity(final JSch sch, final AgentProxy ap, final File priv)
+    private void loadIdentity(final JSch sch, final File priv)
     {
         if (priv.isFile())
         {
