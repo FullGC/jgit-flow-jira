@@ -89,7 +89,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
 
             for (String key : userProps.stringPropertyNames())
             {
-                argList.add("-D" + key + "=" + userProps.getProperty(key));
+                argList.add("-D" + key + "=\"" + userProps.getProperty(key) + "\"");
             }
 
             for (String profileId : getActiveProfileIds(project, session))
