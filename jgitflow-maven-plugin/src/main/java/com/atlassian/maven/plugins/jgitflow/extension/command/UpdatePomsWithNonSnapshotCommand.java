@@ -94,7 +94,7 @@ public class UpdatePomsWithNonSnapshotCommand extends AbstractLogEnabled impleme
         }
         catch (Exception e)
         {
-            throw new JGitFlowExtensionException("Error updating poms with non-snapshot versions for branch '" + branchType.name() + "'");
+            throw new JGitFlowExtensionException("Error updating poms with non-snapshot versions for branch '" + branchType.name() + "'",e);
         }
     }
 
