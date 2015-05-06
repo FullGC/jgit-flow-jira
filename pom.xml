@@ -9,7 +9,7 @@
 
     <groupId>external.atlassian.jgitflow</groupId>
     <artifactId>jgitflow-parent</artifactId>
-    <version>1.0-m5-mjf_206_execption_cause_hidden-SNAPSHOT</version>
+    <version>1.0-m5-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
