@@ -1,5 +1,6 @@
 import com.atlassian.maven.plugins.jgitflow.it.FinishScriptHelper
 import org.apache.commons.io.FileUtils
+import org.eclipse.jgit.api.CreateBranchCommand
 import org.eclipse.jgit.api.Git
 
 try
@@ -10,7 +11,7 @@ try
     Git localGit = gits.local;
     Git remoteGit = gits.remote;
 
-    localGit.checkout().setName("feature/my-feature");
+    localGit.checkout().setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).setCreateBranch(true).setStartPoint("origin/feature/my-feature").setName("feature/my-feature").call()
 
     helper.comparePomFiles("expected-feature-pom.xml", "pom.xml")
     
