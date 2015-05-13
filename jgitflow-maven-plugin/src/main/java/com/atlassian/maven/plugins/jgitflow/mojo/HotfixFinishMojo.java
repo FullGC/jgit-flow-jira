@@ -31,39 +31,86 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Parameter(property = "developmentVersion", defaultValue = "")
     private String developmentVersion = "";
 
+    /**
+     * Whether to push hotfix branches to the remote upstream.
+     */
     @Parameter(defaultValue = "false", property = "pushHotfixes")
     private boolean pushHotfixes = false;
 
+    /**
+     * Whether to turn off maven deployment. If false the "deploy" goal is called. If true the "install" goal is called
+     */
     @Parameter(defaultValue = "false", property = "noDeploy")
     private boolean noDeploy = false;
 
+    /**
+     * Whether to keep the hotfix branch after finishing the release.
+     * If set to false, the branch will be deleted.
+     */
     @Parameter(defaultValue = "false", property = "keepBranch")
     private boolean keepBranch = false;
 
+    /**
+     * Whether to squash commits into a single commit before merging.
+     */
     @Parameter(defaultValue = "false", property = "squash")
     private boolean squash = false;
 
+    /**
+     * Whether to turn off tagging the release in git.
+     */
     @Parameter(defaultValue = "false", property = "noTag")
     private boolean noTag = false;
 
+    /**
+     * Whether to turn off project building. If true the project will NOT be built during hotfix finish
+     */
     @Parameter(defaultValue = "false", property = "noHotfixBuild")
     private boolean noHotfixBuild = false;
 
+    /**
+     * Whether to use the release profile that adds sources and javadocs to the released artifact, if appropriate. 
+     * If set to true, the plugin sets the property "performRelease" to true, which activates the profile "release-profile", which is inherited from the super pom.
+     */
     @Parameter(defaultValue = "true", property = "useReleaseProfile")
     private boolean useReleaseProfile = true;
 
+    /**
+     * Whether, for modules which refer to each other within the same multi-module build, to update dependencies version to the release version.
+     */
     @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies = true;
 
+    /**
+     * Commit message to use when tagging the release.
+     *
+     * If not set, the default message is "tagging release ${version}".
+     */
     @Parameter(property = "tagMessage", defaultValue = "")
     private String tagMessage = "";
 
+    /**
+     * The space-separated list of gaols to run when doing a maven deploy
+     */
     @Parameter(property = "goals", defaultValue = "clean deploy")
     private String goals = "";
+
+    /**
+     * ALL of the explicit arguments to be passed to the internal maven build.
+     * If not set, the plugin will use the args from the initial maven build.
+     */
+    @Parameter(property = "arguments", defaultValue = "")
+    private String arguments = "";
 
     @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
 
+    /**
+     * A FQCN of a compatible hotfix finish extension.
+     * Extensions are used to run custom code at various points in the jgitflow lifecycle.
+     *
+     * More documentation on using extensions will be available in the future
+     */
     @Parameter(defaultValue = "")
     private String hotfixFinishExtension = "";
 
@@ -101,6 +148,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setPassword(password)
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
+           .setArgs(arguments)
            .setGoals(goals)
            .setHotfixFinishExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());

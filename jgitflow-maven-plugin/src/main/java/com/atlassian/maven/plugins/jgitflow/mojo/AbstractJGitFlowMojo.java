@@ -59,6 +59,9 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "${flowInitContext}")
     private FlowInitContext flowInitContext;
 
+    /**
+     * Whether to enable using an ssh-agent.
+     */
     @Parameter(defaultValue = "false", property = "enableSshAgent")
     protected boolean enableSshAgent = false;
 
@@ -68,36 +71,78 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "false", property = "allowSnapshots")
     protected boolean allowSnapshots = false;
 
+    /**
+     * Whether to allow untracked files when checking if the working tree is clean.
+     */
     @Parameter(defaultValue = "false", property = "allowUntracked")
     protected boolean allowUntracked = false;
 
+    /**
+     * Whether to turn off all operations that require network access.
+     * <p></p>
+     * <p></p>
+     * NOTE: THIS IS NOT CURRENTLY IMPLEMENTED!
+     */
     @Parameter(property = "offline", defaultValue = "${settings.offline}")
     protected boolean offline;
 
+    /**
+     * Whether to turn off all operations access the remote git repository.
+     * This will still allow network access to download dependencies and such.
+     * <br />
+     * <br />
+     * NOTE: THIS IS NOT CURRENTLY IMPLEMENTED!
+     */
     @Parameter(property = "localOnly", defaultValue = "false")
     protected boolean localOnly = false;
 
+    /**
+     * Default url to use if origin remote is not found in .git/config.
+     * This is highly useful for CI servers that don't do proper clones.
+     */
     @Parameter(property = "defaultOriginUrl", defaultValue = "")
     protected String defaultOriginUrl = "";
 
+    /**
+     * The message prefix to use for all SCM changes.
+     */
     @Parameter(property = "scmCommentPrefix", defaultValue = "")
     protected String scmCommentPrefix = "";
 
+    /**
+     * The message suffix to use for all SCM changes.
+     */
     @Parameter(property = "scmCommentSuffix", defaultValue = "")
     protected String scmCommentSuffix = "";
 
+    /**
+     * The username to use when using user/pass authentication
+     */
     @Parameter(property = "username", defaultValue = "")
     protected String username = "";
 
+    /**
+     * The password to use when using user/pass authentication
+     */
     @Parameter(property = "password", defaultValue = "")
     protected String password = "";
 
+    /**
+     * Whether to always overwrite the origin url in the .git/config file
+     * This is useful to ensure the proper origin url is used in CI environments
+     */
     @Parameter(defaultValue = "true", property = "alwaysUpdateOrigin")
     protected boolean alwaysUpdateOrigin = true;
 
+    /**
+     * Whether to pull the master branch when jgitflow is initialized
+     */
     @Parameter(defaultValue = "false", property = "pullMaster")
     protected boolean pullMaster = false;
 
+    /**
+     * Whether to pull the develop branch when jgitflow is initialized
+     */
     @Parameter(defaultValue = "false", property = "pullDevelop")
     protected boolean pullDevelop = false;
 
