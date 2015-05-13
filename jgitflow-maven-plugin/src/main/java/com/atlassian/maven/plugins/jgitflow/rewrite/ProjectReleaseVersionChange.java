@@ -27,17 +27,19 @@ public class ProjectReleaseVersionChange implements ProjectChange
 {
     private final Map<String, String> releaseVersions;
 
+    private final boolean consistentProjectVersions;
     private final List<String> workLog;
 
-    private ProjectReleaseVersionChange(Map<String, String> releaseVersions)
+    private ProjectReleaseVersionChange(Map<String, String> releaseVersions, boolean consistentProjectVersions)
     {
         this.releaseVersions = releaseVersions;
+        this.consistentProjectVersions = consistentProjectVersions;
         this.workLog = new ArrayList<String>();
     }
 
-    public static ProjectReleaseVersionChange projectReleaseVersionChange(Map<String, String> releaseVersions)
+    public static ProjectReleaseVersionChange projectReleaseVersionChange(Map<String, String> releaseVersions, boolean consistentProjectVersions)
     {
-        return new ProjectReleaseVersionChange(releaseVersions);
+        return new ProjectReleaseVersionChange(releaseVersions, consistentProjectVersions);
     }
 
     @Override
@@ -53,7 +55,15 @@ public class ProjectReleaseVersionChange implements ProjectChange
 
         if (Strings.isNullOrEmpty(releaseVersion))
         {
-            throw new ProjectRewriteException("Release version for " + project.getName() + " was not found");
+            if (consistentProjectVersions && releaseVersions.size() > 0)
+            {
+                // Use any release version, as the project's versions are consistent/global
+                releaseVersion = releaseVersions.values().iterator().next();
+            }
+            else
+            {
+                throw new ProjectRewriteException("Release version for " + project.getName() + " was not found");
+            }
         }
 
         if (null == versionElement)
@@ -65,6 +75,11 @@ public class ProjectReleaseVersionChange implements ProjectChange
                 String parentId = ArtifactUtils.versionlessKey(parent.getGroupId(), parent.getArtifactId());
 
                 parentVersion = releaseVersions.get(parentId);
+                if (Strings.isNullOrEmpty(parentVersion) && consistentProjectVersions && releaseVersions.size() > 0)
+                {
+                    // Use any version for the parent, as the project's versions are consistent/global
+                    parentVersion = releaseVersions.values().iterator().next();
+                }
             }
 
             if (!releaseVersion.equals(parentVersion))

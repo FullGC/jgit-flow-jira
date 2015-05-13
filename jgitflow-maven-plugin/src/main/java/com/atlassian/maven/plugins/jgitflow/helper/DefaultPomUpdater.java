@@ -70,7 +70,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
             }
         });
 
-        doUpdate(reactorProjects, originalVersions, finalVersions, ctx.isUpdateDependencies());
+        doUpdate(reactorProjects, originalVersions, finalVersions, ctx.isUpdateDependencies(), ctx.isConsistentProjectVersions());
     }
 
     @Override
@@ -97,7 +97,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
             }
         });
 
-        doUpdate(reactorProjects, originalVersions, snapshotVersions, ctx.isUpdateDependencies());
+        doUpdate(reactorProjects, originalVersions, snapshotVersions, ctx.isUpdateDependencies(), ctx.isConsistentProjectVersions());
     }
 
     @Override
@@ -112,7 +112,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(projectsToUpdate);
         Map<String, String> versionsToCopy = versionProvider.getOriginalVersions(projectsToCopy);
 
-        doUpdate(projectsToUpdate, originalVersions, versionsToCopy, ctx.isUpdateDependencies());
+        doUpdate(projectsToUpdate, originalVersions, versionsToCopy, ctx.isUpdateDependencies(), ctx.isConsistentProjectVersions());
     }
 
     @Override
@@ -123,7 +123,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
         ReleaseContext ctx = contextProvider.getContext();
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(projectsToUpdate);
 
-        doUpdate(projectsToUpdate, originalVersions, versionsToCopy, ctx.isUpdateDependencies());
+        doUpdate(projectsToUpdate, originalVersions, versionsToCopy, ctx.isUpdateDependencies(), ctx.isConsistentProjectVersions());
     }
 
     @Override
@@ -137,7 +137,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
         Map<String, String> originalVersions = versionProvider.getOriginalVersions(cacheKey, reactorProjects);
         Map<String, String> developmentVersions = versionProvider.getNextDevelopmentVersions(cacheKey, reactorProjects);
 
-        doUpdate(reactorProjects, originalVersions, developmentVersions, ctx.isUpdateDependencies());
+        doUpdate(reactorProjects, originalVersions, developmentVersions, ctx.isUpdateDependencies(), ctx.isConsistentProjectVersions());
     }
 
     @Override
@@ -166,7 +166,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
             }
         });
 
-        doUpdate(reactorProjects, originalVersions, featureSuffixedVersions, ctx.isUpdateDependencies());
+        doUpdate(reactorProjects, originalVersions, featureSuffixedVersions, ctx.isUpdateDependencies(), ctx.isConsistentProjectVersions());
     }
 
     @Override
@@ -197,7 +197,7 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
             }
         });
 
-        doUpdate(reactorProjects, originalVersions, featureVersions, ctx.isUpdateDependencies());
+        doUpdate(reactorProjects, originalVersions, featureVersions, ctx.isUpdateDependencies(), ctx.isConsistentProjectVersions());
     }
 
     @Override
@@ -223,10 +223,10 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
             }
         });
 
-        doUpdate(reactorProjects, originalVersions, featureVersions, ctx.isUpdateDependencies());
+        doUpdate(reactorProjects, originalVersions, featureVersions, ctx.isUpdateDependencies(), ctx.isConsistentProjectVersions());
     }
 
-    protected void doUpdate(List<MavenProject> reactorProjects, Map<String, String> originalVersions, Map<String, String> finalVersions, boolean updateDependencies) throws MavenJGitFlowException
+    protected void doUpdate(List<MavenProject> reactorProjects, Map<String, String> originalVersions, Map<String, String> finalVersions, boolean updateDependencies, boolean consistentProjectVersions) throws MavenJGitFlowException
     {
         String fullBranchName = branchHelper.getCurrentBranchName();
 
@@ -238,8 +238,8 @@ public class DefaultPomUpdater extends AbstractLogEnabled implements PomUpdater
         for (MavenProject project : reactorProjects)
         {
             ProjectChangeset changes = new ProjectChangeset()
-                    .with(parentReleaseVersionChange(originalVersions, finalVersions))
-                    .with(projectReleaseVersionChange(finalVersions))
+                    .with(parentReleaseVersionChange(originalVersions, finalVersions, consistentProjectVersions))
+                    .with(projectReleaseVersionChange(finalVersions, consistentProjectVersions))
                     .with(artifactReleaseVersionChange(originalVersions, finalVersions, updateDependencies));
             try
             {

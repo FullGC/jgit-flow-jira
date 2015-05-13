@@ -114,6 +114,9 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
     @Parameter(defaultValue = "")
     private String hotfixFinishExtension = "";
 
+    @Parameter(defaultValue = "false", property = "consistentProjectVersions")
+    protected boolean consistentProjectVersions = false;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
@@ -151,7 +154,8 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setArgs(arguments)
            .setGoals(goals)
            .setHotfixFinishExtension(extensionObject)
-           .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
+           .setFlowInitContext(getFlowInitContext().getJGitFlowContext())
+           .setConsistentProjectVersions(consistentProjectVersions);
 
         try
         {

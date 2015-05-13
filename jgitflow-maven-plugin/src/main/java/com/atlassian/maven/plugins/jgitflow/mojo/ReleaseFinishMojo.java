@@ -120,6 +120,9 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
 
+    @Parameter(defaultValue = "false", property = "consistentProjectVersions")
+    protected boolean consistentProjectVersions = false;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
@@ -158,7 +161,8 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
            .setArgs(arguments)
            .setGoals(goals)
            .setReleaseFinishExtension(extensionObject)
-           .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
+           .setFlowInitContext(getFlowInitContext().getJGitFlowContext())
+           .setConsistentProjectVersions(consistentProjectVersions);
 
         try
         {

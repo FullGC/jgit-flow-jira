@@ -22,18 +22,20 @@ public class ParentReleaseVersionChange implements ProjectChange
 {
     private final Map<String, String> originalVersions;
     private final Map<String, String> releaseVersions;
+    private final boolean consistentProjectVersions;
     private final List<String> workLog;
 
-    private ParentReleaseVersionChange(Map<String, String> originalVersions, Map<String, String> releaseVersions)
+    private ParentReleaseVersionChange(Map<String, String> originalVersions, Map<String, String> releaseVersions, boolean consistentProjectVersions)
     {
         this.originalVersions = originalVersions;
         this.releaseVersions = releaseVersions;
+        this.consistentProjectVersions = consistentProjectVersions;
         this.workLog = new ArrayList<String>();
     }
 
-    public static ParentReleaseVersionChange parentReleaseVersionChange(Map<String, String> originalVersions, Map<String, String> releaseVersions)
+    public static ParentReleaseVersionChange parentReleaseVersionChange(Map<String, String> originalVersions, Map<String, String> releaseVersions, boolean consistentProjectVersions)
     {
-        return new ParentReleaseVersionChange(originalVersions, releaseVersions);
+        return new ParentReleaseVersionChange(originalVersions, releaseVersions, consistentProjectVersions);
     }
 
     @Override
@@ -49,6 +51,11 @@ public class ParentReleaseVersionChange implements ProjectChange
             String parentId = ArtifactUtils.versionlessKey(parent.getGroupId(), parent.getArtifactId());
 
             String parentVersion = releaseVersions.get(parentId);
+            if (null == parentVersion && consistentProjectVersions && releaseVersions.size() > 0)
+            {
+                // Use any release version, as the project's versions are consistent/global
+                parentVersion = releaseVersions.values().iterator().next();
+            }
 
             if (null == parentVersion)
             {
