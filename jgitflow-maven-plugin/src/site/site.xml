@@ -90,6 +90,7 @@
             <!--<item name="Contribute" href="contribute.html"/>-->
             <item name="Issues" href="https://ecosystem.atlassian.net/browse/MJF"/>
             <item name="Fork on Bitbucket" href="https://bitbucket.org/atlassian/jgit-flow/"/>
+            <item name="Google Group" href="https://groups.google.com/forum/#!forum/maven-jgitflow-users" />
             <item name="License" href="http://www.apache.org/licenses/LICENSE-2.0"/>
         </menu>
     </body>

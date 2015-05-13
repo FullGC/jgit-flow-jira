@@ -45,6 +45,8 @@ For specific plugin configuration options, [see the Mojo Documentation][plugin-i
 
 Looking for source code? [Check out the Bitbucket Repository][bb-repo]
 
+Want some help from others? [Check out our Google Group](https://groups.google.com/forum/#!forum/maven-jgitflow-users)
+
 #[[##]]# Differences with the Maven Release Plugin
 
 Although this plugin is based on the maven-release-plugin, it does things a bit differently to provide a cleaner workflow.
@@ -64,16 +66,12 @@ The differences are:
 
 #[[##]]# Contribute
 
-Reflow skin provides custom Velocity tools library to be used in Maven site template:
+If you'd like to contribute, first log an issue/feature request in [our issue tracker](https://ecosystem.atlassian.net/browse/MJF)
 
--   **`SkinConfigTool`** - convenient access to custom configuration options (global and per-page)
--   **`HtmlTool`** - query and modify HTML text
--   **`URITool`** - use Java URIs in the template
+Once you have an JIRA issue key, [fork the code on Bitbucket][bb-repo] and issue a pull request.
 
-To enable these tools for any skin, add `reflow-velocity-tools` dependency to
-`maven-site-plugin` in the POM.
-
-[Read more about usage and browse the Javadoc &raquo;][reflow-tools]
+Please note that we prefer you work in a git-flow style. Therefore, please make changes in a feature branch, and have your PR target that same feature branch.
+This way, we'll be able to test your change locally without having to merge it into develop.
 
 [plugin-info]: plugin-info.html
 [bb-repo]: https://bitbucket.org/atlassian/jgit-flow
