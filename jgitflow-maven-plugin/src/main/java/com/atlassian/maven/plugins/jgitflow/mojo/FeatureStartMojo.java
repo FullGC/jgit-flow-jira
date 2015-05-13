@@ -66,6 +66,7 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
            .setUseReleaseProfile(false)
            .setUsername(username)
            .setPassword(password)
+                .setEol(eol)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

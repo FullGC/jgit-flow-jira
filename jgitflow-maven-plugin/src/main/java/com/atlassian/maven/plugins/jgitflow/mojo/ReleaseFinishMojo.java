@@ -166,6 +166,7 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
            .setGoals(goals)
            .setReleaseFinishExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext())
+                .setEol(eol)
            .setConsistentProjectVersions(consistentProjectVersions);
 
         try

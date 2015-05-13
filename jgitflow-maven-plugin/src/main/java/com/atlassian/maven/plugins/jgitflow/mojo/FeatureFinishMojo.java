@@ -110,6 +110,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
            .setUseReleaseProfile(false)
+                .setEol(eol)
            .setConsistentProjectVersions(consistentProjectVersions)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 

@@ -146,6 +146,15 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "false", property = "pullDevelop")
     protected boolean pullDevelop = false;
 
+    /**
+     * This can be used to force the type of line ending used when rewriting poms.
+     * If not set, blank or has an invalid value, the eol will be looked up from core.eol
+     * 
+     * Valid values are: native, lf, crlf
+     */
+    @Parameter(defaultValue = "", property = "eol")
+    protected String eol = "";
+
     Settings getSettings()
     {
         return settings;

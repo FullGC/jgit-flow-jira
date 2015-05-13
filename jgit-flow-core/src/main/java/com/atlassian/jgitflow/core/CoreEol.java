@@ -1,5 +1,6 @@
 package com.atlassian.jgitflow.core;
 
+import com.google.common.base.Strings;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Config.ConfigEnum;
 import org.eclipse.jgit.lib.ConfigConstants;
@@ -37,6 +38,27 @@ public enum CoreEol implements ConfigEnum
                         DEFAULT);
     }
 
+    public static CoreEol fromString(String eol)
+    {
+        if(!Strings.isNullOrEmpty(eol))
+        {
+            for(CoreEol type : CoreEol.values())
+            {
+                if(type.toConfigValue().equalsIgnoreCase(eol))
+                {
+                    return type;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean isValid(String eol)
+    {
+        return (null != fromString(eol));
+    }
+    
     @Override
     public String toConfigValue()
     {

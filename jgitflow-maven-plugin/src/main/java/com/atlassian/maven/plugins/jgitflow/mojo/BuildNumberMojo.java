@@ -133,6 +133,7 @@ public class BuildNumberMojo extends AbstractJGitFlowMojo
                 .setUseReleaseProfile(false)
                 .setUsername(username)
                 .setPassword(password)
+                .setEol(eol)
                 .setAllowRemote(isRemoteAllowed()));
         sessionProvider.setSession(session);
         projectsProvider.setReactorProjects(projects);

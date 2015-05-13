@@ -53,6 +53,7 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
            .setEnableSshAgent(enableSshAgent)
            .setUsername(username)
            .setPassword(password)
+                .setEol(eol)
            .setUseReleaseProfile(false)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 

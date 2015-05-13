@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import com.atlassian.jgitflow.core.CoreEol;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 
 import org.apache.maven.project.MavenProject;
@@ -33,6 +34,9 @@ public class MavenProjectRewriter implements ProjectRewriter
     @Requirement
     private JGitFlowProvider jGitFlowProvider;
 
+    @Requirement
+    private ContextProvider contextProvider;
+
     @Override
     public void applyChanges(MavenProject project, ProjectChangeset changes) throws ProjectRewriteException
     {
@@ -40,7 +44,15 @@ public class MavenProjectRewriter implements ProjectRewriter
 
         try
         {
-            eol = CoreEol.getConfigValue(jGitFlowProvider.gitFlow().git().getRepository().getConfig()).getEol();
+            String eolParam = contextProvider.getContext().getEol();
+            if(CoreEol.isValid(eolParam))
+            {
+                eol = CoreEol.fromString(eolParam).getEol();
+            }
+            else 
+            {
+                eol = CoreEol.getConfigValue(jGitFlowProvider.gitFlow().git().getRepository().getConfig()).getEol();
+            }
         }
         catch (JGitFlowException e)
         {
