@@ -4,7 +4,7 @@
     <parent>
         <groupId>external.atlassian.jgitflow</groupId>
         <artifactId>jgitflow-parent</artifactId>
-        <version>1.0-m5-SNAPSHOT</version>
+        <version>1.0-m5-mjf_193_rebase_missing_upstream-SNAPSHOT</version>
     </parent>
 
     <artifactId>jgitflow-maven-plugin</artifactId>

@@ -3,7 +3,7 @@
     <parent>
         <artifactId>jgitflow-parent</artifactId>
         <groupId>external.atlassian.jgitflow</groupId>
-        <version>1.0-m5-SNAPSHOT</version>
+        <version>1.0-m5-mjf_193_rebase_missing_upstream-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
