@@ -72,6 +72,13 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
     @Parameter(defaultValue = "false", property = "noFeatureBuild")
     private boolean noFeatureBuild = false;
 
+    /**
+     * If set to true, only the first parent/project version will be used across all version updates
+     * @see <a href="https://ecosystem.atlassian.net/browse/MJF-204">https://ecosystem.atlassian.net/browse/MJF-204</a>
+     */
+    @Parameter(defaultValue = "false", property = "consistentProjectVersions")
+    protected boolean consistentProjectVersions = false;
+    
     @Component(hint = "feature")
     FlowReleaseManager releaseManager;
 
@@ -103,6 +110,7 @@ public class FeatureFinishMojo extends AbstractJGitFlowMojo
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
            .setUseReleaseProfile(false)
+           .setConsistentProjectVersions(consistentProjectVersions)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

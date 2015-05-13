@@ -120,6 +120,10 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
 
+    /**
+     * If set to true, only the first parent/project version will be used across all version updates
+     * @see <a href="https://ecosystem.atlassian.net/browse/MJF-204">https://ecosystem.atlassian.net/browse/MJF-204</a>
+     */
     @Parameter(defaultValue = "false", property = "consistentProjectVersions")
     protected boolean consistentProjectVersions = false;
 
