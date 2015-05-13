@@ -54,7 +54,7 @@ public class FeatureRebaseCommand extends AbstractGitFlowCommand<FeatureRebaseCo
         try
         {
             git.checkout().setName(prefixedBranchName).call();
-            git.rebase().call();
+            git.rebase().setUpstream(gfConfig.getDevelop()).call();
         }
         catch (GitAPIException e)
         {
