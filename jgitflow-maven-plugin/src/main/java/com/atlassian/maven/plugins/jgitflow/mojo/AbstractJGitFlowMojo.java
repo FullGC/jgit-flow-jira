@@ -41,6 +41,21 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "${reactorProjects}", readonly = true, required = true)
     private List<MavenProject> reactorProjects;
 
+    /**
+     * This parameter permits you to configure branch and tag names, as shown in the following example:
+     * 
+     * <pre>
+     * &lt;flowInitContext&gt;
+     *   &lt;masterBranchName&gt;master&lt;/masterBranchName&gt;
+     *   &lt;developBranchName&gt;develop&lt;/developBranchName&gt;
+     *   &lt;featureBranchPrefix&gt;feature-&lt;/featureBranchPrefix&gt;
+     *   &lt;releaseBranchPrefix&gt;release-&lt;/releaseBranchPrefix&gt;
+     *   &lt;hotfixBranchPrefix&gt;hotfix-&lt;/hotfixBranchPrefix&gt;
+     *   &lt;versionTagPrefix&gt;stable-&lt;/versionTagPrefix&gt;
+     * &lt;/flowInitContext&gt;
+     * </pre>
+     * 
+     */
     @Parameter(defaultValue = "${flowInitContext}")
     private FlowInitContext flowInitContext;
 

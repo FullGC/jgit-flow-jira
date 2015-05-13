@@ -15,7 +15,7 @@
 
     <name>JGitFlow Parent</name>
     <description>The parent pom for the Jgit Flow project</description>
-    <url>https://bitbucket.org/atlassian/jgit-flow</url>
+    <url>https://www.bitbucket.org/atlassian/jgit-flow</url>
 
     <licenses>
         <license>

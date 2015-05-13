@@ -196,6 +196,9 @@
                 <version>3.3</version>
                 <configuration>
                     <siteDirectory>${project.basedir}/src/site</siteDirectory>
+                    <tempWebappDirectory>${basedir}/target/site/tempdir</tempWebappDirectory>
+                    <relativizeDecorationLinks>false</relativizeDecorationLinks>
+                    <generateProjectInfo>false</generateProjectInfo>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -221,6 +224,14 @@
                 <configuration>
                     <!-- see http://jira.codehaus.org/browse/MNG-5346 -->
                     <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>
