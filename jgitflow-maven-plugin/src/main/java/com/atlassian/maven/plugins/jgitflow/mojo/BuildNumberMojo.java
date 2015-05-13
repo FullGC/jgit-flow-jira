@@ -33,13 +33,21 @@ import static com.atlassian.maven.plugins.jgitflow.rewrite.ProjectReleaseVersion
 @Mojo(name = "build-number", aggregator = true)
 public class BuildNumberMojo extends AbstractJGitFlowMojo
 {
-
+    /**
+     * The build number to tack on to the pom version during the build.
+     */
     @Parameter(property = "buildNumber")
     private String buildNumber;
 
+    /**
+     * Whether, for modules which refer to each other within the same multi-module build, to update dependencies version to the release version.
+     */
     @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies = true;
 
+    /**
+     * The suffix to use after the version number but before the build number
+     */
     @Parameter(defaultValue = "-build", property = "buildNumberVersionSuffix")
     private String buildNumberVersionSuffix = "-build";
 

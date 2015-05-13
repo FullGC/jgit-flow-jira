@@ -26,23 +26,38 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
     private boolean autoVersionSubmodules = false;
 
     /**
-     * Default version to use when preparing a release
+     * Default version to use when preparing a hotfix
      */
     @Parameter(property = "releaseVersion", defaultValue = "")
     private String releaseVersion = "";
 
+    /**
+     * Whether, for modules which refer to each other within the same multi-module build, to update dependencies version to the release version.
+     */
     @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies = true;
 
+    /**
+     * Whether to push hotfix branches to the remote upstream.
+     */
     @Parameter(defaultValue = "false", property = "pushHotfixes")
     private boolean pushHotfixes = false;
 
+    /**
+     * A SHA, short SHA, or branch name to use as the starting point for the new branch
+     */
     @Parameter(property = "startCommit", defaultValue = "")
     private String startCommit = "";
 
     @Component(hint = "hotfix")
     FlowReleaseManager releaseManager;
 
+    /**
+     * A FQCN of a compatible hotfix start extension.
+     * Extensions are used to run custom code at various points in the jgitflow lifecycle.
+     *
+     * More documentation on using extensions will be available in the future
+     */
     @Parameter(defaultValue = "")
     private String hotfixStartExtension = "";
 
