@@ -9,7 +9,7 @@
 
     <groupId>external.atlassian.jgitflow</groupId>
     <artifactId>jgitflow-parent</artifactId>
-    <version>1.0-m5-SNAPSHOT</version>
+    <version>1.0-m5-mjf_183_eol_param-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
