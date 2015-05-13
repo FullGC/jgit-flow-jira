@@ -273,13 +273,39 @@ public class FeatureFinishTest extends BaseGitFlowTest
         flow.featureStart("my-feature").call();
 
         //do a commit to the remote feature branch
-        remoteGit.checkout().setName(flow.getFeatureBranchPrefix() + "my-feature");
+        remoteGit.checkout().setName(flow.getFeatureBranchPrefix() + "my-feature").call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
         FileUtils.writeStringToFile(junkFile, "I am junk");
         remoteGit.add().addFilepattern(junkFile.getName()).call();
         remoteGit.commit().setMessage("adding junk file").call();
 
         flow.featureFinish("my-feature").setFetch(true).call();
+
+    }
+
+    @Test
+    public void finishFeatureWithRebase() throws Exception
+    {
+        Git git = null;
+        Git remoteGit = null;
+        remoteGit = RepoUtil.createRepositoryWithBranches(newDir(), "develop", "feature/my-feature");
+
+        git = Git.cloneRepository().setDirectory(newDir()).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
+
+        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
+        JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
+
+        flow.featureStart("my-feature").call();
+        git.pull().call();
+
+        //do a commit to the develop branch
+        git.checkout().setName(flow.getDevelopBranchName()).call();
+        File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        git.add().addFilepattern(junkFile.getName()).call();
+        git.commit().setMessage("adding junk file").call();
+
+        flow.featureFinish("my-feature").setRebase(true).call();
 
     }
 
