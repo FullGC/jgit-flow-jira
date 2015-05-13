@@ -157,6 +157,7 @@ public class HotfixFinishMojo extends AbstractJGitFlowMojo
            .setPullDevelop(pullDevelop)
            .setArgs(arguments)
            .setGoals(goals)
+                .setEol(eol)
            .setHotfixFinishExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext())
            .setConsistentProjectVersions(consistentProjectVersions);

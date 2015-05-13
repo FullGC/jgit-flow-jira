@@ -89,6 +89,7 @@ public class HotfixStartMojo extends AbstractJGitFlowMojo
            .setScmCommentSuffix(scmCommentSuffix)
            .setUsername(username)
            .setPassword(password)
+                .setEol(eol)
            .setHotfixStartExtension(extensionObject)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 

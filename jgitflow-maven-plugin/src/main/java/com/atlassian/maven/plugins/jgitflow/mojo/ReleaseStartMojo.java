@@ -105,6 +105,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
            .setUsername(username)
            .setPassword(password)
            .setReleaseStartExtension(extensionObject)
+                .setEol(eol)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
