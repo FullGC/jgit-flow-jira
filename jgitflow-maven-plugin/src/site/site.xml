@@ -26,6 +26,7 @@
             <theme>default</theme>
             <highlightJs>true</highlightJs>
             <highlightJsTheme>default</highlightJsTheme>
+            <imgLightbox>false</imgLightbox>
             <!--<absoluteResourceURL>http://jgitflow.bitbucket.org</absoluteResourceURL>-->
             <brand>
                 <!-- Reflow Maven Skin, but with "Reflow" highlighted -->
