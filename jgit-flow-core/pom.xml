@@ -4,7 +4,7 @@
     <parent>
         <groupId>external.atlassian.jgitflow</groupId>
         <artifactId>jgitflow-parent</artifactId>
-        <version>1.0-m5</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>jgit-flow-core</artifactId>
