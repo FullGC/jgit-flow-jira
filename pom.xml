@@ -9,13 +9,13 @@
 
     <groupId>external.atlassian.jgitflow</groupId>
     <artifactId>jgitflow-parent</artifactId>
-    <version>1.0-m4.3</version>
+    <version>1.0-m5</version>
 
     <packaging>pom</packaging>
 
     <name>JGitFlow Parent</name>
     <description>The parent pom for the Jgit Flow project</description>
-    <url>https://bitbucket.org/atlassian/jgit-flow</url>
+    <url>https://www.bitbucket.org/atlassian/jgit-flow</url>
 
     <licenses>
         <license>
@@ -184,7 +184,7 @@
             <dependency>
                 <groupId>org.apache.servicemix.bundles</groupId>
                 <artifactId>org.apache.servicemix.bundles.jsch</artifactId>
-                <version>0.1.49_1</version>
+                <version>0.1.51_1</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
@@ -193,7 +193,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
 
     <build>
         <resources>
@@ -212,6 +211,16 @@
                 </excludes>
             </resource>
         </resources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.3</version>
+                    <inherited>false</inherited>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -227,9 +236,23 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <reportSets>
+                        <reportSet>
+                            <reports><!-- select reports -->
+                                <report>index</report>
+                            </reports>
+                        </reportSet>
+                    </reportSets>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>external.atlassian.jgitflow</groupId>
                 <artifactId>jgitflow-maven-plugin</artifactId>
-                <version>${project.version}</version>
+                <version>1.0-m4.3</version>
                 <inherited>false</inherited>
                 <configuration>
                     <allowSnapshots>true</allowSnapshots>
@@ -246,6 +269,23 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
+                </configuration>
+            </plugin>
+            <!-- Temporary workaround for jira.codehaus.org/browse/MPLUGIN-244 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <inherited>false</inherited>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>
@@ -333,14 +373,14 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
-    
+
     <properties>
         <maven.version>2.2.1</maven.version>
         <!--<mavenVersion>3.0.5</mavenVersion>-->
-        <maven.plugin.plugin.version>3.1</maven.plugin.plugin.version>
+        <maven.plugin.plugin.version>3.3</maven.plugin.plugin.version>
         <maven.release.version>2.4</maven.release.version>
         <jsch.agent.version>0.0.7</jsch.agent.version>
-        <jgit.version>3.3.1.201403241930-r</jgit.version>
+        <jgit.version>3.7.1.201504261725-r</jgit.version>
         <jline.version>1.0</jline.version>
         <gson.version>2.2.2</gson.version>
         <jdom2.version>2.0.4</jdom2.version>

@@ -1,5 +1,6 @@
 import com.atlassian.maven.plugins.jgitflow.it.FinishScriptHelper
 import org.apache.commons.io.FileUtils
+import org.eclipse.jgit.api.CreateBranchCommand
 import org.eclipse.jgit.api.Git
 
 try
@@ -10,7 +11,7 @@ try
     Git localGit = gits.local;
     Git remoteGit = gits.remote;
     
-    localGit.checkout().setName("release/1.1")
+    localGit.checkout().setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).setCreateBranch(true).setStartPoint("origin/release/1.1").setName("release/1.1").call()
 
     File junkFile = new File(localGit.getRepository().getWorkTree(), "junk.txt");
     FileUtils.writeStringToFile(junkFile, "I am junk");

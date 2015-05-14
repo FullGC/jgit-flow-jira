@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import com.atlassian.jgitflow.core.CoreEol;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.exception.ProjectRewriteException;
+import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
 
 import org.apache.maven.project.MavenProject;
@@ -33,6 +34,9 @@ public class MavenProjectRewriter implements ProjectRewriter
     @Requirement
     private JGitFlowProvider jGitFlowProvider;
 
+    @Requirement
+    private ContextProvider contextProvider;
+
     @Override
     public void applyChanges(MavenProject project, ProjectChangeset changes) throws ProjectRewriteException
     {
@@ -40,7 +44,15 @@ public class MavenProjectRewriter implements ProjectRewriter
 
         try
         {
-            eol = CoreEol.getConfigValue(jGitFlowProvider.gitFlow().git().getRepository().getConfig()).getEol();
+            String eolParam = contextProvider.getContext().getEol();
+            if(CoreEol.isValid(eolParam))
+            {
+                eol = CoreEol.fromString(eolParam).getEol();
+            }
+            else 
+            {
+                eol = CoreEol.getConfigValue(jGitFlowProvider.gitFlow().git().getRepository().getConfig()).getEol();
+            }
         }
         catch (JGitFlowException e)
         {
@@ -63,7 +75,7 @@ public class MavenProjectRewriter implements ProjectRewriter
 
         boolean pomWasModified = false;
 
-        pomWasModified |= applyAllChanges(project, root, changes.getItems());
+        pomWasModified |= applyAllChanges(project, root, changes.getItems(), eol);
 
         if (pomWasModified)
         {
@@ -109,13 +121,13 @@ public class MavenProjectRewriter implements ProjectRewriter
 
     }
 
-    private boolean applyAllChanges(MavenProject project, Element root, Iterable<ProjectChange> items) throws ProjectRewriteException
+    private boolean applyAllChanges(MavenProject project, Element root, Iterable<ProjectChange> items, String eol) throws ProjectRewriteException
     {
         boolean modified = false;
 
         for (ProjectChange change : items)
         {
-            boolean result = change.applyChange(project, root);
+            boolean result = change.applyChange(project, root, eol);
 
             if (!modified)
             {

@@ -18,11 +18,11 @@ import org.eclipse.jgit.transport.RefSpec;
 
 /**
  * Publishes feature branch to the remote repository
- * <p/>
- * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p/>
+ * <p></p>
+ * Examples ({@code flow} is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
+ * <p></p>
  * Publish a feature:
- * <p/>
+ * <p></p>
  * <pre>
  * flow.featurePublish(&quot;feature&quot;).call();
  * </pre>
@@ -36,10 +36,8 @@ public class FeaturePublishCommand extends AbstractGitFlowCommand<FeaturePublish
      * <p></p>
      * An instance of this class is usually obtained by calling {@link com.atlassian.jgitflow.core.JGitFlow#featurePublish(String)}
      *
-     * @param name     The name of the feature
      * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
-     * @param reporter
      */
     public FeaturePublishCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
     {

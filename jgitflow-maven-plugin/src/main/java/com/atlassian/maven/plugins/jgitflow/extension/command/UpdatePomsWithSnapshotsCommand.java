@@ -86,11 +86,11 @@ public class UpdatePomsWithSnapshotsCommand implements ExtensionCommand
 
             pomUpdater.addSnapshotToPomVersions(cacheKey, versionType, versionSuffix, branchProjects);
 
-            projectHelper.commitAllPoms(flow.git(), branchProjects, ctx.getScmCommentPrefix() + "updating poms for branch '" + unprefixedBranchName + "' with snapshot versions" + ctx.getScmCommentSuffix());
+            projectHelper.commitAllPoms(flow.git(), branchProjects, ctx.getScmCommentPrefix() + "updating poms for " + unprefixedBranchName + " branch with snapshot versions" + ctx.getScmCommentSuffix());
         }
         catch (Exception e)
         {
-            throw new JGitFlowExtensionException("Error updating poms with snapshot versions for branch '" + unprefixedBranchName + "' : " + e.getMessage(), e);
+            throw new JGitFlowExtensionException("Error updating poms with snapshot versions for " + unprefixedBranchName + " branch: " + e.getMessage(), e);
         }
     }
 

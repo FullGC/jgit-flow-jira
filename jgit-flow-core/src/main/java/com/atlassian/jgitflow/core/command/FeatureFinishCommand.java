@@ -29,23 +29,23 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * <p>
  * This will merge the feature into develop and set the local branch to develop.
  * </p>
- * <p/>
- * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p/>
+ * <p></p>
+ * Examples ({@code flow} is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
+ * <p></p>
  * Finish a feature:
- * <p/>
+ * <p></p>
  * <pre>
  * flow.featureFinish(&quot;feature&quot;).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Don't delete the local feature branch
- * <p/>
+ * <p></p>
  * <pre>
  * flow.featureFinish(&quot;feature&quot;).setKeepBranch(true).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Squash all commits on the feature branch into one before merging
- * <p/>
+ * <p></p>
  * <pre>
  * flow.featureFinish(&quot;feature&quot;).setSquash(true).call();
  * </pre>
@@ -56,6 +56,7 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     private boolean rebase;
     private boolean squash;
     private boolean noMerge;
+    private boolean suppressFastForward;
     private FeatureFinishExtension extension;
 
     /**
@@ -63,10 +64,8 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
      * <p></p>
      * An instance of this class is usually obtained by calling {@link com.atlassian.jgitflow.core.JGitFlow#featureFinish(String)}
      *
-     * @param name     The name of the feature
      * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
-     * @param reporter
      */
     public FeatureFinishCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
     {
@@ -161,7 +160,8 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
                 MergeProcessExtensionWrapper developExtension = new MergeProcessExtensionWrapper(extension.beforeDevelopCheckout(), extension.afterDevelopCheckout(), extension.beforeDevelopMerge(), extension.afterDevelopMerge());
                 if (commitList.size() < 2)
                 {
-                    mergeResult = doMerge(prefixedBranchName, gfConfig.getDevelop(), developExtension, false, MergeCommand.FastForwardMode.FF);
+                    MergeCommand.FastForwardMode ffMode = suppressFastForward ? MergeCommand.FastForwardMode.NO_FF : MergeCommand.FastForwardMode.FF;
+                    mergeResult = doMerge(prefixedBranchName, gfConfig.getDevelop(), developExtension, false, ffMode);
                 }
                 else
                 {
@@ -212,7 +212,7 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     /**
      * Set whether to perform a git rebase on the feature before doing the merge
      *
-     * @param rebase <code>true</code> to do a rebase, <code>false</code>(default) otherwise
+     * @param rebase {@code true} to do a rebase, {@code false}(default) otherwise
      * @return {@code this}
      */
     public FeatureFinishCommand setRebase(boolean rebase)
@@ -224,7 +224,7 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     /**
      * Set whether to squash all commits into a single commit before the merge
      *
-     * @param squash <code>true</code> to squash, <code>false</code>(default) otherwise
+     * @param squash {@code true} to squash, {@code false}(default) otherwise
      * @return {@code this}
      */
     public FeatureFinishCommand setSquash(boolean squash)
@@ -236,6 +236,12 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
     public FeatureFinishCommand setNoMerge(boolean noMerge)
     {
         this.noMerge = noMerge;
+        return this;
+    }
+
+    public FeatureFinishCommand setSuppressFastForward(boolean suppressFastForward)
+    {
+        this.suppressFastForward = suppressFastForward;
         return this;
     }
 

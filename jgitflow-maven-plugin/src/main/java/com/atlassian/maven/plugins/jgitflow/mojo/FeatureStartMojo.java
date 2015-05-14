@@ -23,12 +23,21 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
     @Parameter(property = "featureName")
     private String featureName;
 
+    /**
+     * Whether to append the feature name to the version on the feature branch.
+     */
     @Parameter(defaultValue = "false", property = "enableFeatureVersions")
     private boolean enableFeatureVersions = false;
 
+    /**
+     * Whether to push feature branches to the remote upstream.
+     */
     @Parameter(defaultValue = "false", property = "pushFeatures")
     private boolean pushFeatures = false;
 
+    /**
+     * A SHA, short SHA, or branch name to use as the starting point for the new branch
+     */
     @Parameter(property = "startCommit", defaultValue = "")
     private String startCommit = "";
 
@@ -54,8 +63,10 @@ public class FeatureStartMojo extends AbstractJGitFlowMojo
            .setPullDevelop(pullDevelop)
            .setScmCommentPrefix(scmCommentPrefix)
            .setScmCommentSuffix(scmCommentSuffix)
+           .setUseReleaseProfile(false)
            .setUsername(username)
            .setPassword(password)
+                .setEol(eol)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

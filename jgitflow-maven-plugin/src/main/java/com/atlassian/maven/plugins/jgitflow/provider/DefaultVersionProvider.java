@@ -1,10 +1,5 @@
 package com.atlassian.maven.plugins.jgitflow.provider;
 
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.maven.plugins.jgitflow.PrettyPrompter;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
@@ -12,9 +7,7 @@ import com.atlassian.maven.plugins.jgitflow.VersionState;
 import com.atlassian.maven.plugins.jgitflow.VersionType;
 import com.atlassian.maven.plugins.jgitflow.exception.MavenJGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.helper.MavenExecutionHelper;
-
 import com.google.common.collect.ImmutableMap;
-
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
@@ -27,6 +20,11 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
+
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -278,7 +276,7 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
     {
         ReleaseContext ctx = contextProvider.getContext();
         String defaultVersion = null;
-        String suggestedVersion = null;
+        String suggestedVersion;
 
         if (StringUtils.isNotBlank(contextVersion))
         {
@@ -289,15 +287,29 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
 
         while (StringUtils.isBlank(finalVersion) || ((VersionState.RELEASE.equals(state) && ArtifactUtils.isSnapshot(finalVersion)) || (VersionState.SNAPSHOT.equals(state) && !ArtifactUtils.isSnapshot(finalVersion))))
         {
-            if (!VersionType.HOTFIX.equals(versionType))
-            {
-                suggestedVersion = getSuggestedVersion(versionType, project);
-            }
-            else
+            if (VersionType.HOTFIX.equals(versionType))
             {
                 String projectId = ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId());
                 String lastReleaseVersion = getLastReleaseVersions(rootProject).get(projectId);
                 suggestedVersion = getSuggestedHotfixVersion(project, lastReleaseVersion);
+            }
+            else
+            {
+                String baseVersion = null;
+                if (VersionType.DEVELOPMENT.equals(versionType) && nextReleaseVersions.containsKey(ProjectCacheKey.RELEASE_START_LABEL))
+                {
+                    // MJF-176: Get next version from the release version
+                    Map<String, String> versionCache = nextReleaseVersions.get(ProjectCacheKey.RELEASE_START_LABEL);
+                    String projectId = ArtifactUtils.versionlessKey(project.getGroupId(), project.getArtifactId());
+                    baseVersion = versionCache.get(projectId);
+                }
+
+                if (baseVersion == null)
+                {
+                    baseVersion = project.getVersion();
+                }
+
+                suggestedVersion = getSuggestedVersion(versionType, baseVersion);
             }
 
             if (ctx.isInteractive())
@@ -322,14 +334,14 @@ public class DefaultVersionProvider extends AbstractLogEnabled implements Versio
         return finalVersion;
     }
 
-    private String getSuggestedVersion(VersionType versionType, MavenProject rootProject) throws MavenJGitFlowException
+    private String getSuggestedVersion(VersionType versionType, String incomingVersion) throws MavenJGitFlowException
     {
         ReleaseContext ctx = contextProvider.getContext();
         String suggestedVersion = "unknown";
-        DefaultVersionInfo info = null;
+        DefaultVersionInfo info;
         try
         {
-            info = new DefaultVersionInfo(rootProject.getVersion());
+            info = new DefaultVersionInfo(incomingVersion);
         }
         catch (VersionParseException e)
         {

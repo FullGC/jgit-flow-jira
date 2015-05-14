@@ -15,9 +15,9 @@ import static com.google.common.collect.Iterables.*;
 
 /**
  * Describes changes that should be applied to the project.
- * <p/>
+ * <p></p>
  * This class is immutable; all of its non-getter methods return new instances.
- * <p/>
+ * <p></p>
  * This class also contains static factory methods for all supported change types.
  */
 public final class ProjectChangeset

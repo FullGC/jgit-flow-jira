@@ -1,19 +1,13 @@
 package com.atlassian.maven.plugins.jgitflow.helper;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.*;
-
 import com.atlassian.jgitflow.core.JGitFlow;
 import com.atlassian.jgitflow.core.exception.JGitFlowException;
 import com.atlassian.maven.plugins.jgitflow.ReleaseContext;
 import com.atlassian.maven.plugins.jgitflow.exception.ReactorReloadException;
 import com.atlassian.maven.plugins.jgitflow.provider.ContextProvider;
 import com.atlassian.maven.plugins.jgitflow.provider.JGitFlowProvider;
-
 import com.google.common.base.Joiner;
-
+import com.google.common.base.Strings;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.model.Profile;
@@ -27,6 +21,15 @@ import org.apache.maven.shared.release.exec.MavenExecutorException;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.eclipse.jgit.api.errors.GitAPIException;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Stack;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -53,7 +56,7 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
     {
         ReleaseContext ctx = contextProvider.getContext();
 
-        String goal = "clean deploy";
+        String goal = ctx.getGoals();
 
         if (ctx.isNoDeploy())
         {
@@ -70,21 +73,36 @@ public class DefaultMavenExecutionHelper implements MavenExecutionHelper
 
         List<String> argList = new ArrayList<String>();
 
-        Properties userProps = session.getUserProperties();
-
-        for (String key : userProps.stringPropertyNames())
-        {
-            argList.add("-D" + key + "=" + userProps.getProperty(key));
-        }
 
         if (ctx.isUseReleaseProfile())
         {
             argList.add("-DperformRelease=true");
         }
 
-        for (String profileId : getActiveProfileIds(project, session))
+        String args = ctx.getArgs();
+        if (Strings.isNullOrEmpty(args))
         {
-            argList.add("-P" + profileId);
+
+            // use default user properties + default profiles
+
+            Properties userProps = session.getUserProperties();
+
+            for (String key : userProps.stringPropertyNames())
+            {
+                argList.add("-D" + key + "=\"" + userProps.getProperty(key) + "\"");
+            }
+
+            for (String profileId : getActiveProfileIds(project, session))
+            {
+                argList.add("-P" + profileId);
+            }
+
+        } else
+        {
+
+            // use user specific release arguments
+            argList.add(args.trim());
+
         }
 
         String additionalArgs = Joiner.on(" ").join(argList);

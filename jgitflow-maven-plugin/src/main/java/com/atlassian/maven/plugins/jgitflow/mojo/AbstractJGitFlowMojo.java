@@ -41,9 +41,27 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "${reactorProjects}", readonly = true, required = true)
     private List<MavenProject> reactorProjects;
 
+    /**
+     * This parameter permits you to configure branch and tag names, as shown in the following example:
+     * 
+     * <pre>
+     * &lt;flowInitContext&gt;
+     *   &lt;masterBranchName&gt;master&lt;/masterBranchName&gt;
+     *   &lt;developBranchName&gt;develop&lt;/developBranchName&gt;
+     *   &lt;featureBranchPrefix&gt;feature-&lt;/featureBranchPrefix&gt;
+     *   &lt;releaseBranchPrefix&gt;release-&lt;/releaseBranchPrefix&gt;
+     *   &lt;hotfixBranchPrefix&gt;hotfix-&lt;/hotfixBranchPrefix&gt;
+     *   &lt;versionTagPrefix&gt;stable-&lt;/versionTagPrefix&gt;
+     * &lt;/flowInitContext&gt;
+     * </pre>
+     * 
+     */
     @Parameter(defaultValue = "${flowInitContext}")
     private FlowInitContext flowInitContext;
 
+    /**
+     * Whether to enable using an ssh-agent.
+     */
     @Parameter(defaultValue = "false", property = "enableSshAgent")
     protected boolean enableSshAgent = false;
 
@@ -53,38 +71,89 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     @Parameter(defaultValue = "false", property = "allowSnapshots")
     protected boolean allowSnapshots = false;
 
+    /**
+     * Whether to allow untracked files when checking if the working tree is clean.
+     */
     @Parameter(defaultValue = "false", property = "allowUntracked")
     protected boolean allowUntracked = false;
 
+    /**
+     * Whether to turn off all operations that require network access.
+     * <p></p>
+     * <p></p>
+     * NOTE: THIS IS NOT CURRENTLY IMPLEMENTED!
+     */
     @Parameter(property = "offline", defaultValue = "${settings.offline}")
     protected boolean offline;
 
+    /**
+     * Whether to turn off all operations access the remote git repository.
+     * This will still allow network access to download dependencies and such.
+     * <br />
+     * <br />
+     * NOTE: THIS IS NOT CURRENTLY IMPLEMENTED!
+     */
     @Parameter(property = "localOnly", defaultValue = "false")
     protected boolean localOnly = false;
 
+    /**
+     * Default url to use if origin remote is not found in .git/config.
+     * This is highly useful for CI servers that don't do proper clones.
+     */
     @Parameter(property = "defaultOriginUrl", defaultValue = "")
     protected String defaultOriginUrl = "";
 
+    /**
+     * The message prefix to use for all SCM changes.
+     */
     @Parameter(property = "scmCommentPrefix", defaultValue = "")
     protected String scmCommentPrefix = "";
 
+    /**
+     * The message suffix to use for all SCM changes.
+     */
     @Parameter(property = "scmCommentSuffix", defaultValue = "")
     protected String scmCommentSuffix = "";
 
+    /**
+     * The username to use when using user/pass authentication
+     */
     @Parameter(property = "username", defaultValue = "")
     protected String username = "";
 
+    /**
+     * The password to use when using user/pass authentication
+     */
     @Parameter(property = "password", defaultValue = "")
     protected String password = "";
 
+    /**
+     * Whether to always overwrite the origin url in the .git/config file
+     * This is useful to ensure the proper origin url is used in CI environments
+     */
     @Parameter(defaultValue = "true", property = "alwaysUpdateOrigin")
     protected boolean alwaysUpdateOrigin = true;
 
+    /**
+     * Whether to pull the master branch when jgitflow is initialized
+     */
     @Parameter(defaultValue = "false", property = "pullMaster")
     protected boolean pullMaster = false;
 
+    /**
+     * Whether to pull the develop branch when jgitflow is initialized
+     */
     @Parameter(defaultValue = "false", property = "pullDevelop")
     protected boolean pullDevelop = false;
+
+    /**
+     * This can be used to force the type of line ending used when rewriting poms.
+     * If not set, blank or has an invalid value, the eol will be looked up from core.eol
+     * 
+     * Valid values are: native, lf, crlf
+     */
+    @Parameter(defaultValue = "", property = "eol")
+    protected String eol = "";
 
     Settings getSettings()
     {
@@ -99,7 +168,7 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     /**
      * Sets the base directory of the build.
      *
-     * @param basedir The build's base directory, must not be <code>null</code>.
+     * @param basedir The build's base directory, must not be {@code null}.
      */
     public void setBasedir(File basedir)
     {
@@ -109,7 +178,7 @@ public abstract class AbstractJGitFlowMojo extends AbstractMojo
     /**
      * Gets the list of projects in the build reactor.
      *
-     * @return The list of reactor project, never <code>null</code>.
+     * @return The list of reactor project, never {@code null}.
      */
     public List<MavenProject> getReactorProjects()
     {

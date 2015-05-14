@@ -121,8 +121,14 @@ public class ReleaseFinishTest extends BaseGitFlowTest
         //the develop branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
 
+        //since fast-forward is suppressed the latest commit on develop should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, flow.getDevelopBranchName()).getParentCount());
+
         //the master branch should have our commit
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
+
+        //since fast-forward is suppressed the latest commit on master should be a merge commit with 2 parents
+        assertEquals(2, GitHelper.getLatestCommit(git, flow.getMasterBranchName()).getParentCount());
     }
 
     @Test
@@ -306,7 +312,7 @@ public class ReleaseFinishTest extends BaseGitFlowTest
         flow.releaseStart("1.0").call();
 
         //do a commit to the remote develop branch
-        remoteGit.checkout().setName(flow.getDevelopBranchName());
+        remoteGit.checkout().setName(flow.getDevelopBranchName()).call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
         FileUtils.writeStringToFile(junkFile, "I am junk");
         remoteGit.add().addFilepattern(junkFile.getName()).call();
@@ -332,8 +338,8 @@ public class ReleaseFinishTest extends BaseGitFlowTest
 
         flow.releaseStart("1.0").call();
 
-        //do a commit to the remote develop branch
-        remoteGit.checkout().setName(flow.getMasterBranchName());
+        //do a commit to the remote master branch
+        remoteGit.checkout().setName(flow.getMasterBranchName()).call();
         File junkFile = new File(remoteGit.getRepository().getWorkTree(), "junk.txt");
         FileUtils.writeStringToFile(junkFile, "I am junk");
         remoteGit.add().addFilepattern(junkFile.getName()).call();
@@ -390,6 +396,56 @@ public class ReleaseFinishTest extends BaseGitFlowTest
         assertTrue(GitHelper.isMergedInto(remoteGit, localcommit, flow.getDevelopBranchName()));
         assertFalse(GitHelper.remoteBranchExists(git, flow.getReleaseBranchPrefix() + "1.0"));
         assertFalse(GitHelper.localBranchExists(remoteGit, flow.getReleaseBranchPrefix() + "1.0"));
+    }
+
+    @Test
+    public void finishReleaseAfterHotfix() throws Exception
+    {
+        Git git = RepoUtil.createRepositoryWithMasterAndDevelop(newDir());
+        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
+        JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
+
+        //create a hotfix
+        flow.hotfixStart("1.1").call();
+
+        //create a release
+        flow.git().checkout().setName(flow.getDevelopBranchName()).call();
+        flow.releaseStart("2.0").call();
+
+        //add a commit on hotfix
+        flow.git().checkout().setName(flow.getHotfixBranchPrefix() + "1.1").call();
+        File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
+        FileUtils.writeStringToFile(junkFile, "I am junk");
+        git.add().addFilepattern(junkFile.getName()).call();
+        RevCommit commit = git.commit().setMessage("committing junk file").call();
+
+        //add a commit on release
+        flow.git().checkout().setName(flow.getReleaseBranchPrefix() + "2.0").call();
+        File junkFile2 = new File(git.getRepository().getWorkTree(), "junk2.txt");
+        FileUtils.writeStringToFile(junkFile2, "I am junk");
+        git.add().addFilepattern(junkFile2.getName()).call();
+        RevCommit commit2 = git.commit().setMessage("committing junk file").call();
+
+        //finish the hotfix
+        flow.git().checkout().setName(flow.getHotfixBranchPrefix() + "1.1").call();
+        flow.hotfixFinish("1.1").call();
+
+        //make sure release has the hotfix commit
+        flow.git().checkout().setName(flow.getReleaseBranchPrefix() + "2.0").call();
+        assertTrue(GitHelper.isMergedInto(flow.git(), commit, flow.getReleaseBranchPrefix() + "2.0"));
+        
+        //finish the release
+        ReleaseMergeResult result = flow.releaseFinish("2.0").call();
+
+        assertTrue(result.wasSuccessful());
+
+        //we should be on develop branch
+        assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
+
+        //release branch should be gone
+        Ref ref2check = git.getRepository().getRef(flow.getReleaseBranchPrefix() + "2.0");
+        assertNull(ref2check);
+
     }
 
 }

@@ -11,20 +11,20 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * Instances of this class can be passed to the {@link com.atlassian.jgitflow.core.JGitFlow} init methods to override the default
  * branch names and prefixes used by git flow.
  * </p>
- * <p/>
+ * <p></p>
  * Examples:
- * <p/>
+ * <p></p>
  * Override master branch name
- * <p/>
+ * <p></p>
  * <pre>
  * InitContext ctx = new InitContext();
  * ctx.setMaster("GA");
  *
  * JGitFlow flow = JGitFlow.getOrInit(new File(&quot;some dir&quot;), ctx);
  * </pre>
- * <p/>
+ * <p></p>
  * Override master branch and release prefix
- * <p/>
+ * <p></p>
  * <pre>
  * InitContext ctx = new InitContext();
  * ctx.setMaster(&quot;GA&quot;).setRelease(&quot;rel/&quot;);

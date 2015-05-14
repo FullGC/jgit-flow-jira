@@ -9,11 +9,11 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 /**
  * Performs a rebase of the feature branch
- * <p/>
- * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p/>
+ * <p></p>
+ * Examples ({@code flow} is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
+ * <p></p>
  * Rebase a feature:
- * <p/>
+ * <p></p>
  * <pre>
  * flow.featureRebase(&quot;feature&quot;).call();
  * </pre>
@@ -27,7 +27,6 @@ public class FeatureRebaseCommand extends AbstractGitFlowCommand<FeatureRebaseCo
      * <p></p>
      * This command is usually run as part of a release finish by calling {@link FeatureFinishCommand#setRebase(boolean)}
      *
-     * @param name     The name of the feature
      * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
      */
@@ -55,7 +54,7 @@ public class FeatureRebaseCommand extends AbstractGitFlowCommand<FeatureRebaseCo
         try
         {
             git.checkout().setName(prefixedBranchName).call();
-            git.rebase().call();
+            git.rebase().setUpstream(gfConfig.getDevelop()).call();
         }
         catch (GitAPIException e)
         {

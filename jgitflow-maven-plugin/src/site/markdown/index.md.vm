@@ -1,0 +1,78 @@
+#[[##]]# What is Git Flow?
+
+![Gitflow Workflow](img/gitflow-workflow.svg "Gitflow Workflow")
+If you're new to git-flow, or never heard of it, see:
+
+* ["original blog post"](http://nvie.com/git-model)
+* [why-arent-you-using-git-flow](http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/)
+  
+For more in-depth information about git flow and how git flow can help your business, [check out our git flow guide.](http://www.atlassian.com/git/workflows#!workflow-gitflow)
+
+#[[##]]# Features
+
+While this plugin is primarily used to perform releases, it also provides full git-flow functionality including:
+
+* **starting a release** - creates a release branch and updates pom(s) with release versions
+* **finishing a release** - runs a maven build (deploy or install), merges the release branch, updates pom(s) with development versions
+* **starting a hotfix** - creates a hotfix branch and updates pom(s) with hotfix versions
+* **finishing a hotfix** - runs a maven build (deploy or install), merges the hotfix branch, updates pom(s) with previous versions
+* **starting a feature** - creates a feature branch
+* **finishing a feature** - merges the feature branch
+
+For in-depth maven goal information, [see the Mojo Documentation][plugin-info]
+
+#[[##]]# Get it now
+
+The Maven JGit-Flow Plugin is hosted in the maven central repository and can be added to your pom.xml like this:
+
+``` xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>external.atlassian.jgitflow</groupId>
+            <artifactId>jgitflow-maven-plugin</artifactId>
+            <version>${project.version}</version>
+            <configuration>
+                <!-- For specific plugin configuration options, 
+                see the Goals documentation page -->
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+For specific plugin configuration options, [see the Mojo Documentation][plugin-info]
+
+Looking for source code? [Check out the Bitbucket Repository][bb-repo]
+
+Want some help from others? [Check out our Google Group](https://groups.google.com/forum/#!forum/maven-jgitflow-users)
+
+#[[##]]# Differences with the Maven Release Plugin
+
+Although this plugin is based on the maven-release-plugin, it does things a bit differently to provide a cleaner workflow.
+
+The differences are:
+
+* doesn't create any .backup or release.properties files (or any other files in your working tree)
+* makes all changes on branches. This means to "roll-back" you can simply delete the branch
+* automatically copies any profiles (-P) and user-properties (-D) passed on the command line to the forked maven process when building
+* doesn't run site-deploy
+* provides the ability to completely turn off maven deployment
+* provides the ability to completely turn off remote pushes/tagging
+* Only builds your project once in the finish goal. e.g. if you do release-start and release-finish together, your tests only run once
+* Never clones your project to a temp folder
+* auto tracks origin based on maven scm values if origin tracking is not already setup (I'm looking at you Bamboo!)
+* master branch is always kept at the latest release version (not a SNAPSHOT)
+
+#[[##]]# Contribute
+
+If you'd like to contribute, first log an issue/feature request in [our issue tracker](https://ecosystem.atlassian.net/browse/MJF)
+
+Once you have an JIRA issue key, [fork the code on Bitbucket][bb-repo] and issue a pull request.
+
+Please note that we prefer you work in a git-flow style. Therefore, please make changes in a feature branch, and have your PR target that same feature branch.
+This way, we'll be able to test your change locally without having to merge it into develop.
+
+[plugin-info]: plugin-info.html
+[bb-repo]: https://bitbucket.org/atlassian/jgit-flow
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0

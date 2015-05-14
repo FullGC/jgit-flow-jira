@@ -1,14 +1,13 @@
 package com.atlassian.maven.plugins.jgitflow;
 
-import java.io.File;
-
 import com.atlassian.jgitflow.core.InitContext;
 import com.atlassian.maven.jgitflow.api.MavenHotfixFinishExtension;
 import com.atlassian.maven.jgitflow.api.MavenHotfixStartExtension;
 import com.atlassian.maven.jgitflow.api.MavenReleaseFinishExtension;
 import com.atlassian.maven.jgitflow.api.MavenReleaseStartExtension;
-
 import com.google.common.base.Strings;
+
+import java.io.File;
 
 /**
  * @since version
@@ -31,6 +30,7 @@ public class ReleaseContext
     private boolean useReleaseProfile;
     private boolean enableFeatureVersions;
     private String args;
+    private String goals;
     private String tagMessage;
     private String defaultReleaseVersion;
     private String defaultDevelopmentVersion;
@@ -41,6 +41,7 @@ public class ReleaseContext
     private boolean enableSshAgent;
     private boolean noReleaseMerge;
     private boolean noFeatureMerge;
+    private boolean suppressFastForward;
     private boolean allowUntracked;
     private boolean allowRemote;
     private boolean pullMaster;
@@ -52,10 +53,12 @@ public class ReleaseContext
     private String username;
     private String password;
     private boolean alwaysUpdateOrigin;
+    private boolean consistentProjectVersions;
     private MavenReleaseStartExtension releaseStartExtension;
     private MavenReleaseFinishExtension releaseFinishExtension;
     private MavenHotfixStartExtension hotfixStartExtension;
     private MavenHotfixFinishExtension hotfixFinishExtension;
+    private String eol;
 
     public ReleaseContext(File baseDir)
     {
@@ -77,6 +80,7 @@ public class ReleaseContext
         this.featureRebase = false;
         this.useReleaseProfile = true;
         this.args = "";
+        this.goals = "clean deploy";
         this.startCommit = "";
         this.releaseBranchVersionSuffix = "release";
         this.enableFeatureVersions = false;
@@ -95,10 +99,12 @@ public class ReleaseContext
         this.username = "";
         this.password = "";
         this.alwaysUpdateOrigin = true;
+        this.consistentProjectVersions = false;
         this.releaseStartExtension = null;
         this.releaseFinishExtension = null;
         this.hotfixStartExtension = null;
         this.hotfixFinishExtension = null;
+        this.eol = "";
     }
 
     public boolean isAllowSnapshots()
@@ -322,6 +328,15 @@ public class ReleaseContext
         return this;
     }
 
+    public String getGoals() {
+        return goals;
+    }
+
+    public ReleaseContext setGoals(String goals) {
+        this.goals = goals;
+        return this;
+    }
+
     public String getStartCommit()
     {
         return startCommit;
@@ -407,6 +422,17 @@ public class ReleaseContext
     public ReleaseContext setNoFeatureMerge(boolean merge)
     {
         this.noFeatureMerge = merge;
+        return this;
+    }
+
+    public boolean isSuppressFastForward()
+    {
+        return suppressFastForward;
+    }
+
+    public ReleaseContext setSuppressFastForward(boolean suppressFastForward)
+    {
+        this.suppressFastForward = suppressFastForward;
         return this;
     }
 
@@ -520,6 +546,17 @@ public class ReleaseContext
         return this;
     }
 
+    public boolean isConsistentProjectVersions()
+    {
+        return consistentProjectVersions;
+    }
+
+    public ReleaseContext setConsistentProjectVersions(boolean update)
+    {
+        this.consistentProjectVersions = update;
+        return this;
+    }
+
     public MavenReleaseStartExtension getReleaseStartExtension()
     {
         return releaseStartExtension;
@@ -542,6 +579,22 @@ public class ReleaseContext
         return this;
     }
 
+    public String getEol()
+    {
+        if (null == eol || eol.equalsIgnoreCase("null"))
+        {
+            this.eol = "";
+        }
+
+        return eol;
+    }
+
+    public ReleaseContext setEol(String eol)
+    {
+        this.eol = eol;
+        return this;
+    }
+    
     public MavenHotfixStartExtension getHotfixStartExtension()
     {
         return hotfixStartExtension;

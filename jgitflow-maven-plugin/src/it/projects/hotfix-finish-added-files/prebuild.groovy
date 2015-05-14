@@ -1,11 +1,12 @@
 import com.atlassian.maven.plugins.jgitflow.it.FinishScriptHelper
 import org.apache.commons.io.FileUtils
+import org.eclipse.jgit.api.CreateBranchCommand
 
-    helper = new FinishScriptHelper(basedir, localRepositoryPath, context)
+helper = new FinishScriptHelper(basedir, localRepositoryPath, context)
     gits = helper.createAndCloneRepo("1.0","1.1-SNAPSHOT","1.0.1","hotfix/")
 
     localGit = gits.local;
-    localGit.checkout().setName("hotfix/1.0.1")
+    localGit.checkout().setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).setCreateBranch(true).setStartPoint("origin/hotfix/1.0.1").setName("hotfix/1.0.1").call()
 
     File junkFile = new File(localGit.getRepository().getWorkTree(), "junk.txt");
     FileUtils.writeStringToFile(junkFile, "I am junk");

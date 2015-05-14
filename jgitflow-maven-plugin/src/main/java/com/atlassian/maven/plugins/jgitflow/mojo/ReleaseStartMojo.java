@@ -38,21 +38,39 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
     @Parameter(property = "developmentVersion", defaultValue = "")
     private String developmentVersion = "";
 
+    /**
+     * Suffix to append to versions on the release branch.
+     */
     @Parameter(property = "releaseBranchVersionSuffix", defaultValue = "")
     private String releaseBranchVersionSuffix = "";
 
+    /**
+     * Whether, for modules which refer to each other within the same multi-module build, to update dependencies version to the release version.
+     */
     @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies = true;
 
+    /**
+     * Whether to push release branches to the remote upstream.
+     */
     @Parameter(defaultValue = "false", property = "pushReleases")
     private boolean pushReleases = false;
 
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
 
+    /**
+     * A SHA, short SHA, or branch name to use as the starting point for the new branch
+     */
     @Parameter(property = "startCommit", defaultValue = "")
     private String startCommit = "";
 
+    /**
+     * A FQCN of a compatible release start extension.
+     * Extensions are used to run custom code at various points in the jgitflow lifecycle.
+     * 
+     * More documentation on using extensions will be available in the future
+     */
     @Parameter(defaultValue = "")
     private String releaseStartExtension = "";
 
@@ -87,6 +105,7 @@ public class ReleaseStartMojo extends AbstractJGitFlowMojo
            .setUsername(username)
            .setPassword(password)
            .setReleaseStartExtension(extensionObject)
+                .setEol(eol)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try

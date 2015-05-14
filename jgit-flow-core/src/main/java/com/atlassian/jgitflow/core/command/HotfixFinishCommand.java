@@ -24,35 +24,35 @@ import static com.atlassian.jgitflow.core.util.Preconditions.checkState;
  * <p>
  * This will merge the hotfix into both master and develop and create a tag for the hotfix
  * </p>
- * <p/>
- * Examples (<code>flow</code> is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
- * <p/>
+ * <p></p>
+ * Examples ({@code flow} is a {@link com.atlassian.jgitflow.core.JGitFlow} instance):
+ * <p></p>
  * Finish a hotfix:
- * <p/>
+ * <p></p>
  * <pre>
  * flow.hotfixFinish(&quot;1.0&quot;).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Don't delete the local hotfix branch
- * <p/>
+ * <p></p>
  * <pre>
  * flow.hotfixFinish(&quot;1.0&quot;).setKeepBranch(true).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Squash all commits on the hotfix branch into one before merging
- * <p/>
+ * <p></p>
  * <pre>
  * flow.hotfixFinish(&quot;1.0&quot;).setSquash(true).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Push changes to the remote origin
- * <p/>
+ * <p></p>
  * <pre>
  * flow.hotfixFinish(&quot;1.0&quot;).setPush(true).call();
  * </pre>
- * <p/>
+ * <p></p>
  * Don't create a tag for the hotfix
- * <p/>
+ * <p></p>
  * <pre>
  * flow.hotfixFinish(&quot;1.0&quot;).setNoTag(true).call();
  * </pre>
@@ -72,7 +72,6 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
      * @param hotfixName The name/version of the hotfix
      * @param git        The git instance to use
      * @param gfConfig   The GitFlowConfiguration to use
-     * @param reporter
      */
     public HotfixFinishCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig)
     {
@@ -135,11 +134,6 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
                 doPushIfNeeded(extension, !noTag, gfConfig.getDevelop(), gfConfig.getMaster(), prefixedBranchName);
             }
 
-            if (mergeSuccess)
-            {
-                cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
-            }
-
             //Backmerge to release branch if needed
             if (releaseBranchExists())
             {
@@ -156,6 +150,11 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
                 }
             }
 
+            if (mergeSuccess)
+            {
+                cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
+            }
+            
             reporter.infoText(getCommandName(), "checking out '" + gfConfig.getDevelop() + "'");
             git.checkout().setName(gfConfig.getDevelop()).call();
 
@@ -217,7 +216,7 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
     /**
      * Set whether to turn off tagging
      *
-     * @param noTag <code>true</code> to turn off tagging, <code>false</code>(default) otherwise
+     * @param noTag {@code true} to turn off tagging, {@code false}(default) otherwise
      * @return {@code this}
      */
     public HotfixFinishCommand setNoTag(boolean noTag)

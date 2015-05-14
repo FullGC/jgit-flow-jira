@@ -14,6 +14,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.release.util.ReleaseUtil;
+import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -48,7 +49,7 @@ public class FinishScriptHelper
         this.context = context;
     }
 
-    public Gits createAndCloneRepo(String masterVersion, String developVersion, String releaseVersion, String branchPrefix) throws GitAPIException, IOException
+    public Gits createAndCloneRepo(String masterVersion, String developVersion, String branchVersion, String branchPrefix) throws GitAPIException, IOException
     {
         File remotesBaseDir = new File(baseDirectory.getParentFile().getParentFile(), "remotes");
         remotesBaseDir.mkdirs();
@@ -92,43 +93,98 @@ public class FinishScriptHelper
         remoteGit.add().addFilepattern(".").call();
         remoteGit.commit().setMessage("updating develop versions").call();
 
-        String branchVersion = releaseVersion;
+        String scrubbedBranchVersion = branchVersion;
 
         if ("feature/".equals(branchPrefix))
         {
-            branchVersion = StringUtils.replace(releaseVersion, "-", "_");
-            branchVersion = StringUtils.substringBeforeLast(developVersion, "-SNAPSHOT") + "-" + branchVersion + "-SNAPSHOT";
+            scrubbedBranchVersion = StringUtils.replace(scrubbedBranchVersion, "-", "_");
+            scrubbedBranchVersion = StringUtils.substringBeforeLast(developVersion, "-SNAPSHOT") + "-" + scrubbedBranchVersion + "-SNAPSHOT";
         }
 
-        remoteGit.branchCreate().setName(branchPrefix + releaseVersion).call();
-        remoteGit.commit().setMessage("added branch " + branchPrefix + releaseVersion).call();
-        remoteGit.checkout().setName(branchPrefix + releaseVersion).call();
+        remoteGit.branchCreate().setName(branchPrefix + branchVersion).call();
+        remoteGit.commit().setMessage("added branch " + branchPrefix + branchVersion).call();
+        remoteGit.checkout().setName(branchPrefix + branchVersion).call();
 
         //update branch Version
-        Collection<File> releasePoms = FileUtils.listFiles(remoteProjectDir, FileFilterUtils.nameFileFilter("pom.xml"), FileFilterUtils.directoryFileFilter());
+        Collection<File> branchPoms = FileUtils.listFiles(remoteProjectDir, FileFilterUtils.nameFileFilter("pom.xml"), FileFilterUtils.directoryFileFilter());
 
         //if the prefix is feature, we need special handling of the version/branch
 
 
-        for (File releasePom : releasePoms)
+        for (File branchPom : branchPoms)
         {
-            System.out.println("updating pom for branch: " + releasePom.getAbsolutePath());
-            String pomString = FileUtils.readFileToString(releasePom);
-            String updatedReleasePom = StringUtils.replace(pomString, "<version>" + developVersion + "</version>", "<version>" + branchVersion + "</version>");
-            FileUtils.writeStringToFile(releasePom, updatedReleasePom);
+            System.out.println("updating pom for branch: " + branchPom.getAbsolutePath());
+            String pomString = FileUtils.readFileToString(branchPom);
+            String updatedReleasePom = StringUtils.replace(pomString, "<version>" + developVersion + "</version>", "<version>" + scrubbedBranchVersion + "</version>");
+            FileUtils.writeStringToFile(branchPom, updatedReleasePom);
         }
 
         remoteGit.add().addFilepattern(".").call();
-        remoteGit.commit().setMessage("updating release versions").call();
+        remoteGit.commit().setMessage("updating branch versions").call();
+
+        remoteGit.checkout().setName("master").call();
+        
+        FileUtils.deleteQuietly(baseDirectory);
+        baseDirectory.mkdirs();
+
+        Git localGit = Git.cloneRepository().setCloneAllBranches(true).setDirectory(baseDirectory).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
+
+        Gits gits = new Gits(remoteGit, localGit);
+
+        localGit.checkout().setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).setCreateBranch(true).setStartPoint("origin/develop").setName("develop").call();
+
+        return gits;
+    }
+
+    public Gits cloneDevelopRepo(String developVersion, String branchVersion, String branchPrefix) throws GitAPIException, IOException
+    {
+        File remotesBaseDir = new File(baseDirectory.getParentFile().getParentFile(), "remotes");
+
+        File remoteProjectDir = new File(remotesBaseDir, baseDirectory.getName());
+
+        //update any @project.version@ vars with our plugin version
+        URL url = Resources.getResource("VERSION");
+        String flowVersion = Resources.toString(url, Charsets.UTF_8);
+
+        Git remoteGit = Git.open(remoteProjectDir);
+        
+        remoteGit.checkout().setName("develop").call();
+
+        String scrubbedBranchVersion = branchVersion;
+
+        if ("feature/".equals(branchPrefix))
+        {
+            scrubbedBranchVersion = StringUtils.replace(scrubbedBranchVersion, "-", "_");
+            scrubbedBranchVersion = StringUtils.substringBeforeLast(developVersion, "-SNAPSHOT") + "-" + scrubbedBranchVersion + "-SNAPSHOT";
+        }
+
+        remoteGit.branchCreate().setName(branchPrefix + scrubbedBranchVersion).call();
+        remoteGit.commit().setMessage("added branch " + branchPrefix + scrubbedBranchVersion).call();
+        remoteGit.checkout().setName(branchPrefix + scrubbedBranchVersion).call();
+
+        //update branch Version
+        Collection<File> branchPoms = FileUtils.listFiles(remoteProjectDir, FileFilterUtils.nameFileFilter("pom.xml"), FileFilterUtils.directoryFileFilter());
+
+
+        for (File branchPom : branchPoms)
+        {
+            System.out.println("updating pom for branch: " + branchPom.getAbsolutePath());
+            String pomString = FileUtils.readFileToString(branchPom);
+            String updatedReleasePom = StringUtils.replace(pomString, "<version>" + developVersion + "</version>", "<version>" + scrubbedBranchVersion + "</version>");
+            FileUtils.writeStringToFile(branchPom, updatedReleasePom);
+        }
+
+        remoteGit.add().addFilepattern(".").call();
+        remoteGit.commit().setMessage("updating branch versions").call();
 
         FileUtils.deleteQuietly(baseDirectory);
         baseDirectory.mkdirs();
 
-        Git localGit = Git.cloneRepository().setDirectory(baseDirectory).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
+        Git localGit = Git.cloneRepository().setCloneAllBranches(true).setDirectory(baseDirectory).setURI("file://" + remoteGit.getRepository().getWorkTree().getPath()).call();
 
         Gits gits = new Gits(remoteGit, localGit);
 
-        remoteGit.checkout().setName("master").call();
+        localGit.checkout().setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).setCreateBranch(true).setStartPoint("origin/develop").setName("develop").call();
 
         return gits;
     }
@@ -147,6 +203,13 @@ public class FinishScriptHelper
         String expectedPom = ReleaseUtil.readXmlFile(new File(baseDirectory, expectedPath));
         String actualPom = ReleaseUtil.readXmlFile(new File(baseDirectory, actualPath));
 
+        System.out.println("EXPECTED");
+        System.out.println("--------------------------------");
+        System.out.println(expectedPom);
+        System.out.println("--------------------------------");
+        System.out.println("ACTUAL");
+        System.out.println(actualPom);
+        System.out.println("--------------------------------");
         assertEquals("Pom files don't match!!!: \nexpected:\n" + expectedPom + "actual:\n" + actualPom, expectedPom, actualPom);
     }
 

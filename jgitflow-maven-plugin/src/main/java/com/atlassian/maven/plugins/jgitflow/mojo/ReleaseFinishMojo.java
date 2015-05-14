@@ -25,44 +25,107 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
     @Parameter(defaultValue = "false", property = "autoVersionSubmodules")
     private boolean autoVersionSubmodules = false;
 
+    /**
+     * Whether to push release branches to the remote upstream.
+     */
     @Parameter(defaultValue = "false", property = "pushReleases")
     private boolean pushReleases = false;
 
+    /**
+     * Whether to turn off maven deployment. If false the "deploy" goal is called. If true the "install" goal is called
+     */
     @Parameter(defaultValue = "false", property = "noDeploy")
     private boolean noDeploy = false;
 
+    /**
+     * Whether to keep the release branch after finishing the release.
+     * If set to false, the branch will be deleted.
+     */
     @Parameter(defaultValue = "false", property = "keepBranch")
     private boolean keepBranch = false;
 
+    /**
+     * Whether to squash commits into a single commit before merging.
+     */
     @Parameter(defaultValue = "false", property = "squash")
     private boolean squash = false;
 
+    /**
+     * Whether to turn off tagging the release in git.
+     */
     @Parameter(defaultValue = "false", property = "noTag")
     private boolean noTag = false;
 
+    /**
+     * Whether to turn off project building. If true the project will NOT be built during release finish
+     */
     @Parameter(defaultValue = "false", property = "noReleaseBuild")
     private boolean noReleaseBuild = false;
 
+    /**
+     * Whether to turn off merging changes from the release branch to master and develop
+     */
     @Parameter(defaultValue = "false", property = "noReleaseMerge")
     private boolean noReleaseMerge = false;
 
+    /**
+     * Whether to use the release profile that adds sources and javadocs to the released artifact, if appropriate. 
+     * If set to true, the plugin sets the property "performRelease" to true, which activates the profile "release-profile", which is inherited from the super pom.
+     */
     @Parameter(defaultValue = "true", property = "useReleaseProfile")
     private boolean useReleaseProfile = true;
 
+    /**
+     * Whether, for modules which refer to each other within the same multi-module build, to update dependencies version to the release version.
+     */
     @Parameter(defaultValue = "true", property = "updateDependencies")
     private boolean updateDependencies = true;
 
+    /**
+     * Commit message to use when tagging the release.
+     * 
+     * If not set, the default message is "tagging release ${version}".
+     */
     @Parameter(property = "tagMessage", defaultValue = "")
     private String tagMessage = "";
 
+    /**
+     * Suffix to append to versions on the release branch.
+     */
     @Parameter(property = "releaseBranchVersionSuffix", defaultValue = "")
     private String releaseBranchVersionSuffix = "";
 
+    /**
+     * A FQCN of a compatible release finish extension.
+     * Extensions are used to run custom code at various points in the jgitflow lifecycle.
+     *
+     * More documentation on using extensions will be available in the future
+     */
     @Parameter(defaultValue = "")
     private String releaseFinishExtension = "";
 
+    /**
+     * ALL of the explicit arguments to be passed to the internal maven build.
+     * If not set, the plugin will use the args from the initial maven build.
+     */
+    @Parameter(property = "arguments", defaultValue = "")
+    private String arguments = "";
+
+    /**
+     * The space-separated list of gaols to run when doing a maven deploy
+     */
+    @Parameter(property = "goals", defaultValue = "clean deploy")
+    private String goals = "";
+
     @Component(hint = "release")
     FlowReleaseManager releaseManager;
+
+    /**
+     * If set to true, only the first parent/project version will be used across all version updates
+     * @see <a href="https://ecosystem.atlassian.net/browse/MJF-204">https://ecosystem.atlassian.net/browse/MJF-204</a>
+     */
+    @Parameter(defaultValue = "false", property = "consistentProjectVersions")
+    protected boolean consistentProjectVersions = false;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
@@ -99,8 +162,12 @@ public class ReleaseFinishMojo extends AbstractJGitFlowMojo
            .setPassword(password)
            .setPullMaster(pullMaster)
            .setPullDevelop(pullDevelop)
+           .setArgs(arguments)
+           .setGoals(goals)
            .setReleaseFinishExtension(extensionObject)
-           .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
+           .setFlowInitContext(getFlowInitContext().getJGitFlowContext())
+                .setEol(eol)
+           .setConsistentProjectVersions(consistentProjectVersions);
 
         try
         {

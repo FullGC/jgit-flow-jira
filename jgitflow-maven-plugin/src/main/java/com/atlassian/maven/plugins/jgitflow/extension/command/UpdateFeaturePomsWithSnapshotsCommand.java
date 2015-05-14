@@ -72,7 +72,7 @@ public class UpdateFeaturePomsWithSnapshotsCommand implements ExtensionCommand
         }
         catch (Exception e)
         {
-            throw new JGitFlowExtensionException("Error updating poms with feature versions for branch '" + unprefixedBranchName + "'");
+            throw new JGitFlowExtensionException("Error updating poms with feature versions for branch '" + unprefixedBranchName + "'",e);
         }
     }
 

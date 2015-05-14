@@ -23,9 +23,15 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
     @Parameter(property = "featureName", defaultValue = "")
     private String featureName = "";
 
+    /**
+     * The space-separated list of gaols to run when doing a maven deploy
+     */
     @Parameter(property = "goals", defaultValue = "")
     private String goals = "";
 
+    /**
+     * The build number to tack on to the deployed version.
+     */
     @Parameter(property = "buildNumber", defaultValue = "")
     private String buildNumber = "";
 
@@ -44,9 +50,11 @@ public class FeatureDeployMojo extends AbstractJGitFlowMojo
            .setPullDevelop(pullDevelop)
            .setDefaultOriginUrl(defaultOriginUrl)
            .setAllowRemote(isRemoteAllowed())
-            .setEnableSshAgent(enableSshAgent)
-            .setUsername(username)
-            .setPassword(password)
+           .setEnableSshAgent(enableSshAgent)
+           .setUsername(username)
+           .setPassword(password)
+                .setEol(eol)
+           .setUseReleaseProfile(false)
            .setFlowInitContext(getFlowInitContext().getJGitFlowContext());
 
         try
