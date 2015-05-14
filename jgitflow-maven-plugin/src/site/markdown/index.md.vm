@@ -41,6 +41,7 @@ The Maven JGit-Flow Plugin is hosted in the maven central repository and can be 
 </build>
 ```
 
+[Current Release Notes][release-notes]
 For specific plugin configuration options, [see the Mojo Documentation][plugin-info]
 
 Looking for source code? [Check out the Bitbucket Repository][bb-repo]
@@ -74,5 +75,6 @@ Please note that we prefer you work in a git-flow style. Therefore, please make 
 This way, we'll be able to test your change locally without having to merge it into develop.
 
 [plugin-info]: plugin-info.html
+[release-notes]: release-notes.html
 [bb-repo]: https://bitbucket.org/atlassian/jgit-flow
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

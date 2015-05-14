@@ -81,6 +81,7 @@
         <menu name="Main" inherit="top">
             <item name="Home" href="./"/>
             <item name="Bitbucket project" href="https://bitbucket.org/atlassian/jgit-flow/"/>
+            <item name="Release Notes" href="release-notes.html"/>
         </menu>
         <menu name="Documentation" inherit="bottom">
             <item name="Mojo Documentation" href="plugin-info.html"/>
