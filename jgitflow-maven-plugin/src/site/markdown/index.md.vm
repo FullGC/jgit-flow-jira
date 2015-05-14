@@ -42,6 +42,7 @@ The Maven JGit-Flow Plugin is hosted in the maven central repository and can be 
 ```
 
 [Current Release Notes][release-notes]
+
 For specific plugin configuration options, [see the Mojo Documentation][plugin-info]
 
 Looking for source code? [Check out the Bitbucket Repository][bb-repo]

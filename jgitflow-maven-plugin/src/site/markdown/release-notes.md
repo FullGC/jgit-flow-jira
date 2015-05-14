@@ -3,8 +3,8 @@
 ### Version 1.0-m5 
 (14/May/2015)
 #### Bug
-* [MJF-118](https://ecosystem.atlassian.net/browse/MJF-118) - start-release fails with org.eclipse.jgit.errors.TransportException: ssh://...: Auth fail
-* [MJF-134](https://ecosystem.atlassian.net/browse/MJF-134) - Error if <artifactId> not at top of POM
+* [MJF-118](https://ecosystem.atlassian.net/browse/MJF-118) - start-release fails with ```org.eclipse.jgit.errors.TransportException: ssh://...: Auth fail```
+* [MJF-134](https://ecosystem.atlassian.net/browse/MJF-134) - Error if ```<artifactId>``` not at top of POM
 * [MJF-178](https://ecosystem.atlassian.net/browse/MJF-178) - feature-finish uses release profile
 * [MJF-179](https://ecosystem.atlassian.net/browse/MJF-179) - Snapshot dependencies hard to find when detected on release-start
 * [MJF-187](https://ecosystem.atlassian.net/browse/MJF-187) - NullPointerException on release-start
