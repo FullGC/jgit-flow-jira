@@ -3,7 +3,7 @@
     <parent>
         <artifactId>jgitflow-parent</artifactId>
         <groupId>external.atlassian.jgitflow</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0-mjf_228_push_error_handling-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
