@@ -1,5 +1,10 @@
 ## Release Notes - Maven JGit Flow
 
+### Version 1.0-m5.1 
+(18/May/2015)
+#### Bug
+* [MJF-228](https://ecosystem.atlassian.net/browse/MJF-228) - pushes fail if remote sends back *any* messages
+
 ### Version 1.0-m5 
 (14/May/2015)
 #### Bug

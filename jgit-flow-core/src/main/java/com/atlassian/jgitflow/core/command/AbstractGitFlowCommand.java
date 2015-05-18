@@ -18,8 +18,11 @@ import com.atlassian.jgitflow.core.util.RequirementHelper;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.RemoteRefUpdate;
+import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,9 +97,18 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
                     for (PushResult pr : i)
                     {
                         reporter.infoText(getCommandName(), "messages: '" + pr.getMessages() + "'");
-                        if (pr.getMessages() != null && pr.getMessages().length() > 0) {
-                            // TODO: not sure if a message always means an error, so we may need to create a parameter to let the user control this
-                            throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - " + pr.getMessages());
+
+                        for(RemoteRefUpdate update : pr.getRemoteUpdates()) {
+                            if (update.hasTrackingRefUpdate()) {
+                                RefUpdate.Result trackingResult = update.getTrackingRefUpdate().getResult();
+                                if (failedResult(trackingResult)) {
+                                    if (pr.getMessages() != null && pr.getMessages().length() > 0) {
+                                        throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - status: " + trackingResult.name() + " - " + pr.getMessages());
+                                    } else {
+                                        throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - " + trackingResult.name());
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -113,6 +125,22 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
 
             runExtensionCommands(pushExtension.afterPush());
         }
+    }
+
+    private boolean failedResult(RefUpdate.Result trackingResult) {
+        boolean isFailed = false;
+        
+        switch(trackingResult)
+        {
+            case LOCK_FAILURE:
+            case REJECTED:
+            case REJECTED_CURRENT_BRANCH:
+            case IO_FAILURE:
+                isFailed = true;
+                break;
+        }
+        
+        return isFailed;
     }
 
     protected String runBeforeAndGetPrefixedBranchName(Iterable<ExtensionCommand> before, JGitFlowConstants.PREFIXES prefix) throws JGitFlowExtensionException
