@@ -106,7 +106,7 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
                             {
                                 if (pr.getMessages() != null && pr.getMessages().length() > 0) 
                                 {
-                                    throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - " + pr.getMessages());
+                                    throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - status: " + trackingResult.name() + " - " + pr.getMessages());
                                 }
                                 else
                                 {
