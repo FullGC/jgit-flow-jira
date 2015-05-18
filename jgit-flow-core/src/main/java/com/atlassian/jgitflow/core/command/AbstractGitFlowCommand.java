@@ -138,14 +138,8 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
         switch(trackingResult)
         {
             case LOCK_FAILURE:
-                isFailed = true;
-                break;
             case REJECTED:
-                isFailed = true;
-                break;
             case REJECTED_CURRENT_BRANCH:
-                isFailed = true;
-                break;
             case IO_FAILURE:
                 isFailed = true;
                 break;

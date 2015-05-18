@@ -1,6 +1,6 @@
 # JGit-Flow
 
-**Current Version: 1.0-m5**
+**Current Version: 1.0-m5.1**
 
 **Issue Tracker Has Moved To: [https://ecosystem.atlassian.net/browse/MJF](https://ecosystem.atlassian.net/browse/MJF)**
 
