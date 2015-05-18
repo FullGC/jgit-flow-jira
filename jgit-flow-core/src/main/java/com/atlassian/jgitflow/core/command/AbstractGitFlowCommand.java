@@ -98,23 +98,18 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
                     {
                         reporter.infoText(getCommandName(), "messages: '" + pr.getMessages() + "'");
 
-                        RemoteRefUpdate update = pr.getRemoteUpdate(branchToPush);
-                        if(null != update && update.hasTrackingRefUpdate())
-                        {
-                            RefUpdate.Result trackingResult = update.getTrackingRefUpdate().getResult();
-                            if(failedResult(trackingResult))
-                            {
-                                if (pr.getMessages() != null && pr.getMessages().length() > 0) 
-                                {
-                                    throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - status: " + trackingResult.name() + " - " + pr.getMessages());
-                                }
-                                else
-                                {
-                                    throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - " + trackingResult.name());
+                        for(RemoteRefUpdate update : pr.getRemoteUpdates()) {
+                            if (update.hasTrackingRefUpdate()) {
+                                RefUpdate.Result trackingResult = update.getTrackingRefUpdate().getResult();
+                                if (failedResult(trackingResult)) {
+                                    if (pr.getMessages() != null && pr.getMessages().length() > 0) {
+                                        throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - status: " + trackingResult.name() + " - " + pr.getMessages());
+                                    } else {
+                                        throw new JGitFlowGitAPIException("error pushing to " + branchToPush + " - " + trackingResult.name());
+                                    }
                                 }
                             }
                         }
-                        
                     }
                 }
             }
