@@ -252,7 +252,7 @@
             <plugin>
                 <groupId>external.atlassian.jgitflow</groupId>
                 <artifactId>jgitflow-maven-plugin</artifactId>
-                <version>1.0.0-test_for_push-SNAPSHOT</version>
+                <version>${jgitflowPluginVersion}</version>
                 <inherited>false</inherited>
                 <configuration>
                     <allowSnapshots>true</allowSnapshots>
@@ -391,6 +391,7 @@
         <maven-artifact.version>2.2.1</maven-artifact.version>
         <slf4j.version>1.7.7</slf4j.version>
         <skipUnits>${skipTests}</skipUnits>
+        <jgitflowPluginVersion>1.0-m5</jgitflowPluginVersion>
     </properties>
 </project>
 
