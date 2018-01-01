@@ -237,66 +237,7 @@ public class ReleaseFinishTest extends BaseGitFlowTest
         assertTrue(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
         assertTrue(GitHelper.isMergedInto(git, commit2, flow.getMasterBranchName()));
     }
-
-    @Test
-    public void finishReleaseWithSquash() throws Exception
-    {
-        Git git = RepoUtil.createRepositoryWithMasterAndDevelop(newDir());
-        JGitFlowInitCommand initCommand = new JGitFlowInitCommand();
-        JGitFlow flow = initCommand.setDirectory(git.getRepository().getWorkTree()).call();
-
-        flow.releaseStart("1.0").call();
-
-        //create a new commit
-        File junkFile = new File(git.getRepository().getWorkTree(), "junk.txt");
-        FileUtils.writeStringToFile(junkFile, "I am junk");
-        git.add().addFilepattern(junkFile.getName()).call();
-        RevCommit commit = git.commit().setMessage("committing junk file").call();
-
-        //create second commit
-        File junkFile2 = new File(git.getRepository().getWorkTree(), "junk2.txt");
-        FileUtils.writeStringToFile(junkFile2, "I am junk, and so are you");
-        git.add().addFilepattern(junkFile2.getName()).call();
-        RevCommit commit2 = git.commit().setMessage("updating junk file").call();
-
-        //make sure develop doesn't have our commits yet
-        assertFalse(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
-        assertFalse(GitHelper.isMergedInto(git, commit2, flow.getDevelopBranchName()));
-
-        //try to finish
-        ReleaseMergeResult result = flow.releaseFinish("1.0").setSquash(true).call();
-
-        assertTrue(result.wasSuccessful());
-
-        //we should be on develop branch
-        assertEquals(flow.getDevelopBranchName(), git.getRepository().getBranch());
-
-        //release branch should be gone
-        Ref ref2check = git.getRepository().getRef(flow.getReleaseBranchPrefix() + "1.0");
-        assertNull(ref2check);
-
-        //the develop branch should NOT have both of our commits now
-        assertFalse(GitHelper.isMergedInto(git, commit, flow.getDevelopBranchName()));
-        assertFalse(GitHelper.isMergedInto(git, commit2, flow.getDevelopBranchName()));
-
-        //the master branch should NOT have both of our commits now
-        assertFalse(GitHelper.isMergedInto(git, commit, flow.getMasterBranchName()));
-        assertFalse(GitHelper.isMergedInto(git, commit2, flow.getMasterBranchName()));
-
-        //we should have the release files
-        git.checkout().setName(flow.getDevelopBranchName()).call();
-        File developJunk = new File(git.getRepository().getWorkTree(), "junk.txt");
-        File developJunk2 = new File(git.getRepository().getWorkTree(), "junk2.txt");
-        assertTrue(developJunk.exists());
-        assertTrue(developJunk2.exists());
-
-        git.checkout().setName(flow.getMasterBranchName()).call();
-        File masterJunk = new File(git.getRepository().getWorkTree(), "junk.txt");
-        File masterJunk2 = new File(git.getRepository().getWorkTree(), "junk2.txt");
-        assertTrue(masterJunk.exists());
-        assertTrue(masterJunk2.exists());
-    }
-
+    
     @Test(expected = BranchOutOfDateException.class)
     public void finishReleaseDevelopBehindRemoteWithFetch() throws Exception
     {
