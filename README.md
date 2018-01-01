@@ -5,6 +5,8 @@
 Based on Atlassian jgit-flow project in Bitbucket.
 This project performs Jira tickets manipulation during the the git-flow, and some fixes to the original project
 
+# JGit-Flow
+
 JGit-Flow is a JAVA implementation of Vincent Driessen's [branching model](http://nvie.com/git-model "original
 blog post").
 
