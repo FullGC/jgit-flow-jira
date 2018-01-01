@@ -15,6 +15,7 @@ import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.jgitflow.core.util.RequirementHelper;
 
+import net.rcarz.jiraclient.JiraClient;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
@@ -22,7 +23,6 @@ import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
-import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,15 +50,15 @@ public abstract class AbstractGitFlowCommand<C, T> implements Callable<T>, JGitF
     private boolean fetch;
     private boolean push;
     private final String branchName;
-
-    protected AbstractGitFlowCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
+    protected JiraClient jira;
+    protected AbstractGitFlowCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
         checkNotNull(branchName);
         checkNotNull(git);
         checkNotNull(gfConfig);
 
         this.requirementHelper = new RequirementHelper(git, gfConfig, getCommandName());
-
+        this.jira = jira;
         this.git = git;
         this.gfConfig = gfConfig;
         this.allowUntracked = false;

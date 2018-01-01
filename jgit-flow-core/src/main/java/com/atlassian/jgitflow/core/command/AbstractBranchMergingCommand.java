@@ -10,6 +10,7 @@ import com.atlassian.jgitflow.core.extension.BranchMergingExtension;
 import com.atlassian.jgitflow.core.extension.impl.MergeProcessExtensionWrapper;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
+import net.rcarz.jiraclient.JiraClient;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
@@ -27,9 +28,9 @@ public abstract class AbstractBranchMergingCommand<C, T> extends AbstractGitFlow
     private boolean forceDeleteBranch;
     private String message;
 
-    protected AbstractBranchMergingCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
+    protected AbstractBranchMergingCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
-        super(branchName, git, gfConfig);
+        super(branchName, git, gfConfig, jira);
         this.forceDeleteBranch = true;
         this.message = "tagging release " + branchName;
     }

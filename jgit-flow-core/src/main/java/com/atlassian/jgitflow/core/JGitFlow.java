@@ -9,6 +9,9 @@ import com.atlassian.jgitflow.core.exception.JGitFlowGitAPIException;
 import com.atlassian.jgitflow.core.exception.JGitFlowIOException;
 import com.atlassian.jgitflow.core.exception.SameBranchException;
 
+import net.rcarz.jiraclient.BasicCredentials;
+import net.rcarz.jiraclient.JiraClient;
+import net.rcarz.jiraclient.JiraException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.RepositoryBuilder;
 
@@ -31,16 +34,16 @@ public class JGitFlow
     private Git git;
     private GitFlowConfiguration gfConfig;
     private JGitFlowReporter reporter = JGitFlowReporter.get();
-
+    private JiraClient jira;
     private JGitFlow()
     {
     }
 
-    JGitFlow(Git git, GitFlowConfiguration gfConfig)
+    JGitFlow(Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
         this.git = git;
         this.gfConfig = gfConfig;
-
+        this.jira = jira;
         this.reporter.setGitFlowConfiguration(git, gfConfig);
     }
 
@@ -223,8 +226,16 @@ public class JGitFlow
             File gitDir = rb.getGitDir();
             Git gitRepo = Git.open(gitDir);
             GitFlowConfiguration gfConfig = new GitFlowConfiguration(gitRepo);
+            BasicCredentials creds = new BasicCredentials("", "");
+            JiraClient jira = new JiraClient("", creds);
+            try {
+                jira.getIssueTypes(); // checks if the connection established correcly
+            } catch (JiraException e) {
+                jira = null;
+                e.printStackTrace();
+            }
+            return new JGitFlow(gitRepo, gfConfig, jira);
 
-            return new JGitFlow(gitRepo, gfConfig);
         }
         catch (IOException e)
         {
@@ -387,7 +398,7 @@ public class JGitFlow
      */
     public FeatureStartCommand featureStart(String name)
     {
-        return new FeatureStartCommand(name, git, gfConfig);
+        return new FeatureStartCommand(name, git, gfConfig, jira);
     }
 
     /**
@@ -398,7 +409,7 @@ public class JGitFlow
      */
     public FeatureFinishCommand featureFinish(String name)
     {
-        return new FeatureFinishCommand(name, git, gfConfig);
+        return new FeatureFinishCommand(name, git, gfConfig, jira);
     }
 
     /**
@@ -409,7 +420,7 @@ public class JGitFlow
      */
     public FeaturePublishCommand featurePublish(String name)
     {
-        return new FeaturePublishCommand(name, git, gfConfig);
+        return new FeaturePublishCommand(name, git, gfConfig, jira);
     }
 
     /**
@@ -420,7 +431,7 @@ public class JGitFlow
      */
     public ReleaseStartCommand releaseStart(String name)
     {
-        return new ReleaseStartCommand(name, git, gfConfig);
+        return new ReleaseStartCommand(name, git, gfConfig, jira);
     }
 
     /**
@@ -431,7 +442,7 @@ public class JGitFlow
      */
     public ReleaseFinishCommand releaseFinish(String name)
     {
-        return new ReleaseFinishCommand(name, git, gfConfig);
+        return new ReleaseFinishCommand(name, git, gfConfig, jira);
     }
 
     /**
@@ -442,7 +453,7 @@ public class JGitFlow
      */
     public ReleasePublishCommand releasePublish(String name)
     {
-        return new ReleasePublishCommand(name, git, gfConfig);
+        return new ReleasePublishCommand(name, git, gfConfig, jira);
     }
 
     /**
@@ -453,7 +464,7 @@ public class JGitFlow
      */
     public HotfixStartCommand hotfixStart(String name)
     {
-        return new HotfixStartCommand(name, git, gfConfig);
+        return new HotfixStartCommand(name, git, gfConfig, jira);
     }
 
     /**
@@ -464,7 +475,7 @@ public class JGitFlow
      */
     public HotfixFinishCommand hotfixFinish(String name)
     {
-        return new HotfixFinishCommand(name, git, gfConfig);
+        return new HotfixFinishCommand(name, git, gfConfig, jira);
     }
 
     /**
@@ -475,7 +486,7 @@ public class JGitFlow
      */
     public HotfixPublishCommand hotfixPublish(String name)
     {
-        return new HotfixPublishCommand(name, git, gfConfig);
+        return new HotfixPublishCommand(name, git, gfConfig, jira);
     }
 
     /**

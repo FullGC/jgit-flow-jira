@@ -9,6 +9,7 @@ import com.atlassian.jgitflow.core.extension.BranchCreatingExtension;
 import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
+import net.rcarz.jiraclient.JiraClient;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.ConfigInvalidException;
@@ -25,9 +26,9 @@ public abstract class AbstractBranchCreatingCommand<C, T> extends AbstractGitFlo
     private RevCommit startCommit;
     private String startCommitString;
 
-    protected AbstractBranchCreatingCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
+    protected AbstractBranchCreatingCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
-        super(branchName, git, gfConfig);
+        super(branchName, git, gfConfig, jira);
         this.startCommit = null;
         this.startCommitString = null;
     }

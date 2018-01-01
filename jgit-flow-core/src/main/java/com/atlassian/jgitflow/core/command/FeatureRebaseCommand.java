@@ -4,6 +4,7 @@ import com.atlassian.jgitflow.core.GitFlowConfiguration;
 import com.atlassian.jgitflow.core.JGitFlowConstants;
 import com.atlassian.jgitflow.core.exception.*;
 
+import net.rcarz.jiraclient.JiraClient;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -30,9 +31,9 @@ public class FeatureRebaseCommand extends AbstractGitFlowCommand<FeatureRebaseCo
      * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
      */
-    public FeatureRebaseCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
+    public FeatureRebaseCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
-        super(branchName, git, gfConfig);
+        super(branchName, git, gfConfig, jira);
     }
 
     /**

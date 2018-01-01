@@ -8,6 +8,9 @@ import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.FeatureStartExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyFeatureStartExtension;
 
+import net.rcarz.jiraclient.Issue;
+import net.rcarz.jiraclient.JiraClient;
+import net.rcarz.jiraclient.JiraException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -32,8 +35,7 @@ import org.eclipse.jgit.lib.Ref;
  * flow.featureStart(&quot;feature&quot;).setFetch(true).call();
  * </pre>
  */
-public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureStartCommand, Ref>
-{
+public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureStartCommand, Ref> {
     private static final String SHORT_NAME = "feature-start";
     private FeatureStartExtension extension;
 
@@ -46,9 +48,8 @@ public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureSt
      * @param git        The git instance to use
      * @param gfConfig   The GitFlowConfiguration to use
      */
-    public FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
-    {
-        super(branchName, git, gfConfig);
+    public FeatureStartCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JiraClient jira) {
+        super(branchName, git, gfConfig, jira);
         this.extension = new EmptyFeatureStartExtension();
     }
 
@@ -61,15 +62,13 @@ public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureSt
      * @throws com.atlassian.jgitflow.core.exception.JGitFlowIOException
      */
     @Override
-    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchExistsException, BranchOutOfDateException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException, TagExistsException
-    {
+    public Ref call() throws NotInitializedException, JGitFlowGitAPIException, LocalBranchExistsException, BranchOutOfDateException, JGitFlowIOException, LocalBranchMissingException, RemoteBranchExistsException, JGitFlowExtensionException, TagExistsException {
         String prefixedBranchName = runBeforeAndGetPrefixedBranchName(extension.before(), JGitFlowConstants.PREFIXES.FEATURE);
 
         enforcer().requireGitFlowInitialized();
         enforcer().requireLocalBranchAbsent(prefixedBranchName);
 
-        try
-        {
+        try {
             doFetchIfNeeded(extension);
 
             Ref newBranch = doCreateBranch(gfConfig.getDevelop(), prefixedBranchName, extension);
@@ -77,32 +76,36 @@ public class FeatureStartCommand extends AbstractBranchCreatingCommand<FeatureSt
             doPushNewBranchIfNeeded(extension, prefixedBranchName);
 
             runExtensionCommands(extension.after());
+            if (jira != null) {
+                try {
+                    Issue issue = jira.getIssue(newBranch.getName().substring(newBranch.getName().lastIndexOf("/") + 1));
+                    reporter.infoText("Set ticket", "Set ticket resolution to 'In Progress'");
+                    issue.transition().execute("In Progress");
+                } catch (JiraException e) {
+                    reporter.infoText("In Progress failed", "An error accoured while setting ticket resolution to 'In Progress'");
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             return newBranch;
 
-        }
-        catch (GitAPIException e)
-        {
+        } catch (GitAPIException e) {
             throw new JGitFlowGitAPIException(e);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new JGitFlowIOException(e);
-        }
-        finally
-        {
+        } finally {
             reporter.endCommand();
             reporter.flush();
         }
     }
 
     @Override
-    protected String getCommandName()
-    {
+    protected String getCommandName() {
         return SHORT_NAME;
     }
 
-    public FeatureStartCommand setExtension(FeatureStartExtension extension)
-    {
+    public FeatureStartCommand setExtension(FeatureStartExtension extension) {
         this.extension = extension;
         return this;
     }

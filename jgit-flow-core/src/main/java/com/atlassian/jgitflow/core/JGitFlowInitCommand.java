@@ -12,6 +12,8 @@ import com.atlassian.jgitflow.core.util.GitHelper;
 
 import com.google.common.base.Strings;
 
+import net.rcarz.jiraclient.BasicCredentials;
+import net.rcarz.jiraclient.JiraClient;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -99,6 +101,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
     {
 
         Git git = null;
+        JiraClient jira = null;
 
         reporter.debugCommandCall(SHORT_NAME);
 
@@ -275,6 +278,10 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 git.checkout().setName(currentBranch).call();
             }
 
+            BasicCredentials creds = new BasicCredentials("dani", "dani1985");
+
+            jira = new JiraClient("https://jira.inner-active.com", creds);
+
         }
         catch (IOException e)
         {
@@ -304,7 +311,7 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
             reporter.endCommand();
         }
 
-        return new JGitFlow(git, gfConfig);
+        return new JGitFlow(git, gfConfig, jira);
     }
 
     private String setupOriginIfNeeded(Git git, StoredConfig gitConfig, String originUrl) throws IOException, ConfigInvalidException

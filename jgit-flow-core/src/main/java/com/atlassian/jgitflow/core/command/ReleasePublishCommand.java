@@ -8,6 +8,7 @@ import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.JGitFlowExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseStartExtension;
 
+import net.rcarz.jiraclient.JiraClient;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.ConfigInvalidException;
@@ -40,9 +41,9 @@ public class ReleasePublishCommand extends AbstractGitFlowCommand<ReleasePublish
      * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
      */
-    public ReleasePublishCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
+    public ReleasePublishCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
-        super(branchName, git, gfConfig);
+        super(branchName, git, gfConfig, jira);
     }
 
     /**

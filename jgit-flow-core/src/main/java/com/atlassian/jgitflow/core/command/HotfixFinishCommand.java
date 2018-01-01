@@ -11,6 +11,7 @@ import com.atlassian.jgitflow.core.extension.impl.EmptyHotfixFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.MergeProcessExtensionWrapper;
 import com.atlassian.jgitflow.core.util.GitHelper;
 
+import net.rcarz.jiraclient.JiraClient;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -73,9 +74,9 @@ public class HotfixFinishCommand extends AbstractBranchMergingCommand<HotfixFini
      * @param git        The git instance to use
      * @param gfConfig   The GitFlowConfiguration to use
      */
-    public HotfixFinishCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig)
+    public HotfixFinishCommand(String hotfixName, Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
-        super(hotfixName, git, gfConfig);
+        super(hotfixName, git, gfConfig, jira);
 
         checkState(!StringUtils.isEmptyOrNull(hotfixName));
         this.message = "tagging hotfix " + hotfixName;

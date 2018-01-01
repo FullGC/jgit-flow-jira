@@ -1,8 +1,9 @@
-# JGit-Flow
+# JGit-Flow-Jira
 
-**Current Version: 1.0-m5.1**
+**Current Version: 1.1**
 
-**Issue Tracker Has Moved To: [https://ecosystem.atlassian.net/browse/MJF](https://ecosystem.atlassian.net/browse/MJF)**
+Based on Atlassian jgit-flow project in Bitbucket.
+This project performs Jira tickets manipulation during the the git-flow, and some fixes to the original project
 
 JGit-Flow is a JAVA implementation of Vincent Driessen's [branching model](http://nvie.com/git-model "original
 blog post").

@@ -14,6 +14,7 @@ import com.atlassian.jgitflow.core.util.FileHelper;
 import com.atlassian.jgitflow.core.util.GitHelper;
 import com.atlassian.jgitflow.core.util.IterableHelper;
 
+import net.rcarz.jiraclient.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
@@ -67,9 +68,9 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
      * @param git      The git instance to use
      * @param gfConfig The GitFlowConfiguration to use
      */
-    public FeatureFinishCommand(String branchName, Git git, GitFlowConfiguration gfConfig)
+    public FeatureFinishCommand(String branchName, Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
-        super(branchName, git, gfConfig);
+        super(branchName, git, gfConfig, jira);
 
         checkState(!StringUtils.isEmptyOrNull(branchName));
         this.rebase = false;
@@ -144,7 +145,7 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
             if (rebase)
             {
                 runExtensionCommands(extension.beforeRebase());
-                FeatureRebaseCommand rebaseCommand = new FeatureRebaseCommand(getBranchName(), git, gfConfig);
+                FeatureRebaseCommand rebaseCommand = new FeatureRebaseCommand(getBranchName(), git, gfConfig, jira);
                 rebaseCommand.setAllowUntracked(isAllowUntracked()).call();
                 runExtensionCommands(extension.afterRebase());
             }
@@ -183,14 +184,28 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
 
             cleanupBranchesIfNeeded(gfConfig.getDevelop(), prefixedBranchName);
 
+            Issue issue = jira.getIssue(getBranchName().substring(getBranchName().lastIndexOf("/") + 1));
+
             reporter.infoText(getCommandName(), "checking out '" + gfConfig.getDevelop() + "'");
             git.checkout().setName(gfConfig.getDevelop()).call();
-
             reporter.endCommand();
 
             runExtensionCommands(extension.after());
+            if (jira != null) {
+                try {
+                    if (issue.getTimeSpent() == 0) throw new MissingTimeSpentException();
+                    reporter.infoText("Closing Ticket blah...", "Closing Ticket " + getBranchName() + "... ");
+                    issue.addComment("The issue was resolved by auto process on feature finish command");
+                    issue.transition()
+                            .field(Field.RESOLUTION, "Done")
+                            .execute("QA");
+                } catch (MissingTimeSpentException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             return mergeResult;
-
         }
         catch (GitAPIException e)
         {
@@ -201,8 +216,11 @@ public class FeatureFinishCommand extends AbstractBranchMergingCommand<FeatureFi
         {
             reporter.endCommand();
             throw new JGitFlowIOException(e);
-        }
-        finally
+        } catch (JiraException e) {
+            reporter.endCommand();
+            e.printStackTrace();
+            throw new JGitFlowIOException(e);
+        }  finally
         {
             reporter.endCommand();
             reporter.flush();

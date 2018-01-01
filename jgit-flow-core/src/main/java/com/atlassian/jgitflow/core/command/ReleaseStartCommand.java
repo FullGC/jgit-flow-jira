@@ -8,6 +8,7 @@ import com.atlassian.jgitflow.core.exception.*;
 import com.atlassian.jgitflow.core.extension.ReleaseStartExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseStartExtension;
 
+import net.rcarz.jiraclient.JiraClient;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -46,9 +47,9 @@ public class ReleaseStartCommand extends AbstractBranchCreatingCommand<ReleaseSt
      * @param git         The git instance to use
      * @param gfConfig    The GitFlowConfiguration to use
      */
-    public ReleaseStartCommand(String releaseName, Git git, GitFlowConfiguration gfConfig)
+    public ReleaseStartCommand(String releaseName, Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
-        super(releaseName, git, gfConfig);
+        super(releaseName, git, gfConfig, jira);
         this.extension = new EmptyReleaseStartExtension();
 
     }

@@ -8,6 +8,7 @@ import com.atlassian.jgitflow.core.extension.ReleaseFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.EmptyReleaseFinishExtension;
 import com.atlassian.jgitflow.core.extension.impl.MergeProcessExtensionWrapper;
 
+import net.rcarz.jiraclient.JiraClient;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -74,9 +75,9 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
      * @param git         The git instance to use
      * @param gfConfig    The GitFlowConfiguration to use
      */
-    public ReleaseFinishCommand(String releaseName, Git git, GitFlowConfiguration gfConfig)
+    public ReleaseFinishCommand(String releaseName, Git git, GitFlowConfiguration gfConfig, JiraClient jira)
     {
-        super(releaseName, git, gfConfig);
+        super(releaseName, git, gfConfig, jira);
         checkState(!StringUtils.isEmptyOrNull(releaseName));
         this.noTag = false;
         this.squash = false;
@@ -123,7 +124,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
                 //first merge master
                 MergeProcessExtensionWrapper masterExtension = new MergeProcessExtensionWrapper(extension.beforeMasterCheckout(), extension.afterMasterCheckout(), extension.beforeMasterMerge(), extension.afterMasterMerge());
 
-                masterResult = doMerge(prefixedBranchName, gfConfig.getMaster(), masterExtension, squash);
+                masterResult = doMerge(prefixedBranchName, gfConfig.getMaster(), masterExtension, false);
 
                 //now, tag master
                 if (!noTag && masterResult.getMergeStatus().isSuccessful())
@@ -139,7 +140,7 @@ public class ReleaseFinishCommand extends AbstractBranchMergingCommand<ReleaseFi
                     log.debug("back merging master to develop...");
                 }
 
-                developResult = doMerge(gfConfig.getMaster(), gfConfig.getDevelop(), developExtension, squash);
+                developResult = doMerge(gfConfig.getMaster(), gfConfig.getDevelop(), developExtension, false);
 
                 mergeSuccess = checkMergeResults(masterResult, developResult);
 
