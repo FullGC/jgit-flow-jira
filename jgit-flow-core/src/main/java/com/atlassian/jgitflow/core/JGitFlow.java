@@ -226,6 +226,7 @@ public class JGitFlow
             File gitDir = rb.getGitDir();
             Git gitRepo = Git.open(gitDir);
             GitFlowConfiguration gfConfig = new GitFlowConfiguration(gitRepo);
+            //todo complete here password and jira url
             BasicCredentials creds = new BasicCredentials("", "");
             JiraClient jira = new JiraClient("", creds);
             try {
@@ -235,7 +236,6 @@ public class JGitFlow
                 e.printStackTrace();
             }
             return new JGitFlow(gitRepo, gfConfig, jira);
-
         }
         catch (IOException e)
         {

@@ -14,6 +14,7 @@ import com.google.common.base.Strings;
 
 import net.rcarz.jiraclient.BasicCredentials;
 import net.rcarz.jiraclient.JiraClient;
+import net.rcarz.jiraclient.JiraException;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -278,9 +279,15 @@ public class JGitFlowInitCommand implements Callable<JGitFlow>
                 git.checkout().setName(currentBranch).call();
             }
 
-            BasicCredentials creds = new BasicCredentials("dani", "dani1985");
-
-            jira = new JiraClient("https://jira.inner-active.com", creds);
+            //todo complete here password and jira url
+            BasicCredentials creds = new BasicCredentials("", "");
+            jira = new JiraClient("", creds);
+            try {
+                jira.getIssueTypes(); // checks if the connection established correcly
+            } catch (JiraException e) {
+                jira = null;
+                e.printStackTrace();
+            }
 
         }
         catch (IOException e)
