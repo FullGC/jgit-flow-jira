@@ -1,6 +1,6 @@
 # JGit-Flow-Jira
 
-**Current Version: 1.1**
+**Current Version: 1.0**
 
 Based on Atlassian jgit-flow project in Bitbucket.
 This project performs Jira tickets manipulation during the the git-flow, and some fixes to the original project
